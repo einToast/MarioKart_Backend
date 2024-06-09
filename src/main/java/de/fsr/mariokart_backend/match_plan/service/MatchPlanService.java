@@ -65,6 +65,16 @@ public class MatchPlanService {
         return roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
     }
 
+    public List<Round> getCurrentRounds() {
+        List<Round> rounds = roundRepository.findByPlayedFalse();
+//        System.out.println(rounds);
+        rounds.sort(Comparator.comparing(Round::getStartTime));
+        if (rounds.size() > 2){
+            rounds = rounds.subList(0, 2);
+        }
+        return rounds;
+    }
+
     public List<Game> getGamesByRoundId(Long gameId) {
         return gameRepository.findByRoundId(gameId);
     }

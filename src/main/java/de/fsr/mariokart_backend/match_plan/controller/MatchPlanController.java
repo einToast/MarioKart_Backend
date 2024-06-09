@@ -29,6 +29,11 @@ public class MatchPlanController {
         return matchPlanService.getRounds();
     }
 
+    @GetMapping("/rounds/current")
+    public List<Round> getCurrentRounds() {
+        return matchPlanService.getCurrentRounds();
+    }
+
     @GetMapping("/rounds/{roundId}")
     public ResponseEntity<Round> getRoundById(@PathVariable Long roundId) {
         try {

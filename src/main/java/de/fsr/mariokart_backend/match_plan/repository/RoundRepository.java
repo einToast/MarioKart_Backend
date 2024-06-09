@@ -18,4 +18,6 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
     List<Round> findByFinalGameTrue();
     List<Round> findByStartTimeAfter(LocalDateTime startTime);
     List<Round> findByStartTimeBefore(LocalDateTime startTime);
+
+    List<Round> findByPlayedFalse();
 }

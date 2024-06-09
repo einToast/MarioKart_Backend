@@ -4,6 +4,7 @@ import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundDTO;
+import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
 import de.fsr.mariokart_backend.registration.model.dto.TeamDTO;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.service.RegistrationService;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ import java.util.List;
 public class MyStartupRunner implements CommandLineRunner {
     private final RegistrationService registrationService;
     private final MatchPlanService matchPlanService;
+    private final RoundRepository roundRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -106,6 +109,15 @@ public class MyStartupRunner implements CommandLineRunner {
 
         RoundDTO round3 = new RoundDTO(false);
         matchPlanService.addRound(round3);
+
+        List<Round> rounds = roundRepository.findAll();
+        for (int i = 0; i < rounds.size(); i++) {
+            rounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(20 * i));
+            rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20 * i).plusMinutes(20));
+            roundRepository.save(rounds.get(i));
+        }
+
+
     }
 
     private void addGames() {
@@ -132,7 +144,7 @@ public class MyStartupRunner implements CommandLineRunner {
 
                 for (Team team : selectedTeams) {
                      Points point = new Points();
-                     point.setNormal_points(1);
+                     point.setNormal_points(0);
                      point.setFinal_points(0);
                      point.setTeam(team);
                      point.setGame(game);
