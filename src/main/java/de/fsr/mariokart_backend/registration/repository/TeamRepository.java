@@ -19,8 +19,8 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     boolean existsByCharacterName(String characterName);
     List<Team> findByFinalReadyTrue();
 
-    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.normal_points) DESC")
+    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.normalPoints) DESC")
     List<Team> findAllByOrderByNormalPointsDesc();
-    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.final_points) DESC")
+    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.finalPoints) DESC")
     List<Team> findAllByOrderByFinalPointsDesc();
 }

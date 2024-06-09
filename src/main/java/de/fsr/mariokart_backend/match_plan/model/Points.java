@@ -21,17 +21,17 @@ public class Points {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int normal_points;
+    private int normalPoints;
 
-    private int final_points;
+    private int finalPoints;
 
     @ManyToOne
-    @JoinColumn(name = "team_id", nullable = false)
+    @JoinColumn(name = "teamId", nullable = false)
 //    @JsonBackReference
     private Team team;
 
     @ManyToOne
-    @JoinColumn(name = "game_id", nullable = false)
+    @JoinColumn(name = "gameId", nullable = false)
     @JsonBackReference
     private Game game;
 

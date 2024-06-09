@@ -144,8 +144,8 @@ public class MyStartupRunner implements CommandLineRunner {
 
                 for (Team team : selectedTeams) {
                      Points point = new Points();
-                     point.setNormal_points(0);
-                     point.setFinal_points(0);
+                     point.setNormalPoints(0);
+                     point.setFinalPoints(0);
                      point.setTeam(team);
                      point.setGame(game);
                      matchPlanService.addPoints(point);

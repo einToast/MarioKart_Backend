@@ -128,9 +128,9 @@ public class MatchPlanService {
         Team team = teamRepository.findById(teamId).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
 
         if (round.isFinalGame()){
-            points.setFinal_points(pointsCreation.getPoints());
+            points.setFinalPoints(pointsCreation.getPoints());
         } else {
-            points.setNormal_points(pointsCreation.getPoints());
+            points.setNormalPoints(pointsCreation.getPoints());
         }
 
         points.setGame(game);
@@ -142,8 +142,8 @@ public class MatchPlanService {
         List<Team> teams = teamRepository.findByFinalReadyTrue();
 
         teams.sort((t1, t2) -> {
-            int t1Points = t1.getPoints().stream().mapToInt(Points::getNormal_points).sum();
-            int t2Points = t2.getPoints().stream().mapToInt(Points::getNormal_points).sum();
+            int t1Points = t1.getPoints().stream().mapToInt(Points::getNormalPoints).sum();
+            int t2Points = t2.getPoints().stream().mapToInt(Points::getNormalPoints).sum();
             return t2Points - t1Points;
         });
 
@@ -162,8 +162,8 @@ public class MatchPlanService {
         gameRepository.save(game);
         for (int i = 0; i < teams.size(); i++){
             Points point = new Points();
-            point.setNormal_points(0);
-            point.setFinal_points(3-i);
+            point.setNormalPoints(0);
+            point.setFinalPoints(3-i);
             point.setTeam(teams.get(i));
             point.setGame(game);
             pointsRepository.save(point);
@@ -192,8 +192,8 @@ public class MatchPlanService {
             gameRepository.save(game);
             for (Team team : teams){
                 Points point = new Points();
-                point.setNormal_points(0);
-                point.setFinal_points(0);
+                point.setNormalPoints(0);
+                point.setFinalPoints(0);
                 point.setTeam(team);
                 point.setGame(game);
                 pointsRepository.save(point);

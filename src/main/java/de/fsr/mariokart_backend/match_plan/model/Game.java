@@ -28,7 +28,7 @@ public class Game {
 //    private Team team;
 
     @ManyToOne
-    @JoinColumn(name = "round_id", nullable = false)
+    @JoinColumn(name = "roundId", nullable = false)
     @JsonBackReference
     private Round round;
 
