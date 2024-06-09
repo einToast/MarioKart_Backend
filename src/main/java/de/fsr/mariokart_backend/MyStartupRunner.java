@@ -50,7 +50,7 @@ public class MyStartupRunner implements CommandLineRunner {
         TeamDTO team6 = new TeamDTO("BulletBillBrigade", "Yoshi");
         registrationService.addTeam(team6);
 
-        TeamDTO team7 = new TeamDTO("ChompChampions", "Donkey Kong");
+        TeamDTO team7 = new TeamDTO("ChompChampions", "Donkey-Kong");
         registrationService.addTeam(team7);
 
         TeamDTO team8 = new TeamDTO("RainbowRiders", "Wario");
@@ -65,10 +65,10 @@ public class MyStartupRunner implements CommandLineRunner {
         TeamDTO team11 = new TeamDTO("PiranhaPals", "Rosalina");
         registrationService.addTeam(team11);
 
-        TeamDTO team12 = new TeamDTO("ThwompThumpers", "Metal Mario");
+        TeamDTO team12 = new TeamDTO("ThwompThumpers", "Metall-Mario");
         registrationService.addTeam(team12);
 
-        TeamDTO team13 = new TeamDTO("ShyGuySquad", "Shy Guy");
+        TeamDTO team13 = new TeamDTO("ShyGuySquad", "Shy-Guy");
         registrationService.addTeam(team13);
 
         TeamDTO team14 = new TeamDTO("DryBoneDynasty", "Knochentrocken");
@@ -77,16 +77,16 @@ public class MyStartupRunner implements CommandLineRunner {
         TeamDTO team15 = new TeamDTO("LakituLegends", "Lakitu");
         registrationService.addTeam(team15);
 
-        TeamDTO team16 = new TeamDTO("BooBusters", "König Buu-Huu");
+        TeamDTO team16 = new TeamDTO("BooBusters", "König-Buu-Huu");
         registrationService.addTeam(team16);
 
         TeamDTO team17 = new TeamDTO("KoopaTroop", "Koopa");
         registrationService.addTeam(team17);
 
-        TeamDTO team18 = new TeamDTO("InklingInvaders", "Inkling Mädchen");
+        TeamDTO team18 = new TeamDTO("InklingInvaders", "Inkling-Mädchen");
         registrationService.addTeam(team18);
 
-        TeamDTO team19 = new TeamDTO("VillagerVictory", "Villager");
+        TeamDTO team19 = new TeamDTO("VillagerVictory", "Bewohner");
         registrationService.addTeam(team19);
 
         TeamDTO team20 = new TeamDTO("BabyBruisers", "Baby Daisy");
