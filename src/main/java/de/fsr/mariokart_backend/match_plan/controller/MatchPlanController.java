@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/match_plan")
 @AllArgsConstructor

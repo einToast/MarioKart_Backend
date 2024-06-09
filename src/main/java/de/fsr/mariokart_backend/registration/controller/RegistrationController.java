@@ -14,13 +14,14 @@ import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 
 import java.util.List;
 
-
+@CrossOrigin
 @RestController
 @RequestMapping("/teams")
 @AllArgsConstructor
 public class RegistrationController {
 
         private final RegistrationService registrationService;
+
 
         @GetMapping
         public List<Team> getTeams() {
