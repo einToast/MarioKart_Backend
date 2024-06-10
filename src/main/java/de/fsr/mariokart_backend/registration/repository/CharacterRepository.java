@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.registration.repository;
 
+import de.fsr.mariokart_backend.registration.model.Character;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,16 +15,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TeamRepository extends JpaRepository<Team, Long> {
+public interface CharacterRepository extends JpaRepository<Character, Long> {
+    Optional<Character> findByCharacterName(String characterName);
 
-    boolean existsByTeamName(String teamName);
-//    boolean existsByCharacterName(String characterName);
-    List<Team> findByFinalReadyTrue();
+    List<Character> findByTeamIsNull();
 
-    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.normalPoints) DESC")
-    List<Team> findAllByOrderByNormalPointsDesc();
-    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.finalPoints) DESC")
-    List<Team> findAllByOrderByFinalPointsDesc();
-
-    Optional<Team> findByTeamName(String teamName);
+    List<Character> findByTeamIsNotNull();
 }

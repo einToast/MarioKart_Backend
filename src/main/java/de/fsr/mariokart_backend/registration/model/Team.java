@@ -21,8 +21,9 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
-    private String characterName;
+    @OneToOne
+    @JoinColumn(name = "characterId")
+    private Character character;
 
     @Column(unique = true)
     private String teamName;

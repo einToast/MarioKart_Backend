@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.registration.controller;
 
+import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.dto.TeamDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -47,12 +48,58 @@ public class RegistrationController {
             }
         }
 
+        @GetMapping("/name/{name}")
+        public ResponseEntity<Team> getTeamByName(@PathVariable String name) {
+            try{
+                return ResponseEntity.ok(registrationService.getTeamByName(name));
+            } catch (EntityNotFoundException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }
+
+        @GetMapping("characters")
+        public List<Character> getCharacters() {
+            return registrationService.getCharacters();
+        }
+
+        @GetMapping("characters/available")
+        public List<Character> getAvailableCharacters() {
+            return registrationService.getAvailableCharacters();
+        }
+
+        @GetMapping("characters/taken")
+        public List<Character> getTakenCharacters() {
+            return registrationService.getTakenCharacters();
+        }
+
+        @GetMapping("characters/{id}")
+        public ResponseEntity<Character> getCharacterById(@PathVariable Long id) {
+            try {
+                return ResponseEntity.ok(registrationService.getCharacterById(id));
+            } catch (EntityNotFoundException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }
+
+        @GetMapping("characters/name/{name}")
+        public ResponseEntity<Character> getCharacterByName(@PathVariable String name) {
+            try {
+                return ResponseEntity.ok(registrationService.getCharacterByName(name));
+            } catch (EntityNotFoundException e) {
+                return ResponseEntity.notFound().build();
+            }
+        }
+
+
+
         @PostMapping
         public ResponseEntity<Team> addTeam(@RequestBody TeamDTO teamCreation) {
             try{
                 return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.addTeam(teamCreation));
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().build();
+            } catch (EntityNotFoundException e) {
+                return ResponseEntity.notFound().build();
             }
         }
 
