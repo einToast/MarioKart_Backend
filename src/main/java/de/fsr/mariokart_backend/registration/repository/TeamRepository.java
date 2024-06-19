@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.registration.model.Team;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,10 +21,11 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 //    boolean existsByCharacterName(String characterName);
     List<Team> findByFinalReadyTrue();
 
-    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.normalPoints) DESC")
-    List<Team> findAllByOrderByNormalPointsDesc();
+    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.groupPoints) DESC")
+    List<Team> findAllByOrderByGroupPointsDesc();
     @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.finalPoints) DESC")
     List<Team> findAllByOrderByFinalPointsDesc();
 
     Optional<Team> findByTeamName(String teamName);
+
 }

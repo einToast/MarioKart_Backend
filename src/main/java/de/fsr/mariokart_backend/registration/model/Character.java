@@ -15,6 +15,7 @@ import jakarta.persistence.*;
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Character {
 
+        @Getter
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
@@ -25,4 +26,5 @@ public class Character {
         @OneToOne(mappedBy = "character", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 //        @JsonManagedReference
         private Team team;
+
 }

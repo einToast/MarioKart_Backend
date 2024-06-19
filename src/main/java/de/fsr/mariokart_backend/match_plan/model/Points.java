@@ -21,7 +21,7 @@ public class Points {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int normalPoints;
+    private int groupPoints;
 
     private int finalPoints;
 

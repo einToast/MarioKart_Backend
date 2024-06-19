@@ -1,13 +1,16 @@
 package de.fsr.mariokart_backend.registration.service;
 
 import de.fsr.mariokart_backend.registration.model.Character;
-import de.fsr.mariokart_backend.registration.model.dto.TeamDTO;
+import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
+import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
+import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
+import de.fsr.mariokart_backend.registration.service.dto.RegistrationInputDTOService;
+import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
@@ -21,53 +24,72 @@ public class RegistrationService {
         private final TeamRepository teamRepository;
         private final CharacterRepository characterRepository;
 
-        public List<Team> getTeams() {
-            return teamRepository.findAll();
+        private final RegistrationInputDTOService registrationInputDTOService;
+        private final RegistrationReturnDTOService registrationReturnDTOService;
+
+        public List<TeamReturnDTO> getTeams() {
+            return teamRepository.findAll() .stream()
+                                            .map(registrationReturnDTOService::teamToTeamReturnDTO)
+                                            .toList();
+
         }
 
-        public List<Team> getTeamsSortedByNormalPoints() {
-            return teamRepository.findAllByOrderByNormalPointsDesc();
+        public List<TeamReturnDTO> getTeamsSortedByNormalPoints() {
+            return teamRepository.findAllByOrderByGroupPointsDesc().stream()
+                                                                    .map(registrationReturnDTOService::teamToTeamReturnDTO)
+                                                                    .toList();
         }
 
-        public List<Team> getTeamsSortedByFinalPoints() {
-            return teamRepository.findAllByOrderByFinalPointsDesc();
+        public List<TeamReturnDTO> getTeamsSortedByFinalPoints() {
+            return teamRepository.findAllByOrderByFinalPointsDesc().stream()
+                                                                    .map(registrationReturnDTOService::teamToTeamReturnDTO)
+                                                                    .toList();
         }
 
-        public Team getTeamById(Long id) throws EntityNotFoundException{
-            return teamRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
+        public TeamReturnDTO getTeamById(Long id) throws EntityNotFoundException{
+            return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID.")));
+//            return teamRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
         }
 
-        public Team getTeamByName(String teamName) throws EntityNotFoundException{
+        public TeamReturnDTO getTeamByName(String teamName) throws EntityNotFoundException{
             System.out.println(teamName);
             System.out.println(teamRepository.findByTeamName(teamName));
-            return teamRepository.findByTeamName(teamName).orElseThrow(() -> new EntityNotFoundException("There is no team with this name."));
+            return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.findByTeamName(teamName).orElseThrow(() -> new EntityNotFoundException("There is no team with this name.")));
+//            return teamRepository.findByTeamName(teamName).orElseThrow(() -> new EntityNotFoundException("There is no team with this name."));
         }
 
-        public List<Character> getCharacters() {
-            return characterRepository.findAll();
+        public List<CharacterReturnDTO> getCharacters() {
+            return characterRepository.findAll().stream()
+                                                .map(registrationReturnDTOService::characterToCharacterReturnDTO)
+                                                .toList();
+//            return characterRepository.findAll();
         }
 
 
-        public List<Character> getAvailableCharacters() {
-            return characterRepository.findByTeamIsNull();
+        public List<CharacterReturnDTO> getAvailableCharacters() {
+            return characterRepository.findByTeamIsNull()   .stream()
+                                                            .map(registrationReturnDTOService::characterToCharacterReturnDTO)
+                                                            .toList();
         }
 
-        public List<Character> getTakenCharacters() {
-            return characterRepository.findByTeamIsNotNull();
+        public List<CharacterReturnDTO> getTakenCharacters() {
+            return characterRepository.findByTeamIsNotNull().stream()
+                                                            .map(registrationReturnDTOService::characterToCharacterReturnDTO)
+                                                            .toList();
         }
 
-        public Character getCharacterById(Long id) throws EntityNotFoundException{
-            return characterRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no character with this ID."));
+        public CharacterReturnDTO getCharacterById(Long id) throws EntityNotFoundException{
+            return registrationReturnDTOService.characterToCharacterReturnDTO(characterRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no character with this ID.")));
+//            return characterRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no character with this ID."));
         }
 
-        public Character getCharacterByName(String characterName) throws EntityNotFoundException{
-            return characterRepository.findByCharacterName(characterName).orElseThrow(() -> new EntityNotFoundException("There is no character with this name."));
+        public CharacterReturnDTO getCharacterByName(String characterName) throws EntityNotFoundException{
+            return registrationReturnDTOService.characterToCharacterReturnDTO(characterRepository.findByCharacterName(characterName).orElseThrow(() -> new EntityNotFoundException("There is no character with this name.")));
+//            return characterRepository.findByCharacterName(characterName).orElseThrow(() -> new EntityNotFoundException("There is no character with this name."));
         }
 
-        public Team addTeam(TeamDTO teamCreation) throws IllegalArgumentException, EntityNotFoundException{
-            Team team = new Team();
-            team.setTeamName(teamCreation.getTeamName());
-            team.setCharacter(characterRepository.findByCharacterName(teamCreation.getCharacterName()).orElseThrow(() -> new EntityNotFoundException("There is no character with this name.")));
+        public TeamReturnDTO addTeam(TeamInputDTO teamCreation) throws IllegalArgumentException, EntityNotFoundException{
+            Team team = registrationInputDTOService.teamInputDTOToTeam(teamCreation);
 
             team.setFinalReady(true);
 
@@ -78,31 +100,36 @@ public class RegistrationService {
                 throw new IllegalArgumentException("Team name already exists");
             }
 
-            return teamRepository.save(team);
+            return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
+//            return teamRepository.save(team);
 
         }
 
         public Character addCharacter(Character character) {
+//            return registrationReturnDTOService.characterToCharacterReturnDTO(characterRepository.save(character));
             return characterRepository.save(character);
         }
 
         public List<Character> addCharacters(List<Character> characters) {
+//            return characters   .stream()
+//                                .map(registrationReturnDTOService::characterToCharacterReturnDTO)
+//                                .toList();
             return characterRepository.saveAll(characters);
         }
 
-        public Team updateTeam(Long id, TeamDTO teamCreation) throws EntityNotFoundException, IllegalArgumentException {
+        public TeamReturnDTO updateTeam(Long id, TeamInputDTO teamCreation) throws EntityNotFoundException, IllegalArgumentException {
             Team team = teamRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
 
-            if (teamCreation.getTeamName() != null) {
+            if (teamCreation.getTeamName() != null && !team.getTeamName().equals(teamCreation.getTeamName())) {
                 team.setTeamName(teamCreation.getTeamName());
             }
 
 
-            if (teamCreation.getCharacterName() != null) {
+            if (teamCreation.getCharacterName() != null && !team.getCharacter().getCharacterName().equals(teamCreation.getCharacterName())) {
                 team.setCharacter(characterRepository.findByCharacterName(teamCreation.getCharacterName()).orElseThrow(() -> new EntityNotFoundException("There is no character with this name.")));
             }
 
-            if (team.getCharacter().getTeam() != null) {
+            if (team.getCharacter().getTeam() != null && !team.getCharacter().getTeam().getId().equals(id)) {
                 throw new IllegalArgumentException("Character is already in a team");
             }
 
@@ -110,8 +137,9 @@ public class RegistrationService {
                 throw new IllegalArgumentException("Team name already exists");
             }
 
+            return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
 
-            return teamRepository.save(team);
+//            return teamRepository.save(team);
         }
 
         public void deleteTeam(Long id) {

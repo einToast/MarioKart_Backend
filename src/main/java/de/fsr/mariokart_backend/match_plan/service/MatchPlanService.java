@@ -1,8 +1,8 @@
 package de.fsr.mariokart_backend.match_plan.service;
 
-import de.fsr.mariokart_backend.match_plan.model.dto.GameDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.PointsDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.RoundDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.*;
+import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanInputDTOService;
+import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +19,8 @@ import de.fsr.mariokart_backend.match_plan.repository.PointsRepository;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -33,65 +31,87 @@ public class MatchPlanService {
     private final PointsRepository pointsRepository;
     private final TeamRepository teamRepository;
 
-    public Round addRound(RoundDTO roundCreation) {
-        Round round = new Round();
-        round.setPlayed(roundCreation.isPlayed());
-        return roundRepository.save(round);
+    private final MatchPlanInputDTOService matchPlanInputDTOService;
+    private final MatchPlanReturnDTOService matchPlanReturnDTOService;
+
+    public RoundReturnDTO addRound(RoundInputDTO roundCreation) {
+        Round round = matchPlanInputDTOService.roundInputDTOToRound(roundCreation);
+        return matchPlanReturnDTOService.roundToRoundDTO(roundRepository.save(round));
+//        return roundRepository.save(round);
     }
 
-    public Game addGameDTO(GameDTO gameCreation) throws EntityNotFoundException{
-        Game game = new Game();
-        game.setSwitchGame(gameCreation.getSwitchGame());
-        game.setRound(roundRepository.findById(gameCreation.getRoundId()).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID.")));
-        return gameRepository.save(game);
+    public GameReturnDTO addGameDTO(GameInputDTO gameCreation) throws EntityNotFoundException{
+        Game game = matchPlanInputDTOService.gameInputDTOToGame(gameCreation);
+        return matchPlanReturnDTOService.gameToGameDTO(gameRepository.save(game));
+//        return gameRepository.save(game);
     }
 
-    public Game addGame(Game game) {
-        return gameRepository.save(game);
+    public GameReturnDTO addGame(Game game) {
+        return matchPlanReturnDTOService.gameToGameDTO(gameRepository.save(game));
+//        return gameRepository.save(game);
     }
 
-    public Points addPoints(Points points) {
-        return pointsRepository.save(points);
+    public PointsReturnDTO addPoints(Points points) {
+        return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
+//        return pointsRepository.save(points);
     }
 
 
 
 
-    public List<Round> getRounds() {
-        return roundRepository.findAll();
+    public List<RoundReturnDTO> getRounds() {
+        return roundRepository.findAll().stream()
+                                        .map(matchPlanReturnDTOService::roundToRoundDTO)
+                                        .toList();
+//        return roundRepository.findAll();
     }
 
-    public Round getRoundById(Long roundId) throws EntityNotFoundException{
-        return roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+    public RoundReturnDTO getRoundById(Long roundId) throws EntityNotFoundException{
+        return roundRepository  .findById(roundId)
+                                .map(matchPlanReturnDTOService::roundToRoundDTO)
+                                .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+//        return roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
     }
 
-    public List<Round> getCurrentRounds() {
+    public List<RoundReturnDTO> getCurrentRounds() {
         List<Round> rounds = roundRepository.findByPlayedFalse();
 //        System.out.println(rounds);
         rounds.sort(Comparator.comparing(Round::getStartTime));
         if (rounds.size() > 2){
             rounds = rounds.subList(0, 2);
         }
-        return rounds;
+        return rounds   .stream()
+                        .map(matchPlanReturnDTOService::roundToRoundDTO)
+                        .toList();
     }
 
-    public List<Game> getGamesByRoundId(Long gameId) {
-        return gameRepository.findByRoundId(gameId);
+    public List<GameReturnDTO> getGamesByRoundId(Long gameId) {
+        return gameRepository   .findByRoundId(gameId).stream()
+                                .map(matchPlanReturnDTOService::gameToGameDTO)
+                                .toList();
     }
 
-    public List<Game> getGames() {
-        return gameRepository.findAll();
+    public List<GameReturnDTO> getGames() {
+        return gameRepository.findAll() .stream()
+                                        .map(matchPlanReturnDTOService::gameToGameDTO)
+                                        .toList();
     }
 
-    public Game getGameById(Long gameId) throws EntityNotFoundException{
-        return gameRepository.findById(gameId).orElseThrow(() -> new EntityNotFoundException("There is no game with this ID."));
+    public GameReturnDTO getGameById(Long gameId) throws EntityNotFoundException{
+        return matchPlanReturnDTOService.gameToGameDTO(gameRepository.findById(gameId).orElseThrow(() -> new EntityNotFoundException("There is no game with this ID.")));
+//        return gameRepository   .findById(gameId)
+//                                .map(matchPlanReturnDTOService::gameToGameDTO)
+//                                .orElseThrow(() -> new EntityNotFoundException("There is no game with this ID."));
+//        return gameRepository.findById(gameId).orElseThrow(() -> new EntityNotFoundException("There is no game with this ID."));
     }
 
-    public List<Points> getPoints() {
-        return pointsRepository.findAll();
+    public List<PointsReturnDTO> getPoints() {
+        return pointsRepository.findAll()   .stream()
+                                            .map(matchPlanReturnDTOService::pointsToPointsDTO)
+                                            .toList();
     }
 
-    public Round updateRoundPlayed(Long roundId, RoundDTO roundCreation) throws EntityNotFoundException{
+    public RoundReturnDTO updateRoundPlayed(Long roundId, RoundInputDTO roundCreation) throws EntityNotFoundException{
         Round round = roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
         List<Round> rounds = roundRepository.findByStartTimeAfter(round.getStartTime());
         rounds.sort(Comparator.comparing(Round::getStartTime));
@@ -100,28 +120,31 @@ public class MatchPlanService {
 
         if (round.isPlayed() && !rounds.isEmpty()) {
             for (int i = 0; i < rounds.size(); i++) {
-                rounds.get(i).setStartTime(round.getStartTime().plusMinutes(20 * i));
-                rounds.get(i).setEndTime(round.getStartTime().plusMinutes(20 * i + 20));
+                rounds.get(i).setStartTime(round.getStartTime().plusMinutes(20L * i));
+                rounds.get(i).setEndTime(round.getStartTime().plusMinutes(20L * i + 20));
                 roundRepository.save(rounds.get(i));
             }
         }
 
-        return roundRepository.save(round);
+        return matchPlanReturnDTOService.roundToRoundDTO(roundRepository.save(round));
+//        return roundRepository.save(round)
     }
 
-    public Round updateRound(Long roundId, RoundDTO roundCreation) throws EntityNotFoundException{
+    public RoundReturnDTO updateRound(Long roundId, RoundInputDTO roundCreation) throws EntityNotFoundException{
         Round round = roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
         round.setPlayed(roundCreation.isPlayed());
-        return roundRepository.save(round);
+        return matchPlanReturnDTOService.roundToRoundDTO(roundRepository.save(round));
+//        return roundRepository.save(round);
     }
 
-    public Game updateGame(Long gameId, GameDTO gameCreation) throws EntityNotFoundException{
+    public GameReturnDTO updateGame(Long gameId, GameInputDTO gameCreation) throws EntityNotFoundException{
         Game game = gameRepository.findById(gameId).orElseThrow(() -> new EntityNotFoundException("There is no game with this ID."));
         game.setSwitchGame(gameCreation.getSwitchGame());
-        return gameRepository.save(game);
+        return matchPlanReturnDTOService.gameToGameDTO(gameRepository.save(game));
+//        return gameRepository.save(game);
     }
 
-    public Points updatePoints(Long roundId, Long teamId, Long gameId, PointsDTO pointsCreation) throws EntityNotFoundException{
+    public PointsReturnDTO updatePoints(Long roundId, Long teamId, Long gameId, PointsInputDTO pointsCreation) throws EntityNotFoundException{
         Points points = pointsRepository.findByGameIdAndTeamId(gameId, teamId).orElseThrow(() -> new EntityNotFoundException("There are no points with this ID."));
         Round round = roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
         Game game = gameRepository.findById(gameId).orElseThrow(() -> new EntityNotFoundException("There is no game with this ID."));
@@ -130,20 +153,21 @@ public class MatchPlanService {
         if (round.isFinalGame()){
             points.setFinalPoints(pointsCreation.getPoints());
         } else {
-            points.setNormalPoints(pointsCreation.getPoints());
+            points.setGroupPoints(pointsCreation.getPoints());
         }
 
         points.setGame(game);
         points.setTeam(team);
-        return pointsRepository.save(points);
+        return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
+//        return pointsRepository.save(points);
     }
 
-    public List<Round> createFinalPlan() {
+    public List<RoundReturnDTO> createFinalPlan() {
         List<Team> teams = teamRepository.findByFinalReadyTrue();
 
         teams.sort((t1, t2) -> {
-            int t1Points = t1.getPoints().stream().mapToInt(Points::getNormalPoints).sum();
-            int t2Points = t2.getPoints().stream().mapToInt(Points::getNormalPoints).sum();
+            int t1Points = t1.getPoints().stream().mapToInt(Points::getGroupPoints).sum();
+            int t2Points = t2.getPoints().stream().mapToInt(Points::getGroupPoints).sum();
             return t2Points - t1Points;
         });
 
@@ -162,7 +186,7 @@ public class MatchPlanService {
         gameRepository.save(game);
         for (int i = 0; i < teams.size(); i++){
             Points point = new Points();
-            point.setNormalPoints(0);
+            point.setGroupPoints(0);
             point.setFinalPoints(3-i);
             point.setTeam(teams.get(i));
             point.setGame(game);
@@ -173,7 +197,9 @@ public class MatchPlanService {
             createFinalRounds(teams, LocalDateTime.now().plusMinutes(20 * i));
         }
 
-        return roundRepository.findByFinalGameTrue();
+        return roundRepository.findAll().stream()
+                                        .map(matchPlanReturnDTOService::roundToRoundDTO)
+                                        .toList();
     }
 
     private void createFinalRounds(List<Team> teams, LocalDateTime start_time) {
@@ -192,7 +218,7 @@ public class MatchPlanService {
             gameRepository.save(game);
             for (Team team : teams){
                 Points point = new Points();
-                point.setNormalPoints(0);
+                point.setGroupPoints(0);
                 point.setFinalPoints(0);
                 point.setTeam(team);
                 point.setGame(game);

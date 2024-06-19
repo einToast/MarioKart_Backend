@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class TeamDTO {
+public class TeamInputDTO {
     private String teamName;
     private String characterName;
 //    private boolean finalReady;

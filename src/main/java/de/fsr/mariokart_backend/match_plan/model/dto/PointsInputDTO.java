@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class PointsDTO {
+public class PointsInputDTO {
     private int points;
 }

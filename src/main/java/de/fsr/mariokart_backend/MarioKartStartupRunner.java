@@ -4,10 +4,12 @@ import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
-import de.fsr.mariokart_backend.match_plan.model.dto.RoundDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
-import de.fsr.mariokart_backend.registration.model.dto.TeamDTO;
+import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
+import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -27,6 +29,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final RegistrationService registrationService;
     private final MatchPlanService matchPlanService;
     private final RoundRepository roundRepository;
+    private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
 
     @Override
@@ -45,67 +48,67 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addTeams() {
         try {
-            TeamDTO team1 = new TeamDTO("TollerTeamName", "Mario");
+            TeamInputDTO team1 = new TeamInputDTO("TollerTeamName", "Mario");
             registrationService.addTeam(team1);
 
-            TeamDTO team2 = new TeamDTO("BlitzBoys", "Luigi");
+            TeamInputDTO team2 = new TeamInputDTO("BlitzBoys", "Luigi");
             registrationService.addTeam(team2);
 
-            TeamDTO team3 = new TeamDTO("ToadstoolTerrors", "Peach");
+            TeamInputDTO team3 = new TeamInputDTO("ToadstoolTerrors", "Peach");
             registrationService.addTeam(team3);
 
-            TeamDTO team4 = new TeamDTO("KoopaKings", "Bowser");
+            TeamInputDTO team4 = new TeamInputDTO("KoopaKings", "Bowser");
             registrationService.addTeam(team4);
 
-            TeamDTO team5 = new TeamDTO("MushroomMasters", "Toad");
+            TeamInputDTO team5 = new TeamInputDTO("MushroomMasters", "Toad");
             registrationService.addTeam(team5);
 
-            TeamDTO team6 = new TeamDTO("BulletBillBrigade", "Yoshi");
+            TeamInputDTO team6 = new TeamInputDTO("BulletBillBrigade", "Yoshi");
             registrationService.addTeam(team6);
 
-            TeamDTO team7 = new TeamDTO("ChompChampions", "Donkey-Kong");
+            TeamInputDTO team7 = new TeamInputDTO("ChompChampions", "Donkey-Kong");
             registrationService.addTeam(team7);
 
-            TeamDTO team8 = new TeamDTO("RainbowRiders", "Wario");
+            TeamInputDTO team8 = new TeamInputDTO("RainbowRiders", "Wario");
             registrationService.addTeam(team8);
 
-            TeamDTO team9 = new TeamDTO("ShellShockers", "Waluigi");
+            TeamInputDTO team9 = new TeamInputDTO("ShellShockers", "Waluigi");
             registrationService.addTeam(team9);
 
-            TeamDTO team10 = new TeamDTO("BananaBandits", "Daisy");
+            TeamInputDTO team10 = new TeamInputDTO("BananaBandits", "Daisy");
             registrationService.addTeam(team10);
 
-            TeamDTO team11 = new TeamDTO("PiranhaPals", "Rosalina");
+            TeamInputDTO team11 = new TeamInputDTO("PiranhaPals", "Rosalina");
             registrationService.addTeam(team11);
 
-            TeamDTO team12 = new TeamDTO("ThwompThumpers", "Metall-Mario");
+            TeamInputDTO team12 = new TeamInputDTO("ThwompThumpers", "Metall-Mario");
             registrationService.addTeam(team12);
 
-            TeamDTO team13 = new TeamDTO("ShyGuySquad", "Shy-Guy");
+            TeamInputDTO team13 = new TeamInputDTO("ShyGuySquad", "Shy-Guy");
             registrationService.addTeam(team13);
 
-            TeamDTO team14 = new TeamDTO("DryBoneDynasty", "Knochentrocken");
+            TeamInputDTO team14 = new TeamInputDTO("DryBoneDynasty", "Knochentrocken");
             registrationService.addTeam(team14);
 
-            TeamDTO team15 = new TeamDTO("LakituLegends", "Lakitu");
+            TeamInputDTO team15 = new TeamInputDTO("LakituLegends", "Lakitu");
             registrationService.addTeam(team15);
 
-            TeamDTO team16 = new TeamDTO("BooBusters", "König-Buu-Huu");
+            TeamInputDTO team16 = new TeamInputDTO("BooBusters", "König-Buu-Huu");
             registrationService.addTeam(team16);
 
-            TeamDTO team17 = new TeamDTO("KoopaTroop", "Koopa");
+            TeamInputDTO team17 = new TeamInputDTO("KoopaTroop", "Koopa");
             registrationService.addTeam(team17);
 
-            TeamDTO team18 = new TeamDTO("InklingInvaders", "Inkling-Mädchen");
+            TeamInputDTO team18 = new TeamInputDTO("InklingInvaders", "Inkling-Mädchen");
             registrationService.addTeam(team18);
 
-            TeamDTO team19 = new TeamDTO("VillagerVictory", "Bewohner");
+            TeamInputDTO team19 = new TeamInputDTO("VillagerVictory", "Bewohner");
             registrationService.addTeam(team19);
 
-            TeamDTO team20 = new TeamDTO("BabyBruisers", "Baby-Daisy");
+            TeamInputDTO team20 = new TeamInputDTO("BabyBruisers", "Baby-Daisy");
             registrationService.addTeam(team20);
 
-            TeamDTO team21 = new TeamDTO("Isabelle'sIsle", "Melinda");
+            TeamInputDTO team21 = new TeamInputDTO("Isabelle'sIsle", "Melinda");
             registrationService.addTeam(team21);
         } catch (IllegalArgumentException | EntityNotFoundException e) {
             System.err.print(e.getMessage());
@@ -114,28 +117,28 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     }
 
     private void addRounds() {
-        RoundDTO round1 = new RoundDTO(false);
+        RoundInputDTO round1 = new RoundInputDTO(false);
         matchPlanService.addRound(round1);
 
-        RoundDTO round2 = new RoundDTO(false);
+        RoundInputDTO round2 = new RoundInputDTO(false);
         matchPlanService.addRound(round2);
 
-        RoundDTO round3 = new RoundDTO(false);
+        RoundInputDTO round3 = new RoundInputDTO(false);
         matchPlanService.addRound(round3);
 
         List<Round> rounds = roundRepository.findAll();
         for (int i = 0; i < rounds.size(); i++) {
-            rounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(20 * i));
-            rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20 * i).plusMinutes(20));
+            rounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(20L * i));
+            rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20L * i).plusMinutes(20));
             roundRepository.save(rounds.get(i));
         }
 
 
     }
 
-    private void addGames() {
-        List<Round> rounds = matchPlanService.getRounds();
-        List<Team> teams = registrationService.getTeams();
+    private void addGames() throws EntityNotFoundException {
+        List<Round> rounds = roundRepository.findAll();
+        List<Team> teams = teamRepository.findAll();
         for (Round round : rounds) {
             for (int i = 0; i < 4; i++) {
                 Game game = new Game();
@@ -153,11 +156,13 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
                 Collections.shuffle(teams);
 
+//                System.out.println(teams);
+
                 List<Team> selectedTeams = teams.subList(0, 4);
 
                 for (Team team : selectedTeams) {
                      Points point = new Points();
-                     point.setNormalPoints(0);
+                     point.setGroupPoints(0);
                      point.setFinalPoints(0);
                      point.setTeam(team);
                      point.setGame(game);

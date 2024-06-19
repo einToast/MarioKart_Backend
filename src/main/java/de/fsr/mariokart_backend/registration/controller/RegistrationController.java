@@ -1,10 +1,11 @@
 package de.fsr.mariokart_backend.registration.controller;
 
 import de.fsr.mariokart_backend.registration.model.Character;
-import de.fsr.mariokart_backend.registration.model.dto.TeamDTO;
+import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
+import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
+import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 import lombok.AllArgsConstructor;
 
@@ -25,22 +26,22 @@ public class RegistrationController {
 
 
         @GetMapping
-        public List<Team> getTeams() {
+        public List<TeamReturnDTO> getTeams() {
             return registrationService.getTeams();
         }
 
         @GetMapping("/sortedByNormalPoints")
-        public List<Team> getTeamsSortedByNormalPoints() {
+        public List<TeamReturnDTO> getTeamsSortedByNormalPoints() {
             return registrationService.getTeamsSortedByNormalPoints();
         }
 
         @GetMapping("/sortedByFinalPoints")
-        public List<Team> getTeamsSortedByFinalPoints() {
+        public List<TeamReturnDTO> getTeamsSortedByFinalPoints() {
             return registrationService.getTeamsSortedByFinalPoints();
         }
 
         @GetMapping("/{id}")
-        public ResponseEntity<Team> getTeamById(@PathVariable Long id) {
+        public ResponseEntity<TeamReturnDTO> getTeamById(@PathVariable Long id) {
             try{
                 return ResponseEntity.ok(registrationService.getTeamById(id));
             } catch (EntityNotFoundException e) {
@@ -49,7 +50,7 @@ public class RegistrationController {
         }
 
         @GetMapping("/name/{name}")
-        public ResponseEntity<Team> getTeamByName(@PathVariable String name) {
+        public ResponseEntity<TeamReturnDTO> getTeamByName(@PathVariable String name) {
             try{
                 return ResponseEntity.ok(registrationService.getTeamByName(name));
             } catch (EntityNotFoundException e) {
@@ -58,22 +59,22 @@ public class RegistrationController {
         }
 
         @GetMapping("characters")
-        public List<Character> getCharacters() {
+        public List<CharacterReturnDTO> getCharacters() {
             return registrationService.getCharacters();
         }
 
         @GetMapping("characters/available")
-        public List<Character> getAvailableCharacters() {
+        public List<CharacterReturnDTO> getAvailableCharacters() {
             return registrationService.getAvailableCharacters();
         }
 
         @GetMapping("characters/taken")
-        public List<Character> getTakenCharacters() {
+        public List<CharacterReturnDTO> getTakenCharacters() {
             return registrationService.getTakenCharacters();
         }
 
         @GetMapping("characters/{id}")
-        public ResponseEntity<Character> getCharacterById(@PathVariable Long id) {
+        public ResponseEntity<CharacterReturnDTO> getCharacterById(@PathVariable Long id) {
             try {
                 return ResponseEntity.ok(registrationService.getCharacterById(id));
             } catch (EntityNotFoundException e) {
@@ -82,7 +83,7 @@ public class RegistrationController {
         }
 
         @GetMapping("characters/name/{name}")
-        public ResponseEntity<Character> getCharacterByName(@PathVariable String name) {
+        public ResponseEntity<CharacterReturnDTO> getCharacterByName(@PathVariable String name) {
             try {
                 return ResponseEntity.ok(registrationService.getCharacterByName(name));
             } catch (EntityNotFoundException e) {
@@ -93,7 +94,7 @@ public class RegistrationController {
 
 
         @PostMapping
-        public ResponseEntity<Team> addTeam(@RequestBody TeamDTO teamCreation) {
+        public ResponseEntity<TeamReturnDTO> addTeam(@RequestBody TeamInputDTO teamCreation) {
             try{
                 return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.addTeam(teamCreation));
             } catch (IllegalArgumentException e) {
@@ -105,7 +106,7 @@ public class RegistrationController {
 
         @PutMapping("/{id}")
         @ResponseBody
-        public ResponseEntity<Team> updateTeam(@PathVariable Long id, @RequestBody  TeamDTO teamCreation) {
+        public ResponseEntity<TeamReturnDTO> updateTeam(@PathVariable Long id, @RequestBody TeamInputDTO teamCreation) {
             try {
                 return ResponseEntity.ok(registrationService.updateTeam(id, teamCreation));
             } catch (EntityNotFoundException e) {

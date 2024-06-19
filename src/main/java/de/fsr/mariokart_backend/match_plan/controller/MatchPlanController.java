@@ -4,10 +4,8 @@ import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
-import de.fsr.mariokart_backend.match_plan.model.dto.PointsDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.RoundDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.*;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
-import de.fsr.mariokart_backend.registration.model.Team;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.server.ResponseStatusException;
@@ -25,17 +23,17 @@ public class MatchPlanController {
     private final MatchPlanService matchPlanService;
 
     @GetMapping("/rounds")
-    public List<Round> getRounds() {
+    public List<RoundReturnDTO> getRounds() {
         return matchPlanService.getRounds();
     }
 
     @GetMapping("/rounds/current")
-    public List<Round> getCurrentRounds() {
+    public List<RoundReturnDTO> getCurrentRounds() {
         return matchPlanService.getCurrentRounds();
     }
 
     @GetMapping("/rounds/{roundId}")
-    public ResponseEntity<Round> getRoundById(@PathVariable Long roundId) {
+    public ResponseEntity<RoundReturnDTO> getRoundById(@PathVariable Long roundId) {
         try {
             return ResponseEntity.ok(matchPlanService.getRoundById(roundId));
         } catch (EntityNotFoundException e) {
@@ -45,17 +43,17 @@ public class MatchPlanController {
     }
 
     @GetMapping("/rounds/{roundId}/games")
-    public List<Game> getGamesByRoundId(@PathVariable Long roundId) {
+    public List<GameReturnDTO> getGamesByRoundId(@PathVariable Long roundId) {
         return matchPlanService.getGamesByRoundId(roundId);
     }
 
     @GetMapping("/games")
-    public List<Game> getGames() {
+    public List<GameReturnDTO> getGames() {
         return matchPlanService.getGames();
     }
 
     @GetMapping("/games/{gameId}")
-    public ResponseEntity<Game> getGame(@PathVariable Long gameId) {
+    public ResponseEntity<GameReturnDTO> getGame(@PathVariable Long gameId) {
         try {
             return ResponseEntity.ok(matchPlanService.getGameById(gameId));
         } catch (EntityNotFoundException e) {
@@ -64,7 +62,7 @@ public class MatchPlanController {
     }
 
     @GetMapping("/points")
-    public List<Points> getPoints() {
+    public List<PointsReturnDTO> getPoints() {
         return matchPlanService.getPoints();
     }
 
@@ -83,19 +81,19 @@ public class MatchPlanController {
 //    }
 
     @PostMapping("/create/match_plan")
-    public ResponseEntity<List<Round>> createMatchPlan() {
+    public ResponseEntity<List<RoundReturnDTO>> createMatchPlan() {
 
         throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
 
     }
 
     @PostMapping("/create/final_plan")
-    public List<Round> createFinalPlan() {
+    public List<RoundReturnDTO> createFinalPlan() {
         return matchPlanService.createFinalPlan();
     }
 
     @PutMapping("/rounds/{roundId}")
-    public ResponseEntity<Round> updateRoundPlayed(@PathVariable Long roundId, @RequestBody RoundDTO roundCreation) {
+    public ResponseEntity<RoundReturnDTO> updateRoundPlayed(@PathVariable Long roundId, @RequestBody RoundInputDTO roundCreation) {
         try {
             return ResponseEntity.ok(matchPlanService.updateRoundPlayed(roundId, roundCreation));
 
@@ -105,7 +103,7 @@ public class MatchPlanController {
     }
 
     @PutMapping("/rounds/{roundId}/games/{gameId}/teams/{teamId}/points")
-    public ResponseEntity<Points> updatePoints(@PathVariable Long roundId, @PathVariable Long gameId, @PathVariable Long teamId, @RequestBody PointsDTO pointsCreation) {
+    public ResponseEntity<PointsReturnDTO> updatePoints(@PathVariable Long roundId, @PathVariable Long gameId, @PathVariable Long teamId, @RequestBody PointsInputDTO pointsCreation) {
         try {
             return ResponseEntity.ok(matchPlanService.updatePoints(roundId, gameId, teamId, pointsCreation));
         } catch (EntityNotFoundException e) {

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class GameDTO {
+public class GameInputDTO {
     private Long roundId;
     private String switchGame;
 
