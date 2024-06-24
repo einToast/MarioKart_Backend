@@ -11,6 +11,9 @@ import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.AddCharacterService;
+import de.fsr.mariokart_backend.user.model.User;
+import de.fsr.mariokart_backend.user.repository.UserRepository;
+import de.fsr.mariokart_backend.user.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -31,6 +34,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final RoundRepository roundRepository;
     private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
+    private final UserService userService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -40,10 +44,19 @@ public class MarioKartStartupRunner implements CommandLineRunner {
             System.err.print(e.getMessage());
         }
 
+        addUser();
         addTeams();
         addRounds();
         addGames();
 
+    }
+
+    private void addUser(){
+        if (userService.getUsers().isEmpty()) {
+            User user = new User("FSR", true);
+            user.setPassword("Passwort1234");
+            userService.createAndRegisterIfNotExist(user);
+        }
     }
 
     private void addTeams() {
