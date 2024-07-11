@@ -18,7 +18,13 @@ import de.fsr.mariokart_backend.match_plan.repository.PointsRepository;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -160,6 +166,76 @@ public class MatchPlanService {
         points.setTeam(team);
         return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
 //        return pointsRepository.save(points);
+    }
+
+    public List<RoundReturnDTO> createMatchPlan() throws EntityNotFoundException, IOException {
+        String static_dir = "src/main/resources/static/team_plans/";
+
+        List<Team> teams = teamRepository.findAll();
+
+        if(teams.size()>25 || teams.size()<16) {
+            throw new EntityNotFoundException("There need to be 16 to 25 Teams!");
+        }
+        // Datei öffnen
+        String fileName = static_dir + teams.size() + "_teams.txt";
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
+
+        // ArrayList für das Ergebnis erstellen
+        ArrayList<ArrayList<ArrayList<Integer>>> result = new ArrayList<>();
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            // Neue Liste für jede Zeile
+            ArrayList<ArrayList<Integer>> lineList = new ArrayList<>();
+
+            // Zeile in Sub-Listen teilen
+            String[] subLists = line.split(";");
+            for (String subList : subLists) {
+                // Sub-Liste in Integer konvertieren und zur lineList hinzufügen
+                ArrayList<Integer> intList = new ArrayList<>();
+                String[] numbers = subList.split(",");
+                for (String number : numbers) {
+                    intList.add(Integer.parseInt(number));
+                }
+                lineList.add(intList);
+            }
+
+            // lineList zur Ergebnisliste hinzufügen
+            result.add(lineList);
+        }
+        reader.close();
+
+        LocalDateTime currRoundTime = LocalDateTime.now().plusMinutes(5);
+        for(ArrayList<ArrayList<Integer>> round_teams : result) {
+            Round round = new Round();
+            round.setStartTime(currRoundTime);
+            currRoundTime = currRoundTime.plusMinutes(18);
+            roundRepository.save(round);
+
+            for(int i = 0; i < round_teams.size(); i++) {
+                Game game = new Game();
+                switch (i) {
+                    case 0:
+                        game.setSwitchGame("Weiß");
+                        break;
+                    case 2:
+                        game.setSwitchGame("Blau");
+                        break;
+                    case 3:
+                        game.setSwitchGame("Rot");
+                        break;
+                    case 4:
+                        game.setSwitchGame("Grün");
+                        break;
+                }
+                game.setRound(round);
+                gameRepository.save(game);
+            }
+
+        }
+        return roundRepository.findAll().stream()
+                .map(matchPlanReturnDTOService::roundToRoundDTO)
+                .toList();
     }
 
     public List<RoundReturnDTO> createFinalPlan() {

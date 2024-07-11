@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
 import lombok.AllArgsConstructor;
 
+import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin
@@ -82,8 +83,11 @@ public class MatchPlanController {
 
     @PostMapping("/create/match_plan")
     public ResponseEntity<List<RoundReturnDTO>> createMatchPlan() {
-
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+        try {
+            return ResponseEntity.ok(matchPlanService.createMatchPlan());
+        } catch (EntityNotFoundException | IOException e) {
+            return ResponseEntity.notFound().build();
+        }
 
     }
 
