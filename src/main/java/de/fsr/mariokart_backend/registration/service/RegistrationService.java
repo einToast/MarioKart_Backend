@@ -52,8 +52,6 @@ public class RegistrationService {
         }
 
         public TeamReturnDTO getTeamByName(String teamName) throws EntityNotFoundException{
-            System.out.println(teamName);
-            System.out.println(teamRepository.findByTeamName(teamName));
             return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.findByTeamName(teamName).orElseThrow(() -> new EntityNotFoundException("There is no team with this name.")));
 //            return teamRepository.findByTeamName(teamName).orElseThrow(() -> new EntityNotFoundException("There is no team with this name."));
         }
