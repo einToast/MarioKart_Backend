@@ -10,6 +10,11 @@ import lombok.NoArgsConstructor;
 public class TeamInputDTO {
     private String teamName;
     private String characterName;
-//    private boolean finalReady;
+    private boolean finalReady;
 
+    public TeamInputDTO(String teamName, String characterName) {
+        this.teamName = teamName;
+        this.characterName = characterName;
+        this.finalReady = true;
+    }
 }

@@ -162,14 +162,12 @@ public class MarioKartStartupRunner implements CommandLineRunner {
                 } else if (i == 2) {
                     game.setSwitchGame("Grün");
                 } else {
-                    game.setSwitchGame("Gelb");
+                    game.setSwitchGame("Weiß");
                 }
                 game.setRound(round);
                 matchPlanService.addGame(game);
 
                 Collections.shuffle(teams);
-
-//                System.out.println(teams);
 
                 List<Team> selectedTeams = teams.subList(0, 4);
 

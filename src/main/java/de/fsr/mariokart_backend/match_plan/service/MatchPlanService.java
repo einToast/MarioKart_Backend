@@ -75,7 +75,7 @@ public class MatchPlanService {
 
     public List<RoundReturnDTO> getCurrentRounds() {
         List<Round> rounds = roundRepository.findByPlayedFalse();
-//        System.out.println(rounds);
+
         rounds.sort(Comparator.comparing(Round::getStartTime));
         if (rounds.size() > 2){
             rounds = rounds.subList(0, 2);
@@ -144,7 +144,7 @@ public class MatchPlanService {
 //        return gameRepository.save(game);
     }
 
-    public PointsReturnDTO updatePoints(Long roundId, Long teamId, Long gameId, PointsInputDTO pointsCreation) throws EntityNotFoundException{
+    public PointsReturnDTO updatePoints(Long roundId, Long gameId, Long teamId, PointsInputDTO pointsCreation) throws EntityNotFoundException{
         Points points = pointsRepository.findByGameIdAndTeamId(gameId, teamId).orElseThrow(() -> new EntityNotFoundException("There are no points with this ID."));
         Round round = roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
         Game game = gameRepository.findById(gameId).orElseThrow(() -> new EntityNotFoundException("There is no game with this ID."));
@@ -208,7 +208,7 @@ public class MatchPlanService {
         round.setFinalGame(true);
         round.setPlayed(false);
         round.setStartTime(start_time);
-        round.setEndTime(start_time.plusMinutes(40));
+        round.setEndTime(start_time.plusMinutes(20));
         roundRepository.save(round);
 
         for (int i = 0; i < 4; i++){
@@ -224,9 +224,6 @@ public class MatchPlanService {
                 point.setGame(game);
                 pointsRepository.save(point);
             }
-
         }
     }
-
-
 }

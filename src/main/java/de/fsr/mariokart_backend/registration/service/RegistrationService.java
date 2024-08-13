@@ -122,16 +122,19 @@ public class RegistrationService {
                 team.setTeamName(teamCreation.getTeamName());
             }
 
-
             if (teamCreation.getCharacterName() != null && !team.getCharacter().getCharacterName().equals(teamCreation.getCharacterName())) {
                 team.setCharacter(characterRepository.findByCharacterName(teamCreation.getCharacterName()).orElseThrow(() -> new EntityNotFoundException("There is no character with this name.")));
+            }
+
+            if (teamCreation.isFinalReady() != team.isFinalReady()) {
+                team.setFinalReady(teamCreation.isFinalReady());
             }
 
             if (team.getCharacter().getTeam() != null && !team.getCharacter().getTeam().getId().equals(id)) {
                 throw new IllegalArgumentException("Character is already in a team");
             }
 
-            if (teamRepository.existsByTeamName(team.getTeamName())) {
+            if (teamRepository.existsByTeamName(team.getTeamName()) && !teamRepository.findByTeamName(team.getTeamName()).get().getId().equals(id)) {
                 throw new IllegalArgumentException("Team name already exists");
             }
 

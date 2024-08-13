@@ -35,5 +35,9 @@ public class Points {
     @JsonBackReference
     private Game game;
 
+    @Override
+    public String toString() {
+        return game.getId() + " " + team.getId();
+    }
 }
 

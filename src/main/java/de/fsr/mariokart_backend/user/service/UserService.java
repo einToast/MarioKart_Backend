@@ -48,10 +48,6 @@ public class UserService {
 
     public User createAndRegisterIfNotExist(User user){
         Optional<User> userOptional = userRepository.getUserByUsername(user.getUsername());
-        if(userOptional.isPresent()){
-            return userOptional.get();
-        }else{
-            return userRepository.save(user);
-        }
+        return userOptional.orElseGet(() -> userRepository.save(user));
     }
 }
