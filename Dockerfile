@@ -11,4 +11,4 @@ WORKDIR /
 EXPOSE 8080
 
 # Java-Anwendung ausführen
-CMD ["java", "-jar", "/service.jar", "--debug"]
+CMD ["java", "-jar", "/service.jar"]
