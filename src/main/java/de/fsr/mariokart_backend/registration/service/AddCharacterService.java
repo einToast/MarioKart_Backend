@@ -1,13 +1,19 @@
 package de.fsr.mariokart_backend.registration.service;
 
 import de.fsr.mariokart_backend.registration.model.Character;
+import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @AllArgsConstructor
@@ -31,6 +37,11 @@ public class AddCharacterService {
 
         registrationService.addCharacters(characters);
 
+        System.out.println(registrationService.getCharacters()
+                                              .stream()
+                                              .map(CharacterReturnDTO::getCharacterName)
+                                              .collect(Collectors.toList()));
+
         return characters;
 
 
@@ -38,23 +49,17 @@ public class AddCharacterService {
     }
 
     public List<String> getImageNames(String directoryPath) throws IOException{
-        List<String> imageNames = new ArrayList<>();
-        DirectoryStream.Filter<Path> filter = entry -> {
-            String fileName = entry.getFileName().toString().toLowerCase();
-            return fileName.endsWith(".png");
-        };
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(directoryPath), filter)) {
-            for (Path entry : stream) {
-                String fileName = entry.getFileName().toString();
-                String nameWithoutExtension = fileName.substring(0, fileName.lastIndexOf('.'));
-                imageNames.add(nameWithoutExtension);
-            }
-        }
 
-        System.out.println(imageNames);
 
-        return imageNames;
+        // Suchmuster für Dateien im Ordner "static/media"
+        Resource[] resources = resolver.getResources("classpath:static/" + directoryPath + "/*.png");
 
+
+        return Stream.of(resources)
+                .map(Resource::getFilename).filter(Objects::nonNull)
+                .map(filename -> filename.replaceFirst("\\.png$", ""))
+                .collect(Collectors.toList());
     }
 }
