@@ -39,7 +39,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try{
-            addCharacterService.addCharacters("src/main/resources/static/media");
+            addCharacterService.addCharacters("media");
         } catch (IllegalStateException | IOException e) {
             System.err.print(e.getMessage());
         }
