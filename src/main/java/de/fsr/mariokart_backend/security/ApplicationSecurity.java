@@ -30,20 +30,24 @@ public class ApplicationSecurity {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers(HttpMethod.GET, "/users").authenticated()
                         .requestMatchers(HttpMethod.POST, "/users").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/users/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/users/register/*").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/users/logout").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/users/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/teams/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/teams").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/teams/*").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/teams/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/teams/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/match_plan/rounds/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/games/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/points").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/match_plan/create/*").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/match_plan/rounds/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/match_plan/create/*").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/match_plan/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/match_plan/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/match_plan/**").authenticated()
+
+
                         .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

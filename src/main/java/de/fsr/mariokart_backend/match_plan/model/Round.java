@@ -6,6 +6,8 @@ import lombok.*;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -29,9 +31,9 @@ public class Round {
 
     private boolean played;
 
-    @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private Set<Game> games;
+    private List<Game> games = new LinkedList<>();
 
 }
 

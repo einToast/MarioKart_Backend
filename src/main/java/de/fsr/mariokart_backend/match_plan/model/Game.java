@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.*;
 import lombok.*;
 
 import jakarta.persistence.*;
+
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -29,13 +32,13 @@ public class Game {
 //    private Team team;
 
     @ManyToOne
-    @JoinColumn(name = "roundId", nullable = false)
+    @JoinColumn(name = "roundId")
     @JsonBackReference
     private Round round;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private Set<Points> points;
+    private List<Points> points = new LinkedList<>();
 
     public Set<Team> getTeams() {
         if (points == null)

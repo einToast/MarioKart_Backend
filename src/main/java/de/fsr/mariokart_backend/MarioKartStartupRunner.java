@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
@@ -123,7 +124,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
             TeamInputDTO team21 = new TeamInputDTO("Isabelle'sIsle", "Melinda");
             registrationService.addTeam(team21);
-        } catch (IllegalArgumentException | EntityNotFoundException e) {
+        } catch (IllegalArgumentException | EntityNotFoundException | RoundsAlreadyExistsException e) {
             System.err.print(e.getMessage());
         }
 
