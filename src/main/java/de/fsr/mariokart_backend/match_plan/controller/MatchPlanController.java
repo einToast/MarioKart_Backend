@@ -1,9 +1,8 @@
 package de.fsr.mariokart_backend.match_plan.controller;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import de.fsr.mariokart_backend.match_plan.model.Game;
-import de.fsr.mariokart_backend.match_plan.model.Points;
-import de.fsr.mariokart_backend.match_plan.model.Round;
+import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
+import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.dto.*;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
 import org.springframework.http.HttpStatus;
@@ -53,7 +52,7 @@ public class MatchPlanController {
     }
 
     @GetMapping("/games/{gameId}")
-    public ResponseEntity<GameReturnDTO> getGame(@PathVariable Long gameId) {
+    public ResponseEntity<GameReturnDTO> getGameById(@PathVariable Long gameId) {
         try {
             return ResponseEntity.ok(matchPlanService.getGameById(gameId));
         } catch (EntityNotFoundException e) {
@@ -80,16 +79,42 @@ public class MatchPlanController {
 //
 //    }
 
-    @PostMapping("/create/match_plan")
-    public ResponseEntity<List<RoundReturnDTO>> createMatchPlan() {
+    @GetMapping("/create/match_plan")
+    public ResponseEntity<Boolean> isMatchPlanCreated() {
+        return ResponseEntity.ok(matchPlanService.isMatchPlanCreated());
+    }
 
-        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
+    @GetMapping("/create/final_plan")
+    public ResponseEntity<Boolean> isFinalPlanCreated() {
+        return ResponseEntity.ok(matchPlanService.isFinalPlanCreated());
+    }
+
+    @PostMapping("/create/match_plan")
+    public List<RoundReturnDTO> createMatchPlan() {
+
+        try {
+            return matchPlanService.createMatchPlan();
+        } catch (RoundsAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        } catch (NotEnoughTeamsException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (UnsupportedOperationException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, e.getMessage());
+        }
 
     }
 
     @PostMapping("/create/final_plan")
     public List<RoundReturnDTO> createFinalPlan() {
-        return matchPlanService.createFinalPlan();
+        try {
+            return matchPlanService.createFinalPlan();
+        } catch (RoundsAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (NotEnoughTeamsException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
     }
 
     @PutMapping("/rounds/{roundId}")
@@ -99,6 +124,8 @@ public class MatchPlanController {
 
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -111,6 +138,21 @@ public class MatchPlanController {
         }
 
 
+    }
+
+    @DeleteMapping("create/match_plan")
+    public void deleteMatchPlan() {
+        matchPlanService.deleteMatchPlan();
+    }
+
+    @DeleteMapping("create/final_plan")
+    public void deleteFinalPlan() {
+        matchPlanService.deleteFinalPlan();
+    }
+
+    @DeleteMapping("reset")
+    public void reset() {
+        matchPlanService.reset();
     }
 
 }

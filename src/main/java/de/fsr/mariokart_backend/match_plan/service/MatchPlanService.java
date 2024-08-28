@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.match_plan.service;
 
+import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
+import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.dto.*;
 import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanInputDTOService;
 import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService;
@@ -162,7 +164,16 @@ public class MatchPlanService {
 //        return pointsRepository.save(points);
     }
 
-    public List<RoundReturnDTO> createFinalPlan() {
+    public List<RoundReturnDTO> createFinalPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
+
+        if (!roundRepository.findByFinalGameTrue().isEmpty()){
+            throw new RoundsAlreadyExistsException("Final plan already created");
+        } else if (!roundRepository.findByPlayedFalse().isEmpty()){
+            throw new IllegalArgumentException("Not all rounds played");
+        } else if (teamRepository.findByFinalReadyTrue().size() < 4){
+            throw new NotEnoughTeamsException("Not enough teams ready for final");
+        }
+
         List<Team> teams = teamRepository.findByFinalReadyTrue();
 
         teams.sort((t1, t2) -> {
@@ -225,5 +236,41 @@ public class MatchPlanService {
                 pointsRepository.save(point);
             }
         }
+    }
+
+    public Boolean isMatchPlanCreated() {
+        return !roundRepository.findAll().isEmpty();
+    }
+
+    public Boolean isFinalPlanCreated() {
+        return !roundRepository.findByFinalGameTrue().isEmpty();
+    }
+
+    public void deleteMatchPlan() {
+        roundRepository.deleteAll();
+//        gameRepository.deleteAll();
+//        pointsRepository.deleteAll();
+    }
+
+    public void deleteFinalPlan() {
+        roundRepository.deleteAll(roundRepository.findByFinalGameTrue());
+//        gameRepository.deleteAll(gameRepository.findByRoundFinalGameTrue());
+//        pointsRepository.deleteAll(pointsRepository.findByGameRoundFinalGameTrue());
+    }
+
+    public List<RoundReturnDTO> createMatchPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
+        if (!roundRepository.findAll().isEmpty()){
+            throw new RoundsAlreadyExistsException("Match plan already created");
+        } else if (!(teamRepository.findAll().size() < 16)){
+            throw new NotEnoughTeamsException("Not enough teams");
+        }
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public void reset() {
+        roundRepository.deleteAll();
+        gameRepository.deleteAll();
+        pointsRepository.deleteAll();
+        teamRepository.deleteAll();
     }
 }
