@@ -2,8 +2,7 @@ from http.cookiejar import debug
 
 from flask import Flask, request, jsonify, Response
 
-from match_create.generate_gameplay_lists import create_plan, get_unrated_games, generate_plan
-from match_create.helper import create_team_liste, check_game_plan
+from generate_gameplay_lists import generate_plan
 
 app = Flask(__name__)
 
