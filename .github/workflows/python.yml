@@ -17,12 +17,10 @@ jobs:
           uses: actions/setup-python@v2
           with:
               python-version: '3.9'
-        - name: ls
-          run: ls -la
         - name: Install dependencies
           run: |
               python -m pip install --upgrade pip
-              pip install -r requirements.txt
+              pip install -r match_create/requirements.txt
         - name: Run python
           run: |
-              python webserver.py
+              python match_create/webserver.py
