@@ -1,4 +1,4 @@
-FROM openjdk:17
+FROM openjdk:18
 MAINTAINER docker@fsr.de
 
 COPY ./target/MarioKart_Backend-0.0.1-SNAPSHOT.jar /service.jar
