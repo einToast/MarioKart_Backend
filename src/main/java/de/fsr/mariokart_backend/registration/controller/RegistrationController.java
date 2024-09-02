@@ -124,7 +124,7 @@ public class RegistrationController {
         registrationService.deleteTeam(id);
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping
     public void deleteAllTeams() {
         registrationService.deleteAllTeams();
     }
