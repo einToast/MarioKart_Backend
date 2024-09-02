@@ -17,7 +17,7 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 10
 
-    - package-ecosystem: "pip"
+  - package-ecosystem: "pip"
     directory: "/match_create"
     schedule:
       interval: "weekly"
