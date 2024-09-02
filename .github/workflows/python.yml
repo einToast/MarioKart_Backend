@@ -1,0 +1,33 @@
+name: Test Python Webserver
+
+on:
+  #  push:
+  #    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+    build:
+
+        runs-on: ubuntu-latest
+
+        steps:
+        - uses: actions/checkout@v3
+        - name: Set up Python 3.12
+          uses: actions/setup-python@v2
+          with:
+              python-version: '3.12'
+        - name: Install dependencies
+          run: |
+              python -m pip install --upgrade pip
+              pip install -r match_create/requirements.txt
+        - name: Start Webserver in Background
+          run: |
+            nohup python match_create/webserver.py &
+        - name: Wait for Webserver to start
+          run: |
+            sleep 5
+        - name: Test Webserver
+          run: |
+            curl -f http://localhost:8000/healthcheck || exit 1
+
