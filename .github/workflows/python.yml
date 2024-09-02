@@ -29,5 +29,5 @@ jobs:
             sleep 5
         - name: Test Webserver
           run: |
-            curl -f http://localhost:8000 || exit 1
+            curl -f http://localhost:8000/healthcheck || exit 1
 
