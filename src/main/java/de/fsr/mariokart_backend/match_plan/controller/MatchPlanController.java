@@ -96,7 +96,7 @@ public class MatchPlanController {
             return matchPlanService.createMatchPlan();
         } catch (RoundsAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
-        } catch (NotEnoughTeamsException e) {
+        } catch (NotEnoughTeamsException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (UnsupportedOperationException e) {
             throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, e.getMessage());
