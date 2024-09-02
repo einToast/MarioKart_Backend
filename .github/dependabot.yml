@@ -18,7 +18,13 @@ updates:
     open-pull-requests-limit: 10
 
   - package-ecosystem: "pip"
-    directory: "/match_create"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+    - package-ecosystem: "docker"
+    directory: "/"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 10
