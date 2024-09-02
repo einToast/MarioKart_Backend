@@ -28,4 +28,6 @@ public class Tournament {
     private boolean tournamentOpen;
 
     private boolean registrationOpen;
+
+    private int gamesCount;
 }

@@ -247,8 +247,9 @@ public class MatchPlanService {
     }
 
     public void deleteMatchPlan() {
-        roundRepository.deleteAll();
-//        gameRepository.deleteAll();
+//        pointsRepository.deleteAll();
+//        roundRepository.deleteAll();
+        gameRepository.deleteAll();
 //        pointsRepository.deleteAll();
     }
 
