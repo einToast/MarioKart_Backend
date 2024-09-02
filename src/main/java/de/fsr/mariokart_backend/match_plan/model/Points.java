@@ -26,12 +26,12 @@ public class Points {
     private int finalPoints;
 
     @ManyToOne
-    @JoinColumn(name = "teamId", nullable = false)
+    @JoinColumn(name = "team_ID")
 //    @JsonBackReference
     private Team team;
 
     @ManyToOne
-    @JoinColumn(name = "gameId")
+    @JoinColumn(name = "game_ID")
     @JsonBackReference
     private Game game;
 

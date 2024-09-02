@@ -32,13 +32,13 @@ public class Game {
 //    private Team team;
 
     @ManyToOne
-    @JoinColumn(name = "roundId")
+    @JoinColumn(name = "round_ID")
     @JsonBackReference
     private Round round;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "game" ,cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Points> points = new LinkedList<>();
+    private Set<Points> points;
 
     public Set<Team> getTeams() {
         if (points == null)
