@@ -12,6 +12,7 @@ import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.AddCharacterService;
+import de.fsr.mariokart_backend.settings.service.SettingsService;
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 import de.fsr.mariokart_backend.user.service.UserService;
@@ -36,14 +37,17 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
     private final UserService userService;
+    private final SettingsService settingsService;
 
     @Override
     public void run(String... args) throws Exception {
         try{
             addCharacterService.addCharacters("media");
+            settingsService.createSettings();
         } catch (IllegalStateException | IOException e) {
             System.err.print(e.getMessage());
         }
+
 
         addUser();
         addTeams();

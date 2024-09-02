@@ -28,6 +28,11 @@ public class ApplicationSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((auth) -> auth
+
+                        .requestMatchers(HttpMethod.GET, "/settings").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/settings").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/settings").authenticated()
+
                         .requestMatchers(HttpMethod.GET, "/users").authenticated()
                         .requestMatchers(HttpMethod.POST, "/users").authenticated()
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
@@ -46,6 +51,8 @@ public class ApplicationSecurity {
                         .requestMatchers(HttpMethod.POST, "/match_plan/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/match_plan/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/match_plan/**").authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/healthcheck").permitAll()
 
 
                         .anyRequest().permitAll())

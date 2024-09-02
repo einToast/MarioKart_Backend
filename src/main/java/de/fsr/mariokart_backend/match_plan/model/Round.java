@@ -33,7 +33,7 @@ public class Round {
 
     @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private List<Game> games = new LinkedList<>();
+    private Set<Game> games;
 
 }
 

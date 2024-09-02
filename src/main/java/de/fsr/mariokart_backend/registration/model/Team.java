@@ -16,7 +16,7 @@ import de.fsr.mariokart_backend.match_plan.model.Points;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "team")
-@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Team {
 
     @Id
@@ -24,7 +24,7 @@ public class Team {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "characterId")
+    @JoinColumn(name = "character_ID")
     private Character character;
 
     @Column(unique = true)
