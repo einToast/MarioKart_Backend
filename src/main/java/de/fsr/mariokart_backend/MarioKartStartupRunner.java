@@ -51,8 +51,8 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
         addUser();
         addTeams();
-        addRounds();
-        addGames();
+//        addRounds();
+//        addGames();
 
     }
 

@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.match_plan.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.dto.*;
@@ -7,6 +9,8 @@ import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanInputDTOService;
 import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+
 
 import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
@@ -19,10 +23,14 @@ import de.fsr.mariokart_backend.match_plan.repository.PointsRepository;
 
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -32,6 +40,9 @@ public class MatchPlanService {
     private final GameRepository gameRepository;
     private final PointsRepository pointsRepository;
     private final TeamRepository teamRepository;
+
+    private final WebClient webClient;
+    private final ObjectMapper objectMapper;
 
     private final MatchPlanInputDTOService matchPlanInputDTOService;
     private final MatchPlanReturnDTOService matchPlanReturnDTOService;
@@ -247,9 +258,8 @@ public class MatchPlanService {
     }
 
     public void deleteMatchPlan() {
-//        pointsRepository.deleteAll();
-//        roundRepository.deleteAll();
-        gameRepository.deleteAll();
+        roundRepository.deleteAll();
+//        gameRepository.deleteAll();
 //        pointsRepository.deleteAll();
     }
 
@@ -259,13 +269,48 @@ public class MatchPlanService {
 //        pointsRepository.deleteAll(pointsRepository.findByGameRoundFinalGameTrue());
     }
 
-    public List<RoundReturnDTO> createMatchPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
+    public List<RoundReturnDTO> createMatchPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException, EntityNotFoundException {
         if (!roundRepository.findAll().isEmpty()){
             throw new RoundsAlreadyExistsException("Match plan already created");
-        } else if (!(teamRepository.findAll().size() < 16)){
+        } else if (teamRepository.findAll().size() < 16){
             throw new NotEnoughTeamsException("Not enough teams");
         }
-        throw new UnsupportedOperationException("Not implemented");
+
+        int teamCount = teamRepository.findAll().size();
+        List<List<List<Integer>>> response = getGeneratedMatchPlan(teamCount);
+
+        System.out.println(response);
+        List<String> switchColors = List.of("Blau", "Rot", "Grün", "Weiß");
+
+        for (int i = 0; i < response.size(); i++) {
+            Round round = new Round();
+            round.setPlayed(false);
+            round.setStartTime(LocalDateTime.now().plusMinutes(20L * i));
+            round.setEndTime(LocalDateTime.now().plusMinutes(20L * i).plusMinutes(20));
+            roundRepository.save(round);
+
+            for (int j = 0; j < response.get(i).size(); j++) {
+                Game game = new Game();
+                game.setSwitchGame(switchColors.get(j));
+                game.setRound(round);
+                gameRepository.save(game);
+
+                for (int k = 0; k < response.get(i).get(j).size(); k++) {
+                    Points point = new Points();
+                    point.setGroupPoints(0);
+                    point.setFinalPoints(0);
+//                    System.out.println(response.get(i).get(j).get(k));
+                    point.setTeam(teamRepository.findById((long) (response.get(i).get(j).get(k) + 1)).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID.")));
+                    point.setGame(game);
+                    pointsRepository.save(point);
+                }
+            }
+        }
+
+        return roundRepository.findAll().stream()
+                                        .map(matchPlanReturnDTOService::roundToRoundDTO)
+                                        .toList();
+
     }
 
     public void reset() {
@@ -274,4 +319,21 @@ public class MatchPlanService {
         pointsRepository.deleteAll();
         teamRepository.deleteAll();
     }
+
+    public List<List<List<Integer>>> getGeneratedMatchPlan(int teamCount) {
+        Map<String, Integer> requestBody = new HashMap<>();
+        requestBody.put("num_teams", teamCount);
+        Mono<String> response = webClient.post()
+                .uri("/match_plan")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(String.class);
+
+        try {
+            return objectMapper.readValue(response.block(), new TypeReference<List<List<List<Integer>>>>() {});
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse JSON response", e);
+        }
+    }
+
 }
