@@ -36,7 +36,7 @@ public class Game {
     @JsonBackReference
     private Round round;
 
-    @OneToMany(mappedBy = "game" ,cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "game" ,cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private Set<Points> points;
 
