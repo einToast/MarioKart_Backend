@@ -1,5 +1,5 @@
 # Verwende ein offizielles Python-Image als Basis
-FROM python:3.9-alpine
+FROM python:3.12-alpine
 
 # Setze das Arbeitsverzeichnis im Container
 WORKDIR /app
