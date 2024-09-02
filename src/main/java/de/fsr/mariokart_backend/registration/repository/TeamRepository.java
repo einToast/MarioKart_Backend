@@ -28,4 +28,9 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     Optional<Team> findByTeamName(String teamName);
 
+//    @Query("DELETE FROM Team t WHERE t.id = :id")
+//    @Modifying
+//    @Transactional
+//    void deleteById(@Param("id") Long id);
+
 }
