@@ -17,6 +17,4 @@ def match_plan():
     return jsonify(plan)
 
 if __name__ == '__main__':
-    import os
-    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
-    app.run(debug=debug_mode, port=8000, host='0.0.0.0')
+    app.run(debug=False, port=8000, host='0.0.0.0')
