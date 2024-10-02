@@ -15,6 +15,8 @@ FROM eclipse-temurin:17-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar /service.jar
 
+RUN apk add --no-cache curl
+
 EXPOSE 8080
 
 CMD ["java", "-jar", "/service.jar", "--spring.profiles.active=${SPRING_PROFILES_ACTIVE:-default}"]
