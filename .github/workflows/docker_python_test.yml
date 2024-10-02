@@ -1,12 +1,11 @@
 name: Docker Python Build
 
 on:
-#  push:
-#    branches:
-#      - main
+  #  push:
+  #    branches: [ "master" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "master" ]
+
 
 jobs:
   build:
