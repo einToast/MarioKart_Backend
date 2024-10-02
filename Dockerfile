@@ -11,7 +11,7 @@ COPY src ./src
 RUN mvn clean package
 
 #Stage 2: Run
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:21-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar /service.jar
 
