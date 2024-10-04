@@ -152,22 +152,16 @@ public class RegistrationService {
         return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
     }
 
-    public void deleteTeam(Long id) {
-        if (!settingsService.getSettings().getRegistrationOpen()) {
-            throw new IllegalArgumentException("Registration is closed");
-        }
-        if (!settingsService.getSettings().getTournamentOpen()) {
-            throw new IllegalArgumentException("Tournament is closed");
+    public void deleteTeam(Long id) throws RoundsAlreadyExistsException {
+        if (!roundRepository.findAll().isEmpty()) {
+            throw new RoundsAlreadyExistsException("Match plan already exists");
         }
         teamRepository.deleteById(id);
     }
 
-    public void deleteAllTeams() {
-        if (!settingsService.getSettings().getRegistrationOpen()) {
-            throw new IllegalArgumentException("Registration is closed");
-        }
-        if (!settingsService.getSettings().getTournamentOpen()) {
-            throw new IllegalArgumentException("Tournament is closed");
+    public void deleteAllTeams() throws RoundsAlreadyExistsException {
+        if (!roundRepository.findAll().isEmpty()) {
+            throw new RoundsAlreadyExistsException("Match plan already exists");
         }
         teamRepository.deleteAll();
     }

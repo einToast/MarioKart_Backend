@@ -120,12 +120,12 @@ public class RegistrationController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTeam(@PathVariable Long id) {
+    public void deleteTeam(@PathVariable Long id) throws RoundsAlreadyExistsException {
         registrationService.deleteTeam(id);
     }
 
     @DeleteMapping
-    public void deleteAllTeams() {
+    public void deleteAllTeams() throws RoundsAlreadyExistsException {
         registrationService.deleteAllTeams();
     }
 }
