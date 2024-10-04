@@ -1,5 +1,3 @@
-from http.cookiejar import debug
-
 from flask import Flask, request, jsonify, Response
 
 from generate_gameplay_lists import generate_plan

@@ -98,7 +98,7 @@ public class RegistrationController {
     public ResponseEntity<TeamReturnDTO> addTeam(@RequestBody TeamInputDTO teamCreation) {
         try{
             return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.addTeam(teamCreation));
-        } catch (RoundsAlreadyExistsException e) {
+        } catch (RoundsAlreadyExistsException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
@@ -120,12 +120,12 @@ public class RegistrationController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTeam(@PathVariable Long id) {
+    public void deleteTeam(@PathVariable Long id) throws RoundsAlreadyExistsException {
         registrationService.deleteTeam(id);
     }
 
     @DeleteMapping
-    public void deleteAllTeams() {
+    public void deleteAllTeams() throws RoundsAlreadyExistsException {
         registrationService.deleteAllTeams();
     }
 }
