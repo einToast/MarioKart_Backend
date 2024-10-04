@@ -9,6 +9,7 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationInputDTOService;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
+import de.fsr.mariokart_backend.settings.service.SettingsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +26,11 @@ public class RegistrationService {
 
     private final TeamRepository teamRepository;
     private final CharacterRepository characterRepository;
+    private final RoundRepository roundRepository;
 
     private final RegistrationInputDTOService registrationInputDTOService;
     private final RegistrationReturnDTOService registrationReturnDTOService;
-    private final RoundRepository roundRepository;
+    private final SettingsService settingsService;
 
     public List<TeamReturnDTO> getTeams() {
         return teamRepository.findAll().stream()
@@ -90,9 +92,17 @@ public class RegistrationService {
     }
 
     public TeamReturnDTO addTeam(TeamInputDTO teamCreation) throws IllegalArgumentException, EntityNotFoundException, RoundsAlreadyExistsException {
+        if (!settingsService.getSettings().getRegistrationOpen()) {
+            throw new IllegalStateException("Registration is closed");
+        }
+        if (!settingsService.getSettings().getTournamentOpen()) {
+            throw new IllegalStateException("Tournament is closed");
+        }
+
         if (!roundRepository.findAll().isEmpty()) {
             throw new RoundsAlreadyExistsException("Match plan already exists");
         }
+
         Team team = registrationInputDTOService.teamInputDTOToTeam(teamCreation);
 
         team.setFinalReady(true);
@@ -105,19 +115,14 @@ public class RegistrationService {
         }
 
         return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
-//            return teamRepository.save(team);
 
     }
 
     public Character addCharacter(Character character) {
-//            return registrationReturnDTOService.characterToCharacterReturnDTO(characterRepository.save(character));
         return characterRepository.save(character);
     }
 
     public List<Character> addCharacters(List<Character> characters) {
-//            return characters   .stream()
-//                                .map(registrationReturnDTOService::characterToCharacterReturnDTO)
-//                                .toList();
         return characterRepository.saveAll(characters);
     }
 
@@ -145,15 +150,25 @@ public class RegistrationService {
         }
 
         return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
-
-//            return teamRepository.save(team);
     }
 
     public void deleteTeam(Long id) {
+        if (!settingsService.getSettings().getRegistrationOpen()) {
+            throw new IllegalArgumentException("Registration is closed");
+        }
+        if (!settingsService.getSettings().getTournamentOpen()) {
+            throw new IllegalArgumentException("Tournament is closed");
+        }
         teamRepository.deleteById(id);
     }
 
     public void deleteAllTeams() {
+        if (!settingsService.getSettings().getRegistrationOpen()) {
+            throw new IllegalArgumentException("Registration is closed");
+        }
+        if (!settingsService.getSettings().getTournamentOpen()) {
+            throw new IllegalArgumentException("Tournament is closed");
+        }
         teamRepository.deleteAll();
     }
 }
