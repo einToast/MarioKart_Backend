@@ -54,6 +54,8 @@ public class ApplicationSecurity {
 
                         .requestMatchers(HttpMethod.GET, "/healthcheck").permitAll()
 
+                        .requestMatchers("/ws/**").permitAll()
+
 
                         .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
