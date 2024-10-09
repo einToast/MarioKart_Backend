@@ -67,7 +67,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addTeams() {
         try {
-            settingsService.updateSettings(new TournamentDTO(true, true));
+            settingsService.updateSettings(new TournamentDTO(true, true, 6));
             TeamInputDTO team1 = new TeamInputDTO("TollerTeamName", "Mario");
             registrationService.addTeam(team1);
 

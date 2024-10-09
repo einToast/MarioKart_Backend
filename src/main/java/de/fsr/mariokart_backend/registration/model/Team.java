@@ -2,9 +2,12 @@ package de.fsr.mariokart_backend.registration.model;
 
 import com.fasterxml.jackson.annotation.*;
 import de.fsr.mariokart_backend.match_plan.model.Game;
+import de.fsr.mariokart_backend.match_plan.model.Round;
 import lombok.*;
 
 import jakarta.persistence.*;
+
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,11 +39,15 @@ public class Team {
 //    @JsonManagedReference
     private Set<Points> points;
 
-    public int getGroupPoints() {
+    public int getGroupPoints(int maxGames) {
         if (points == null)
             return 0;
 
-        return points.stream().mapToInt(Points::getGroupPoints).sum();
+        return points.stream()
+                     .sorted(Comparator.comparingLong(Points::getId))
+                     .limit(maxGames)
+                     .mapToInt(Points::getGroupPoints)
+                     .sum();
     }
 
     public int getFinalPoints() {

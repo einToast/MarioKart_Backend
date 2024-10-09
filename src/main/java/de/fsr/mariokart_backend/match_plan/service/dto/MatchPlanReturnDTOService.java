@@ -6,6 +6,7 @@ import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.*;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationFromMatchPlanReturnDTOService;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
+import de.fsr.mariokart_backend.settings.service.SettingsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class MatchPlanReturnDTOService {
 
 //    private final RegistrationReturnDTOService registrationReturnDTOService;
+    private final SettingsService settingsService;
     private final RegistrationFromMatchPlanReturnDTOService registrationFromMatchPlanReturnDTOService;
 
     public GameReturnDTO gameToGameDTO(Game game){
