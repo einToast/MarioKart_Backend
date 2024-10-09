@@ -1,6 +1,4 @@
 import itertools
-import os
-from datetime import datetime
 
 import pandas as pd
 
@@ -51,16 +49,11 @@ def create_filled_df(_t_l, plan_games):
     return df
 
 
-def check_game_plan(plan, eval_plan=None, save_path=None):
+def check_game_plan(plan, eval_plan=None):
     output_string = ''
-    if save_path:
-        backup_dir = os.path.join(settings.BASE_DIR, save_path)
-        os.makedirs(backup_dir, exist_ok=True)
-
-        current_datetime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        backup_filename = f'{current_datetime}_game_plan.txt'
 
     output_string += str(plan)
+    max_games_count = set(iter([0]))
 
     if plan and isinstance(plan[0][0][0], Team):
         teams = sorted(list(set(flatten(plan))), key=lambda team: team.name)
@@ -85,6 +78,7 @@ def check_game_plan(plan, eval_plan=None, save_path=None):
                             dic[plan[r_idx][f_idx][t_idx]] = 1
         output_string += '\n' + 'Every team has same amount of rating games: ' + str(
             len(set(dic.values())) == 1) + ' = ' + str(set(dic.values()))
+        max_games_count = set(dic.values())
     switch_1 = set()
     for r in plan:
         for t in r[0]:
@@ -92,9 +86,4 @@ def check_game_plan(plan, eval_plan=None, save_path=None):
     output_string += '\n' + 'Every team at least once at switch 1: ' + str(len(switch_1) == len(teams))
     print(output_string)
 
-    if save_path:
-        with open(os.path.join(backup_dir, backup_filename), "w") as file:
-            file.write(output_string)
-        return os.path.join(backup_dir, backup_filename)
-    else:
-        return True
+    return max_games_count

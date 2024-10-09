@@ -213,8 +213,8 @@ def generate_plan(num_teams=25, num_fields=4, num_rounds=8):
     print(plan)
     rate_plan = get_unrated_games(plan)
     print(rate_plan)
-    check_game_plan(plan, rate_plan)
-    return plan
+    max_games_count = check_game_plan(plan, rate_plan)
+    return plan, max_games_count
 
 # if __name__ == '__main__':
 #     plan = create_plan(create_team_liste(25), 4, 8)
