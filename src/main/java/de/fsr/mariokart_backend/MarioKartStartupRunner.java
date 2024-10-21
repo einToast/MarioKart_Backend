@@ -59,8 +59,8 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addUser(){
         if (userService.getUsers().isEmpty()) {
-            User user = new User("FSR", true);
-            user.setPassword("Passwort1234");
+            User user = new User(System.getenv("USER_NAME"), true);
+            user.setPassword(System.getenv("USER_PASSWORD"));
             userService.createAndRegisterIfNotExist(user);
         }
     }
