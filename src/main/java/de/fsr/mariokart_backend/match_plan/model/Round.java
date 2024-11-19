@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.match_plan.model;
 
 import com.fasterxml.jackson.annotation.*;
+import de.fsr.mariokart_backend.settings.model.Break;
 import lombok.*;
 
 import jakarta.persistence.*;
@@ -34,6 +35,10 @@ public class Round {
     @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<Game> games;
+
+    @OneToOne
+    @JoinColumn(name = "break_ID")
+    private Break breakTime;
 
 }
 

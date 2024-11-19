@@ -29,7 +29,7 @@ public class MatchPlanReturnDTOService {
     public RoundReturnDTO roundToRoundDTO(Round round){
         if (round == null)
             return null;
-        return new RoundReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getGames() != null ? round.getGames().stream().map(this::gameToGameFromRoundReturnDTO).collect(Collectors.toSet()) : null);
+        return new RoundReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getGames() != null ? round.getGames().stream().map(this::gameToGameFromRoundReturnDTO).collect(Collectors.toSet()) : null, round.getBreakTime());
     }
 
     public PointsReturnDTO pointsToPointsDTO(Points points){
@@ -53,7 +53,7 @@ public class MatchPlanReturnDTOService {
     public RoundFromGameReturnDTO roundToRoundFromGameReturnDTO (Round round){
         if (round == null)
             return null;
-        return new RoundFromGameReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed());
+        return new RoundFromGameReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getBreakTime());
     }
 
     public PointsFromGameReturnDTO pointsToPointsFromGameReturnDTO (Points points){

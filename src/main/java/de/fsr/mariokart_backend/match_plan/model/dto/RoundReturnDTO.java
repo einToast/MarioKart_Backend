@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.match_plan.model.dto;
 
+import de.fsr.mariokart_backend.settings.model.Break;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,5 @@ public class RoundReturnDTO {
     private boolean finalGame;
     private boolean played;
     private Set<GameFromRoundReturnDTO> games;
+    private Break breakTime;
 }
