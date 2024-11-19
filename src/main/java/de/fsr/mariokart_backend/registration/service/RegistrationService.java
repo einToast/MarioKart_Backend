@@ -40,9 +40,14 @@ public class RegistrationService {
     }
 
     public List<TeamReturnDTO> getTeamsSortedByNormalPoints() {
-        return teamRepository.findAllByOrderByGroupPointsDesc().stream()
+        List<TeamReturnDTO> teams = teamRepository.findAllByOrderByGroupPointsDesc().stream()
                                                                .map(registrationReturnDTOService::teamToTeamReturnDTO)
                                                                .toList();
+        if (teams.isEmpty()) {
+            teams = getTeams();
+        }
+
+        return teams;
     }
 
     public List<TeamReturnDTO> getTeamsSortedByFinalPoints() {
