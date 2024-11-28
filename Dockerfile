@@ -8,6 +8,13 @@ RUN mvn dependency:go-offline
 
 COPY src ./src
 
+ENV SECRET_KEY=${SECRET_KEY}
+ENV DB_USER=${DB_USER}
+ENV DB_PASSWORD=${DB_PASSWORD}
+ENV USER_NAME=${USER_NAME}
+ENV USER_PASSWORD=${USER_PASSWORD}
+
+
 RUN mvn clean package
 
 #Stage 2: Run

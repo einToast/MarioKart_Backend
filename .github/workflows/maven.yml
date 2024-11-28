@@ -19,6 +19,14 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      SECRET_KEY: ${{ vars.SECRET_KEY }}
+      DB_USER: ${{ vars.DB_USER }}
+      DB_PASSWORD: ${{ vars.DB_PASSWORD }}
+      USER_NAME: ${{ vars.USER_NAME }}
+      USER_PASSWORD: ${{ vars.USER_PASSWORD }}
+      
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
