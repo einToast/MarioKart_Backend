@@ -45,5 +45,7 @@ public abstract class Question {
 
     private Boolean active;
 
+    private Boolean live;
+
 }
 
