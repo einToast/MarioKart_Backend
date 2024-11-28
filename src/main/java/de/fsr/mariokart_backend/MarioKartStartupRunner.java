@@ -6,7 +6,6 @@ import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
@@ -15,12 +14,9 @@ import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.SettingsService;
 import de.fsr.mariokart_backend.user.model.User;
-import de.fsr.mariokart_backend.user.repository.UserRepository;
-import de.fsr.mariokart_backend.user.service.AddUserService;
+import de.fsr.mariokart_backend.user.service.AdminUserService;
 import de.fsr.mariokart_backend.user.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +37,8 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
     private final SettingsService settingsService;
-    private final AddUserService addUserService;
+    private final UserService userService;
+    private final AdminUserService addUserService;
 
 
 
@@ -56,10 +53,15 @@ public class MarioKartStartupRunner implements CommandLineRunner {
         }
 
 
-        addUserService.addUser();
+        addUser();
         addTeams();
-//        addRounds();
-//        addGames();
+
+    }
+
+    private void addUser() {
+        User user = new User(addUserService.getUsername(), true);
+        user.setPassword(addUserService.getPassword());
+        userService.createAndRegisterIfNotExist(user);
 
     }
 
