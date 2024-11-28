@@ -6,7 +6,6 @@ import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
@@ -59,11 +58,12 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addUser(){
         if (userService.getUsers().isEmpty()) {
-            User user = new User("FSR", true);
-            user.setPassword("Passwort1234");
+            User user = new User(System.getenv("USER_NAME"), true);
+            user.setPassword(System.getenv("USER_PASSWORD"));
             userService.createAndRegisterIfNotExist(user);
         }
     }
+
 
     private void addTeams() {
         try {
@@ -152,8 +152,6 @@ public class MarioKartStartupRunner implements CommandLineRunner {
             rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20L * i).plusMinutes(20));
             roundRepository.save(rounds.get(i));
         }
-
-
     }
 
     private void addGames() throws EntityNotFoundException {
