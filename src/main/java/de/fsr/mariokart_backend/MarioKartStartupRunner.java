@@ -152,8 +152,6 @@ public class MarioKartStartupRunner implements CommandLineRunner {
             rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20L * i).plusMinutes(20));
             roundRepository.save(rounds.get(i));
         }
-
-
     }
 
     private void addGames() throws EntityNotFoundException {
