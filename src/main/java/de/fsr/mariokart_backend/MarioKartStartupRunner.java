@@ -14,7 +14,7 @@ import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.SettingsService;
 import de.fsr.mariokart_backend.user.model.User;
-import de.fsr.mariokart_backend.user.service.AdminUserService;
+import de.fsr.mariokart_backend.user.repository.UserRepository;
 import de.fsr.mariokart_backend.user.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -36,12 +36,8 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final RoundRepository roundRepository;
     private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
-    private final SettingsService settingsService;
     private final UserService userService;
-    private final AdminUserService addUserService;
-
-
-
+    private final SettingsService settingsService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -55,14 +51,17 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
         addUser();
         addTeams();
+//        addRounds();
+//        addGames();
 
     }
 
-    private void addUser() {
-        User user = new User(addUserService.getUsername(), true);
-        user.setPassword(addUserService.getPassword());
-        userService.createAndRegisterIfNotExist(user);
-
+    private void addUser(){
+        if (userService.getUsers().isEmpty()) {
+            User user = new User(System.getenv("USER_NAME"), true);
+            user.setPassword(System.getenv("USER_PASSWORD"));
+            userService.createAndRegisterIfNotExist(user);
+        }
     }
 
 
