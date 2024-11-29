@@ -13,6 +13,9 @@ import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.survey.model.QuestionType;
+import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
+import de.fsr.mariokart_backend.survey.service.SurveyService;
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 import de.fsr.mariokart_backend.user.service.UserService;
@@ -38,6 +41,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final AddCharacterService addCharacterService;
     private final UserService userService;
     private final SettingsService settingsService;
+    private final SurveyService surveyService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -51,8 +55,25 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
         addUser();
         addTeams();
+        addSurvey();
 //        addRounds();
 //        addGames();
+
+    }
+
+    private void addSurvey() {
+        try{
+            surveyService.createSurvey(new QuestionInputDTO("Wie zufrieden bist du mit dem Turnier?",
+                                                            QuestionType.MULTIPLE_CHOICE.toString(),
+                                                            List.of("Sehr zufrieden", "Zufrieden", "Neutral", "Unzufrieden", "Sehr unzufrieden"),
+                                                        true,
+                                                        true, true));
+
+
+        }
+        catch (IllegalArgumentException e) {
+            System.err.print(e.getMessage());
+            }
 
     }
 
