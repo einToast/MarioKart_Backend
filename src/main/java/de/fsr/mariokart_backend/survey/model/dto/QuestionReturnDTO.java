@@ -15,5 +15,6 @@ public class QuestionReturnDTO {
     private String questionText;
     private List<String> options;
     private boolean active;
+    private boolean visible;
     private boolean live;
 }

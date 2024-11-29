@@ -28,7 +28,8 @@ public class QuestionReturnDTOService {
         }
         questionReturnDTO.setQuestionText(question.getQuestionText());
         questionReturnDTO.setActive(question.getActive());
-
+        questionReturnDTO.setVisible(question.getVisible());
+        questionReturnDTO.setLive(question.getLive());
         return questionReturnDTO;
     }
 }

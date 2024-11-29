@@ -28,6 +28,8 @@ public class QuestionInputDTOService {
         }
         question.setQuestionText(questionInputDTO.getQuestionText());
         question.setActive(questionInputDTO.isActive());
+        question.setVisible(questionInputDTO.isVisible());
+        question.setLive(questionInputDTO.isLive());
         return question;
     }
 }
