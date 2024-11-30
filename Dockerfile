@@ -18,7 +18,7 @@ ENV USER_PASSWORD=${USER_PASSWORD}
 RUN mvn clean package
 
 #Stage 2: Run
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:23-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar /service.jar
 
