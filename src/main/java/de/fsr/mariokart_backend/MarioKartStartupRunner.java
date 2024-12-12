@@ -67,7 +67,18 @@ public class MarioKartStartupRunner implements CommandLineRunner {
                                                             QuestionType.MULTIPLE_CHOICE.toString(),
                                                             List.of("Sehr zufrieden", "Zufrieden", "Neutral", "Unzufrieden", "Sehr unzufrieden"),
                                                         true,
-                                                        true, true));
+                                                        true, false));
+            surveyService.createSurvey(new QuestionInputDTO(("Was würdest du verbessern?"),
+                                                            QuestionType.FREE_TEXT.toString(),
+                                                            null,
+                                                            true,
+                                                            true, false));
+
+            surveyService.createSurvey(new QuestionInputDTO("Was sind deine Lieblingscharaktere?",
+                                                            QuestionType.CHECKBOX.toString(),
+                                                            List.of("Mario", "Luigi", "Peach", "Bowser", "Toad", "Yoshi", "Donkey-Kong", "Wario", "Waluigi", "Daisy", "Rosalina", "Metall-Mario", "Shy-Guy", "Knochentrocken", "Lakitu", "König-Buu-Huu", "Koopa", "Inkling-Mädchen", "Bewohner", "Baby-Daisy", "Melinda"),
+                                                            true,
+                                                            true, false));
 
 
         }
