@@ -29,5 +29,5 @@ public class Tournament {
 
     private boolean registrationOpen;
 
-    private int gamesCount;
+    private int maxGamesCount;
 }

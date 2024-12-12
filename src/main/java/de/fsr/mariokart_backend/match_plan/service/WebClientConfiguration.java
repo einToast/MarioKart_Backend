@@ -9,6 +9,7 @@ public class WebClientConfiguration {
 
     @Bean
     public WebClient webClient() {
+//        TODO: change to real url
         return WebClient.builder().baseUrl("http://localhost:8000").build();
     }
 }

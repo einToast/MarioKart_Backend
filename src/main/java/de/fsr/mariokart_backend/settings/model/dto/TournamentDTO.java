@@ -11,9 +11,11 @@ import lombok.NoArgsConstructor;
 public class TournamentDTO {
     private Boolean tournamentOpen;
     private Boolean registrationOpen;
+    private Integer maxGamesCount;
 
     public TournamentDTO(Tournament tournament) {
         this.tournamentOpen = tournament.isTournamentOpen();
         this.registrationOpen = tournament.isRegistrationOpen();
+        this.maxGamesCount = tournament.getMaxGamesCount();
     }
 }

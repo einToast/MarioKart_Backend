@@ -38,6 +38,10 @@ public class SettingsService {
             tournament.setRegistrationOpen(tournamentDTO.getRegistrationOpen());
         }
 
+        if (tournamentDTO.getMaxGamesCount() != null){
+            tournament.setMaxGamesCount(tournamentDTO.getMaxGamesCount());
+        }
+
         return new TournamentDTO(tournamentRepository.save(tournament));
     }
 

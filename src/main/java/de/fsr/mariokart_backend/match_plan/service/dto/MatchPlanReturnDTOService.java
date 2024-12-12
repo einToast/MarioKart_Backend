@@ -6,6 +6,7 @@ import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.*;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationFromMatchPlanReturnDTOService;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
+import de.fsr.mariokart_backend.settings.service.SettingsService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class MatchPlanReturnDTOService {
 
 //    private final RegistrationReturnDTOService registrationReturnDTOService;
+    private final SettingsService settingsService;
     private final RegistrationFromMatchPlanReturnDTOService registrationFromMatchPlanReturnDTOService;
 
     public GameReturnDTO gameToGameDTO(Game game){
@@ -27,7 +29,7 @@ public class MatchPlanReturnDTOService {
     public RoundReturnDTO roundToRoundDTO(Round round){
         if (round == null)
             return null;
-        return new RoundReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getGames() != null ? round.getGames().stream().map(this::gameToGameFromRoundReturnDTO).collect(Collectors.toSet()) : null);
+        return new RoundReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getGames() != null ? round.getGames().stream().map(this::gameToGameFromRoundReturnDTO).collect(Collectors.toSet()) : null, round.getBreakTime());
     }
 
     public PointsReturnDTO pointsToPointsDTO(Points points){
@@ -51,7 +53,7 @@ public class MatchPlanReturnDTOService {
     public RoundFromGameReturnDTO roundToRoundFromGameReturnDTO (Round round){
         if (round == null)
             return null;
-        return new RoundFromGameReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed());
+        return new RoundFromGameReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getBreakTime());
     }
 
     public PointsFromGameReturnDTO pointsToPointsFromGameReturnDTO (Points points){

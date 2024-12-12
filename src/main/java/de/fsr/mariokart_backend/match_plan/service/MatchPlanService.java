@@ -9,6 +9,7 @@ import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanInputDTOService;
 import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,7 @@ public class MatchPlanService {
     private final MatchPlanInputDTOService matchPlanInputDTOService;
     private final MatchPlanReturnDTOService matchPlanReturnDTOService;
     private final SettingsService settingsService;
+    private final WebSocketService webSocketService;
 
     public RoundReturnDTO addRound(RoundInputDTO roundCreation) {
         Round round = matchPlanInputDTOService.roundInputDTOToRound(roundCreation);
@@ -130,6 +132,9 @@ public class MatchPlanService {
             }
         }
 
+//      TODO: enum for possible send/receive topics
+        webSocketService.sendMessage("/topic/rounds", "update");
+
         return matchPlanReturnDTOService.roundToRoundDTO(roundRepository.save(round));
     }
 
@@ -206,6 +211,8 @@ public class MatchPlanService {
             createFinalRounds(teams, LocalDateTime.now().plusMinutes(20 * i));
         }
 
+        webSocketService.sendMessage("/topic/rounds", "create");
+
         return roundRepository.findAll().stream()
                                         .map(matchPlanReturnDTOService::roundToRoundDTO)
                                         .toList();
@@ -264,37 +271,40 @@ public class MatchPlanService {
         }
 
         int teamCount = teamRepository.findAll().size();
-        List<List<List<Integer>>> response = getGeneratedMatchPlan(teamCount);
+        MatchPlanDTO response = getGeneratedMatchPlan(teamCount);
 
         System.out.println(response);
+        List<List<List<Integer>>> plan = response.getPlan();
+        int maxGamesCount = response.getMax_games_count();
         List<String> switchColors = List.of("Blau", "Rot", "Grün", "Weiß");
 
-        for (int i = 0; i < response.size(); i++) {
+        for (int i = 0; i < plan.size(); i++) {
             Round round = new Round();
             round.setPlayed(false);
             round.setStartTime(LocalDateTime.now().plusMinutes(20L * i));
             round.setEndTime(LocalDateTime.now().plusMinutes(20L * i).plusMinutes(20));
             roundRepository.save(round);
 
-            for (int j = 0; j < response.get(i).size(); j++) {
+            for (int j = 0; j < plan.get(i).size(); j++) {
                 Game game = new Game();
                 game.setSwitchGame(switchColors.get(j));
                 game.setRound(round);
                 gameRepository.save(game);
 
-                for (int k = 0; k < response.get(i).get(j).size(); k++) {
+                for (int k = 0; k < plan.get(i).get(j).size(); k++) {
                     Points point = new Points();
                     point.setGroupPoints(0);
                     point.setFinalPoints(0);
 //                    System.out.println(response.get(i).get(j).get(k));
-                    point.setTeam(teamRepository.findById((long) (response.get(i).get(j).get(k) + 1)).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID.")));
+                    point.setTeam(teamRepository.findById((long) (plan.get(i).get(j).get(k) + 1)).orElseThrow(() -> new EntityNotFoundException("There is no team with this ID.")));
                     point.setGame(game);
                     pointsRepository.save(point);
                 }
             }
         }
 
-        settingsService.updateSettings(new TournamentDTO(null, false));
+        settingsService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
+        webSocketService.sendMessage("/topic/rounds", "create");
 
         return roundRepository.findAll().stream()
                                         .map(matchPlanReturnDTOService::roundToRoundDTO)
@@ -309,7 +319,7 @@ public class MatchPlanService {
         teamRepository.deleteAll();
     }
 
-    public List<List<List<Integer>>> getGeneratedMatchPlan(int teamCount) {
+    public MatchPlanDTO getGeneratedMatchPlan(int teamCount) {
         Map<String, Integer> requestBody = new HashMap<>();
         requestBody.put("num_teams", teamCount);
         Mono<String> response = webClient.post()
@@ -319,7 +329,7 @@ public class MatchPlanService {
                 .bodyToMono(String.class);
 
         try {
-            return objectMapper.readValue(response.block(), new TypeReference<List<List<List<Integer>>>>() {});
+            return objectMapper.readValue(response.block(), MatchPlanDTO.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse JSON response", e);
         }
