@@ -47,14 +47,14 @@ public class ApplicationSecurity {
                         .requestMatchers(HttpMethod.GET, "/match_plan/rounds/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/games/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/points").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/match_plan/create/*").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/match_plan/create/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/match_plan/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/match_plan/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/match_plan/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/survey").permitAll()
                         .requestMatchers(HttpMethod.GET, "/survey/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/survey/*/answers").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/survey/*/answers").permitAll()
                         .requestMatchers(HttpMethod.POST, "/survey").authenticated()
                         .requestMatchers(HttpMethod.POST, "/survey/answer").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/survey/*").authenticated()
@@ -62,7 +62,6 @@ public class ApplicationSecurity {
                         .requestMatchers(HttpMethod.GET, "/healthcheck").permitAll()
 
                         .requestMatchers("/ws/**").permitAll()
-
 
                         .anyRequest().permitAll())
                 .csrf(csrf -> csrf.disable())
