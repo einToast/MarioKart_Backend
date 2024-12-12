@@ -24,9 +24,9 @@ public class SurveyController {
         return surveyService.getQuestions();
     }
 
-    @GetMapping("/active")
-    public List<QuestionReturnDTO> getActiveQuestions() {
-        return surveyService.getActiveQuestions();
+    @GetMapping("/visible")
+    public List<QuestionReturnDTO> getVisibleQuestions() {
+        return surveyService.getVisibleQuestions();
     }
 
     @GetMapping("/{id}")

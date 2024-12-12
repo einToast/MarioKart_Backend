@@ -43,8 +43,8 @@ public class SurveyService {
                                            .toList();
     }
 
-    public List<QuestionReturnDTO> getActiveQuestions() {
-        return questionRepository.findAllByActive(true).stream()
+    public List<QuestionReturnDTO> getVisibleQuestions() {
+        return questionRepository.findAllByVisible(true).stream()
                                                         .map(questionReturnDTOService::questionToQuestionReturnDTO)
                                                         .toList();
     }
@@ -62,6 +62,10 @@ public class SurveyService {
 
     public AnswerReturnDTO submitAnswer(AnswerInputDTO answer) {
 //        return answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer));
+        Question question = questionRepository.findById(answer.getQuestionId()).orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
+        if (!question.getActive() || !question.getVisible()) {
+            throw new IllegalArgumentException("Question is not active or visible.");
+        }
         return answerReturnDTOService.answerToAnswerReturnDTO(answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer)));
     }
 
@@ -87,6 +91,12 @@ public class SurveyService {
         }
         if (updatedQuestion.getActive() != null) {
             questionToUpdate.setActive(updatedQuestion.getActive());
+        }
+        if (updatedQuestion.getVisible() != null) {
+            questionToUpdate.setVisible(updatedQuestion.getVisible());
+        }
+        if (updatedQuestion.getLive() != null) {
+            questionToUpdate.setLive(updatedQuestion.getLive());
         }
         if (updatedQuestion instanceof MultipleChoiceQuestion) {
             if (((MultipleChoiceQuestion) updatedQuestion).getOptions() != null) {
