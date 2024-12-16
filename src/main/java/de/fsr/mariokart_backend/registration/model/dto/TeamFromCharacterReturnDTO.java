@@ -14,6 +14,7 @@ public class TeamFromCharacterReturnDTO {
     private Long id;
     private String teamName;
     private boolean finalReady;
+    private boolean active;
     private int groupPoints;
     private int finalPoints;
     private Set<GameFromTeamReturnDTO> games;

@@ -26,6 +26,9 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
     @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.finalPoints) DESC")
     List<Team> findAllByOrderByFinalPointsDesc();
 
+    @Query("SELECT t FROM Team t JOIN t.points p GROUP BY t.id ORDER BY SUM(p.finalPoints) DESC, SUM(p.groupPoints) DESC")
+    List<Team> findAllByOrderByFinalPointsDescGroupPointsDesc();
+
     Optional<Team> findByTeamName(String teamName);
 
 //    @Query("DELETE FROM Team t WHERE t.id = :id")
