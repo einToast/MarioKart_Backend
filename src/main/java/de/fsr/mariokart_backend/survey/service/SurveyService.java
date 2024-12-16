@@ -69,19 +69,6 @@ public class SurveyService {
         return answerReturnDTOService.answerToAnswerReturnDTO(answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer)));
     }
 
-    public List getSurveyResultCount(Long id) {
-        return null;
-    }
-
-    public List getSurveyResultsText(Long id) {
-        return null;
-    }
-
-    public void deleteQuestion(Long id) {
-        questionRepository.deleteById(id);
-        answerRepository.deleteAllByQuestionId(id);
-    }
-
 
     public QuestionReturnDTO updateQuestion(Long id, QuestionInputDTO question) {
         Question questionToUpdate = questionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
@@ -112,5 +99,15 @@ public class SurveyService {
             throw new IllegalArgumentException("Question type not supported.");
         }
         return questionReturnDTOService.questionToQuestionReturnDTO(questionRepository.save(questionToUpdate));
+    }
+
+    public void deleteQuestion(Long id) {
+        questionRepository.deleteById(id);
+        answerRepository.deleteAllByQuestionId(id);
+    }
+
+    public void deleteAllQuestions() {
+        questionRepository.deleteAll();
+        answerRepository.deleteAll();
     }
 }

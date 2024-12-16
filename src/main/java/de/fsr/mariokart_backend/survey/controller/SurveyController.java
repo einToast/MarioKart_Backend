@@ -75,5 +75,10 @@ public class SurveyController {
         surveyService.deleteQuestion(id);
     }
 
+    @DeleteMapping
+    public void deleteAllQuestions() {
+        surveyService.deleteAllQuestions();
+    }
+
 }
 
