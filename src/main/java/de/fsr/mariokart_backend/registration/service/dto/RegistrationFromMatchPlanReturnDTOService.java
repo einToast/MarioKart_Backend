@@ -17,12 +17,12 @@ public class RegistrationFromMatchPlanReturnDTOService {
     public TeamFromGameReturnDTO teamToTeamFromGameReturnDTO(Team team){
         if (team == null)
             return null;
-        return new TeamFromGameReturnDTO(team.getId(), team.getTeamName(), registrationReturnDTOService.characterToCharacterFromTeamReturnDTO(team.getCharacter()),team.isFinalReady(), team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints());
+        return new TeamFromGameReturnDTO(team.getId(), team.getTeamName(), registrationReturnDTOService.characterToCharacterFromTeamReturnDTO(team.getCharacter()),team.isFinalReady(), team.isActive(),team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints());
     }
 
     public TeamFromPointsReturnDTO teamToTeamFromPointsReturnDTO(Team team){
         if (team == null)
             return null;
-        return new TeamFromPointsReturnDTO(team.getId(), team.getTeamName(), registrationReturnDTOService.characterToCharacterFromTeamReturnDTO(team.getCharacter()),team.isFinalReady(), team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints());
+        return new TeamFromPointsReturnDTO(team.getId(), team.getTeamName(), registrationReturnDTOService.characterToCharacterFromTeamReturnDTO(team.getCharacter()),team.isFinalReady(), team.isActive(), team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints());
     }
 }

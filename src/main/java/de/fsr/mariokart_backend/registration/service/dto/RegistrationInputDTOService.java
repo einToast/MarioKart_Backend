@@ -17,6 +17,8 @@ public class RegistrationInputDTOService {
         Team team = new Team();
         team.setTeamName(teamInputDTO.getTeamName());
         team.setCharacter(characterRepository.findByCharacterName(teamInputDTO.getCharacterName()).orElseThrow(() -> new EntityNotFoundException("There is no character with this name.")));
+        team.setFinalReady(teamInputDTO.isFinalReady());
+        team.setActive(teamInputDTO.isActive());
         return team;
     }
 

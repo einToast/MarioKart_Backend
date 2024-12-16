@@ -1,7 +1,6 @@
 package de.fsr.mariokart_backend.registration.controller;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
-import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
@@ -10,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.AllArgsConstructor;
 
-import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.service.RegistrationService;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
@@ -32,8 +30,8 @@ public class RegistrationController {
     }
 
     @GetMapping("/sortedByNormalPoints")
-    public List<TeamReturnDTO> getTeamsSortedByNormalPoints() {
-        return registrationService.getTeamsSortedByNormalPoints();
+    public List<TeamReturnDTO> getTeamsSortedByGroupPoints() {
+        return registrationService.getTeamsSortedByGroupPoints();
     }
 
     @GetMapping("/sortedByFinalPoints")
