@@ -1,8 +1,10 @@
 package de.fsr.mariokart_backend.match_plan.service.dto;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.match_plan.model.Break;
 import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Round;
+import de.fsr.mariokart_backend.match_plan.model.dto.BreakInputDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.GameInputDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
@@ -30,4 +32,14 @@ public class MatchPlanInputDTOService {
     }
 
 
+    public Break breakInputDTOToBreak(BreakInputDTO breakCreation) throws EntityNotFoundException {
+        Break aBreak = new Break();
+        Round round = roundRepository.findById(breakCreation.getRoundId())
+                                    .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+        aBreak.setRound(round);
+        aBreak.setStartTime(round.getStartTime().minusMinutes(breakCreation.getBreakDuration()));
+        aBreak.setEndTime(round.getStartTime());
+        aBreak.setBreakEnded(breakCreation.getBreakEnded());
+        return aBreak;
+    }
 }

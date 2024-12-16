@@ -1,6 +1,6 @@
 package de.fsr.mariokart_backend.match_plan.model.dto;
 
-import de.fsr.mariokart_backend.settings.model.Break;
+import de.fsr.mariokart_backend.match_plan.model.Break;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,10 +1,11 @@
 package de.fsr.mariokart_backend.match_plan.service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
+import de.fsr.mariokart_backend.match_plan.model.Break;
 import de.fsr.mariokart_backend.match_plan.model.dto.*;
+import de.fsr.mariokart_backend.match_plan.repository.BreakRepository;
 import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanInputDTOService;
 import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
@@ -42,6 +43,7 @@ public class MatchPlanService {
     private final RoundRepository roundRepository;
     private final GameRepository gameRepository;
     private final PointsRepository pointsRepository;
+    private final BreakRepository breakRepository;
     private final TeamRepository teamRepository;
 
     private final WebClient webClient;
@@ -68,6 +70,18 @@ public class MatchPlanService {
 
     public PointsReturnDTO addPoints(Points points) {
         return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
+    }
+
+    public BreakReturnDTO addBreak(BreakInputDTO breakCreation) throws EntityNotFoundException {
+        Break aBreak = breakRepository.save(matchPlanInputDTOService.breakInputDTOToBreak(breakCreation));
+        Round round = roundRepository.findById(breakCreation.getRoundId()).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+        if (round.isFinalGame()){
+            throw new IllegalArgumentException("Final game has no breaks");
+        }
+
+        round.setBreakTime(aBreak);
+        roundRepository.save(round);
+        return matchPlanReturnDTOService.breakToBreakDTO(round.getBreakTime());
     }
 
     public List<RoundReturnDTO> getRounds() {
@@ -115,6 +129,10 @@ public class MatchPlanService {
         return pointsRepository.findAll()   .stream()
                                             .map(matchPlanReturnDTOService::pointsToPointsDTO)
                                             .toList();
+    }
+
+    public BreakReturnDTO getBreak() {
+        return matchPlanReturnDTOService.breakToBreakDTO(breakRepository.findAll().get(0));
     }
 
     public RoundReturnDTO updateRoundPlayed(Long roundId, RoundInputDTO roundCreation) throws EntityNotFoundException{
@@ -165,6 +183,28 @@ public class MatchPlanService {
         points.setGame(game);
         points.setTeam(team);
         return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
+    }
+
+    public BreakReturnDTO updateBreak(BreakInputDTO breakCreation) throws EntityNotFoundException {
+        if (!isMatchPlanCreated()){
+            throw new EntityNotFoundException("Match plan not created yet.");
+        }
+
+        Break aBreak = breakRepository.findAll().get(0);
+        Round oldRound = aBreak.getRound();
+        Round newRound = roundRepository.findById(breakCreation.getRoundId()).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+        aBreak.setRound(newRound);
+        aBreak.setStartTime(newRound.getStartTime().minusMinutes(breakCreation.getBreakDuration()));
+        aBreak.setEndTime(newRound.getStartTime());
+        if (breakCreation.getBreakEnded() != null){
+            aBreak.setBreakEnded(breakCreation.getBreakEnded());
+        }
+        oldRound.setBreakTime(null);
+        roundRepository.save(oldRound);
+        Break newBreak = breakRepository.save(aBreak);
+        newRound.setBreakTime(newBreak);
+        roundRepository.save(newRound);
+        return matchPlanReturnDTOService.breakToBreakDTO(newRound.getBreakTime());
     }
 
     public List<RoundReturnDTO> createFinalPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
@@ -303,6 +343,10 @@ public class MatchPlanService {
             }
         }
 
+        List<Round> rounds = roundRepository.findAll();
+        addBreak(new BreakInputDTO(rounds.get(5).getId(), 30, false));
+
+
         settingsService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
         webSocketService.sendMessage("/topic/rounds", "create");
 
@@ -310,13 +354,6 @@ public class MatchPlanService {
                                         .map(matchPlanReturnDTOService::roundToRoundDTO)
                                         .toList();
 
-    }
-
-    public void reset() {
-        roundRepository.deleteAll();
-        gameRepository.deleteAll();
-        pointsRepository.deleteAll();
-        teamRepository.deleteAll();
     }
 
     public MatchPlanDTO getGeneratedMatchPlan(int teamCount) {

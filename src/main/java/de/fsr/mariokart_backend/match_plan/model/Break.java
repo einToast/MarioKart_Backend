@@ -1,6 +1,5 @@
-package de.fsr.mariokart_backend.settings.model;
+package de.fsr.mariokart_backend.match_plan.model;
 
-import de.fsr.mariokart_backend.match_plan.model.Round;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,9 +24,8 @@ public class Break {
 
     private boolean breakEnded;
 
-    //    @OneToOne(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-//    private Break breakTime;
-    @OneToOne(mappedBy = "breakTime", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+//    TODO: Parent-Child_Relationship the other way around
+    @OneToOne(mappedBy = "breakTime", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Round round;
 
 

@@ -1,14 +1,11 @@
 package de.fsr.mariokart_backend.match_plan.model;
 
 import com.fasterxml.jackson.annotation.*;
-import de.fsr.mariokart_backend.settings.model.Break;
 import lombok.*;
 
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 @Entity
