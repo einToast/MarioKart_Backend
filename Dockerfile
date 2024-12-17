@@ -1,5 +1,5 @@
 #Stage 1: Build
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ ENV USER_PASSWORD=${USER_PASSWORD}
 RUN mvn clean package
 
 #Stage 2: Run
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:21-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar /service.jar
 
