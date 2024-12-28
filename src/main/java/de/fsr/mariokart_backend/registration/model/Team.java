@@ -35,6 +35,8 @@ public class Team {
 
     private boolean finalReady;
 
+    private boolean active;
+
     @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 //    @JsonManagedReference
     private Set<Points> points;

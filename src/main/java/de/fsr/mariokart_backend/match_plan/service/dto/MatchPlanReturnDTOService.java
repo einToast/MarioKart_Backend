@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.match_plan.service.dto;
 
+import de.fsr.mariokart_backend.match_plan.model.Break;
 import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
@@ -38,6 +39,12 @@ public class MatchPlanReturnDTOService {
         return new PointsReturnDTO(points.getId(), Math.max(points.getGroupPoints(), points.getFinalPoints()), registrationFromMatchPlanReturnDTOService.teamToTeamFromPointsReturnDTO(points.getTeam()), gameToGameFromPointsReturnDTO(points.getGame()));
     }
 
+    public BreakReturnDTO breakToBreakDTO(Break aBreak){
+        if (aBreak == null)
+            return null;
+        return new BreakReturnDTO(aBreak.getId(), aBreak.getStartTime(), aBreak.getEndTime(), aBreak.isBreakEnded(), roundToRoundFromBreakReturnDTO(aBreak.getRound()));
+    }
+
     public GameFromRoundReturnDTO gameToGameFromRoundReturnDTO (Game game){
         if (game == null)
             return null;
@@ -54,6 +61,12 @@ public class MatchPlanReturnDTOService {
         if (round == null)
             return null;
         return new RoundFromGameReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getBreakTime());
+    }
+
+    public RoundFromBreakReturnDTO roundToRoundFromBreakReturnDTO (Round round){
+        if (round == null)
+            return null;
+        return new RoundFromBreakReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(), round.isPlayed(), round.getGames() != null ? round.getGames().stream().map(this::gameToGameFromRoundReturnDTO).collect(Collectors.toSet()) : null);
     }
 
     public PointsFromGameReturnDTO pointsToPointsFromGameReturnDTO (Points points){

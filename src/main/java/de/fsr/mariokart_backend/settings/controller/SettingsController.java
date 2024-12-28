@@ -39,6 +39,12 @@ public class SettingsController {
             return ResponseEntity.ok(settingsService.updateSettings(tournamentDTO));
         } catch (IllegalStateException e) {
             return ResponseEntity.notFound().build();
+        } catch (RoundsAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
+
+    @DeleteMapping("/reset")
+    public void reset() {settingsService.reset();}
+
 }

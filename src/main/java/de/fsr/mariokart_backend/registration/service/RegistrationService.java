@@ -39,7 +39,7 @@ public class RegistrationService {
 
     }
 
-    public List<TeamReturnDTO> getTeamsSortedByNormalPoints() {
+    public List<TeamReturnDTO> getTeamsSortedByGroupPoints() {
         List<TeamReturnDTO> teams = teamRepository.findAllByOrderByGroupPointsDesc().stream()
                                                                .map(registrationReturnDTOService::teamToTeamReturnDTO)
                                                                .toList();
@@ -51,9 +51,16 @@ public class RegistrationService {
     }
 
     public List<TeamReturnDTO> getTeamsSortedByFinalPoints() {
-        return teamRepository.findAllByOrderByFinalPointsDesc().stream()
+        List<TeamReturnDTO> teams = teamRepository.findAllByOrderByFinalPointsDescGroupPointsDesc().stream()
                                                                .map(registrationReturnDTOService::teamToTeamReturnDTO)
                                                                .toList();
+        if (teams.isEmpty()) {
+            teams = getTeams();
+        }
+        return teams;
+//        return teamRepository.findAllByOrderByFinalPointsDescGroupPointsDesc().stream()
+//                .map(registrationReturnDTOService::teamToTeamReturnDTO)
+//                .toList();
     }
 
     public TeamReturnDTO getTeamById(Long id) throws EntityNotFoundException{
@@ -144,6 +151,10 @@ public class RegistrationService {
 
         if (teamCreation.isFinalReady() != team.isFinalReady()) {
             team.setFinalReady(teamCreation.isFinalReady());
+        }
+
+        if (teamCreation.isActive() != team.isActive()) {
+            team.setActive(teamCreation.isActive());
         }
 
         if (team.getCharacter().getTeam() != null && !team.getCharacter().getTeam().getId().equals(id)) {

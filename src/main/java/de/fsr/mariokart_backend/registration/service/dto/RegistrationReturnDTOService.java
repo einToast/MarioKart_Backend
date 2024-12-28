@@ -27,7 +27,7 @@ public class RegistrationReturnDTOService {
     public TeamReturnDTO teamToTeamReturnDTO(Team team){
         if (team == null)
             return null;
-        return new TeamReturnDTO(team.getId(), team.getTeamName(), characterToCharacterFromTeamReturnDTO(team.getCharacter()),team.isFinalReady(), team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints(), team.getGames() != null ? team.getGames().stream().map(matchPlanFromRegistrationReturnDTOService::gameToGameFromTeamReturnDTO).collect(Collectors.toSet()) : null);
+        return new TeamReturnDTO(team.getId(), team.getTeamName(), characterToCharacterFromTeamReturnDTO(team.getCharacter()), team.isFinalReady(), team.isActive(), team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints(), team.getGames() != null ? team.getGames().stream().map(matchPlanFromRegistrationReturnDTOService::gameToGameFromTeamReturnDTO).collect(Collectors.toSet()) : null);
     }
 
     public CharacterFromTeamReturnDTO characterToCharacterFromTeamReturnDTO(Character character){
@@ -39,6 +39,6 @@ public class RegistrationReturnDTOService {
     public TeamFromCharacterReturnDTO teamToTeamFromCharacterReturnDTO(Team team){
         if (team == null)
             return null;
-        return new TeamFromCharacterReturnDTO(team.getId(), team.getTeamName(), team.isFinalReady(), team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints(), team.getGames().stream().map(matchPlanFromRegistrationReturnDTOService::gameToGameFromTeamReturnDTO).collect(Collectors.toSet()));
+        return new TeamFromCharacterReturnDTO(team.getId(), team.getTeamName(), team.isFinalReady(), team.isActive(), team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints(), team.getGames().stream().map(matchPlanFromRegistrationReturnDTOService::gameToGameFromTeamReturnDTO).collect(Collectors.toSet()));
     }
 }

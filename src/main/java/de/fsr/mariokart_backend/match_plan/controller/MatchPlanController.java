@@ -65,6 +65,11 @@ public class MatchPlanController {
         return matchPlanService.getPoints();
     }
 
+    @GetMapping("/break")
+    public BreakReturnDTO getBreak() {
+        return matchPlanService.getBreak();
+    }
+
 //    @GetMapping("/rounds/{id}/games/{gameId}/teams")
 //    public List<Round> getTeamsByGameId(@PathVariable Long id, @PathVariable Long gameId) {
 //
@@ -140,6 +145,15 @@ public class MatchPlanController {
 
     }
 
+    @PutMapping("/break")
+    public ResponseEntity<BreakReturnDTO> updateBreak(@RequestBody BreakInputDTO breakCreation) {
+        try {
+            return ResponseEntity.ok(matchPlanService.updateBreak(breakCreation));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("create/match_plan")
     public void deleteMatchPlan() {
         matchPlanService.deleteMatchPlan();
@@ -148,11 +162,6 @@ public class MatchPlanController {
     @DeleteMapping("create/final_plan")
     public void deleteFinalPlan() {
         matchPlanService.deleteFinalPlan();
-    }
-
-    @DeleteMapping("reset")
-    public void reset() {
-        matchPlanService.reset();
     }
 
 }
