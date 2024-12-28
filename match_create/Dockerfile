@@ -14,4 +14,4 @@ EXPOSE 8000
 
 ENTRYPOINT ["python"]
 
-CMD ["-u webserver.py"]
+CMD ["webserver.py"]
