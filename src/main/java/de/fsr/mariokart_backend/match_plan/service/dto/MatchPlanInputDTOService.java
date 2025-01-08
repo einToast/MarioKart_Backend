@@ -37,8 +37,8 @@ public class MatchPlanInputDTOService {
         Round round = roundRepository.findById(breakCreation.getRoundId())
                                     .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
         aBreak.setRound(round);
-        aBreak.setStartTime(round.getStartTime().minusMinutes(breakCreation.getBreakDuration()));
-        aBreak.setEndTime(round.getStartTime());
+        aBreak.setStartTime(round.getStartTime());
+        aBreak.setEndTime(round.getStartTime().plusMinutes(breakCreation.getBreakDuration()));
         aBreak.setBreakEnded(breakCreation.getBreakEnded());
         return aBreak;
     }
