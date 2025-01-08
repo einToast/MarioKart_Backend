@@ -12,6 +12,6 @@ COPY . .
 
 EXPOSE 8000
 
-ENTRYPOINT ["python -u"]
+ENTRYPOINT ["python"]
 
 CMD ["webserver.py"]
