@@ -30,6 +30,7 @@ import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -137,17 +138,69 @@ public class MatchPlanService {
 
     public RoundReturnDTO updateRoundPlayed(Long roundId, RoundInputDTO roundCreation) throws EntityNotFoundException{
         Round round = roundRepository.findById(roundId).orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+        long playMinutes = 20L;
         List<Round> rounds = roundRepository.findByStartTimeAfter(round.getStartTime());
+        List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
         rounds.sort(Comparator.comparing(Round::getStartTime));
+        notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
 
         round.setPlayed(roundCreation.isPlayed());
 
-        if (round.isPlayed() && !rounds.isEmpty()) {
-            for (int i = 0; i < rounds.size(); i++) {
-                rounds.get(i).setStartTime(round.getStartTime().plusMinutes(20L * i));
-                rounds.get(i).setEndTime(round.getStartTime().plusMinutes(20L * i + 20));
-                roundRepository.save(rounds.get(i));
-            }
+        round.setEndTime(LocalDateTime.now());
+
+//        if (round.isPlayed() && !rounds.isEmpty()) {
+//            for (int i = 0; i < rounds.size(); i++) {
+//                rounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(playMinutes * i));
+//                rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(playMinutes * i).plusMinutes(playMinutes));
+//                roundRepository.save(rounds.get(i));
+//            }
+//        }
+
+        if (round.isPlayed() && !notPlayedRounds.isEmpty()) {
+            notPlayedRounds.remove(round);
+        }
+
+        if (!round.isPlayed() && !notPlayedRounds.contains(round)){
+            notPlayedRounds.add(round);
+            notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
+        }
+
+        for (int i = 0; i < notPlayedRounds.size(); i++) {
+            notPlayedRounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(playMinutes * i));
+            notPlayedRounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(playMinutes * i).plusMinutes(playMinutes));
+            roundRepository.save(notPlayedRounds.get(i));
+        }
+
+        Round breakRound = notPlayedRounds.stream()
+                .filter(r -> r.getBreakTime() != null)
+                .findFirst()
+                .orElseThrow(() -> new EntityNotFoundException("No round with a break found."));
+
+        List<Round> roundsAfterBreak = notPlayedRounds.stream()
+                .filter(r -> r.getStartTime().isAfter(breakRound.getStartTime()))
+                .toList();
+
+        int breakDuration = (int) Duration.between(breakRound.getBreakTime().getStartTime(), breakRound.getBreakTime().getEndTime()).toMinutes();
+
+        System.out.println(breakDuration);
+        System.out.println(breakRound.getStartTime());
+
+
+        breakRound.getBreakTime().setStartTime(breakRound.getStartTime());
+        breakRound.getBreakTime().setEndTime(breakRound.getStartTime().plusMinutes(breakDuration));
+
+        breakRound.setStartTime(breakRound.getBreakTime().getEndTime());
+        breakRound.setEndTime(breakRound.getStartTime().plusMinutes(playMinutes));
+
+        System.out.println(breakRound.getStartTime());
+
+        roundRepository.save(breakRound);
+        breakRepository.save(breakRound.getBreakTime());
+
+        for (int i = 0; i < roundsAfterBreak.size(); i++) {
+            roundsAfterBreak.get(i).setStartTime(breakRound.getEndTime().plusMinutes(playMinutes * i));
+            roundsAfterBreak.get(i).setEndTime(breakRound.getEndTime().plusMinutes(playMinutes * i).plusMinutes(playMinutes));
+            roundRepository.save(roundsAfterBreak.get(i));
         }
 
 //      TODO: enum for possible send/receive topics
@@ -232,6 +285,8 @@ public class MatchPlanService {
         Round round = new Round();
         round.setFinalGame(true);
         round.setPlayed(true);
+        round.setStartTime(LocalDateTime.now());
+        round.setEndTime(LocalDateTime.now());
         roundRepository.save(round);
 
         Game game = new Game();
@@ -247,7 +302,7 @@ public class MatchPlanService {
             pointsRepository.save(point);
         }
 
-        for (int i = 0; i < 2; i++){
+        for (int i = 0; i < 1; i++){
             createFinalRounds(teams, LocalDateTime.now().plusMinutes(20 * i));
         }
 
@@ -345,6 +400,14 @@ public class MatchPlanService {
 
         List<Round> rounds = roundRepository.findAll();
         addBreak(new BreakInputDTO(rounds.get(5).getId(), 30, false));
+
+        List<Round> roundsAfterBreak = roundRepository.findByStartTimeAfter(rounds.get(5).getStartTime().minusMinutes(1));
+
+        for (int i = 0; i < roundsAfterBreak.size(); i++) {
+            roundsAfterBreak.get(i).setStartTime(rounds.get(5).getStartTime().plusMinutes(20L * i).plusMinutes(i == 0 ? 30 : 0));
+            roundsAfterBreak.get(i).setEndTime(rounds.get(5).getStartTime().plusMinutes(20L * i).plusMinutes(20));
+            roundRepository.save(roundsAfterBreak.get(i));
+        }
 
 
         settingsService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
