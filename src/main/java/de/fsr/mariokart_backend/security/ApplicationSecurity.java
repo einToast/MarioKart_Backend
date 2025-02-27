@@ -62,13 +62,14 @@ public class ApplicationSecurity {
                         .requestMatchers(HttpMethod.GET, "/survey/*/answers").permitAll()
                         .requestMatchers(HttpMethod.POST, "/survey").authenticated()
                         .requestMatchers(HttpMethod.POST, "/survey/answer").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/survey/*").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/survey/*").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/healthcheck").permitAll()
 
                         .requestMatchers("/ws/**").permitAll()
 
-                        .anyRequest().permitAll())
+                        .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
 //                .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
