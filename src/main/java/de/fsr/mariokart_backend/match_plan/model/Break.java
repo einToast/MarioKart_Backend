@@ -1,12 +1,18 @@
 package de.fsr.mariokart_backend.match_plan.model;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -24,9 +30,8 @@ public class Break {
 
     private boolean breakEnded;
 
-//    TODO: Parent-Child_Relationship the other way around
+    // TODO: Parent-Child_Relationship the other way around
     @OneToOne(mappedBy = "breakTime", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Round round;
-
 
 }

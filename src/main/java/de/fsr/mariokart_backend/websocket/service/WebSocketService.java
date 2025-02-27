@@ -1,8 +1,9 @@
 package de.fsr.mariokart_backend.websocket.service;
 
-import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor

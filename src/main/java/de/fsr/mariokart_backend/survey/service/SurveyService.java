@@ -1,5 +1,9 @@
 package de.fsr.mariokart_backend.survey.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
@@ -16,9 +20,6 @@ import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -31,47 +32,51 @@ public class SurveyService {
     private final AnswerInputDTOService answerInputDTOService;
     private final AnswerReturnDTOService answerReturnDTOService;
 
-
     public QuestionReturnDTO getQuestion(Long id) {
-        return questionReturnDTOService.questionToQuestionReturnDTO(questionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no question with this id.")));
+        return questionReturnDTOService.questionToQuestionReturnDTO(questionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("There is no question with this id.")));
     }
-
 
     public List<QuestionReturnDTO> getQuestions() {
         return questionRepository.findAll().stream()
-                                           .map(questionReturnDTOService::questionToQuestionReturnDTO)
-                                           .toList();
+                .map(questionReturnDTOService::questionToQuestionReturnDTO)
+                .toList();
     }
 
     public List<QuestionReturnDTO> getVisibleQuestions() {
         return questionRepository.findAllByVisible(true).stream()
-                                                        .map(questionReturnDTOService::questionToQuestionReturnDTO)
-                                                        .toList();
+                .map(questionReturnDTOService::questionToQuestionReturnDTO)
+                .toList();
     }
 
     public List<AnswerReturnDTO> getAnswersOfQuestion(Long id) {
         return answerRepository.findAllByQuestionId(id).stream()
-                                                        .map(answerReturnDTOService::answerToAnswerReturnDTO)
-                                                        .toList();
+                .map(answerReturnDTOService::answerToAnswerReturnDTO)
+                .toList();
     }
 
     public QuestionReturnDTO createSurvey(QuestionInputDTO survey) {
-//        return questionRepository.save(questionInputDTOService.questionInputDTOToQuestion(survey));
-        return questionReturnDTOService.questionToQuestionReturnDTO(questionRepository.save(questionInputDTOService.questionInputDTOToQuestion(survey)));
+        // return
+        // questionRepository.save(questionInputDTOService.questionInputDTOToQuestion(survey));
+        return questionReturnDTOService.questionToQuestionReturnDTO(
+                questionRepository.save(questionInputDTOService.questionInputDTOToQuestion(survey)));
     }
 
     public AnswerReturnDTO submitAnswer(AnswerInputDTO answer) {
-//        return answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer));
-        Question question = questionRepository.findById(answer.getQuestionId()).orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
+        // return
+        // answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer));
+        Question question = questionRepository.findById(answer.getQuestionId())
+                .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
         if (!question.getActive() || !question.getVisible()) {
             throw new IllegalArgumentException("Question is not active or visible.");
         }
-        return answerReturnDTOService.answerToAnswerReturnDTO(answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer)));
+        return answerReturnDTOService
+                .answerToAnswerReturnDTO(answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer)));
     }
 
-
     public QuestionReturnDTO updateQuestion(Long id, QuestionInputDTO question) {
-        Question questionToUpdate = questionRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
+        Question questionToUpdate = questionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
         Question updatedQuestion = questionInputDTOService.questionInputDTOToQuestion(question);
         if (updatedQuestion.getQuestionText() != null) {
             questionToUpdate.setQuestionText(updatedQuestion.getQuestionText());
@@ -87,13 +92,14 @@ public class SurveyService {
         }
         if (updatedQuestion instanceof MultipleChoiceQuestion) {
             if (((MultipleChoiceQuestion) updatedQuestion).getOptions() != null) {
-                ((MultipleChoiceQuestion) questionToUpdate).setOptions(((MultipleChoiceQuestion) updatedQuestion).getOptions());
+                ((MultipleChoiceQuestion) questionToUpdate)
+                        .setOptions(((MultipleChoiceQuestion) updatedQuestion).getOptions());
             }
         } else if (updatedQuestion instanceof CheckboxQuestion) {
             if (((CheckboxQuestion) updatedQuestion).getOptions() != null) {
                 ((CheckboxQuestion) questionToUpdate).setOptions(((CheckboxQuestion) updatedQuestion).getOptions());
             }
-        } else if (updatedQuestion instanceof FreeTextQuestion){
+        } else if (updatedQuestion instanceof FreeTextQuestion) {
             // nothing to update
         } else {
             throw new IllegalArgumentException("Question type not supported.");

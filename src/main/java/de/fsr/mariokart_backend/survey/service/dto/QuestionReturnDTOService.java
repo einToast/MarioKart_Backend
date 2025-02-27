@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.service.dto;
 
+import org.springframework.stereotype.Service;
+
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.QuestionType;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
@@ -7,7 +9,6 @@ import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor

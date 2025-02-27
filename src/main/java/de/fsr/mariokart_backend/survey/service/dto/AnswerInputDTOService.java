@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.service.dto;
 
+import org.springframework.stereotype.Service;
+
 import de.fsr.mariokart_backend.survey.model.Answer;
 import de.fsr.mariokart_backend.survey.model.QuestionType;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
@@ -7,10 +9,8 @@ import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceAnswer;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
-import de.fsr.mariokart_backend.survey.service.SurveyService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
@@ -32,7 +32,8 @@ public class AnswerInputDTOService {
         } else {
             throw new IllegalArgumentException("Invalid answer type.");
         }
-        answer.setQuestion(questionRepository.findById(answerInputDTO.getQuestionId()).orElseThrow( () -> new EntityNotFoundException("There is no question with this id.")));
+        answer.setQuestion(questionRepository.findById(answerInputDTO.getQuestionId())
+                .orElseThrow(() -> new EntityNotFoundException("There is no question with this id.")));
         return answer;
     }
 }

@@ -1,5 +1,13 @@
 package de.fsr.mariokart_backend;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.Game;
@@ -8,28 +16,19 @@ import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
+import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.AddCharacterService;
+import de.fsr.mariokart_backend.registration.service.RegistrationService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.SettingsService;
 import de.fsr.mariokart_backend.survey.model.QuestionType;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.service.SurveyService;
 import de.fsr.mariokart_backend.user.model.User;
-import de.fsr.mariokart_backend.user.repository.UserRepository;
 import de.fsr.mariokart_backend.user.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
-
-import de.fsr.mariokart_backend.registration.model.Team;
-import de.fsr.mariokart_backend.registration.service.RegistrationService;
-
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -45,57 +44,55 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        try{
+        try {
             addCharacterService.addCharacters("media");
             settingsService.createSettings();
         } catch (IllegalStateException | IOException e) {
             System.err.print(e.getMessage());
         }
 
-
         addUser();
-//        addTeams();
-//        addSurvey();
-//        addRounds();
-//        addGames();
+        // addTeams();
+        // addSurvey();
+        // addRounds();
+        // addGames();
 
     }
 
     private void addSurvey() {
-        try{
+        try {
             surveyService.createSurvey(new QuestionInputDTO("Wie zufrieden bist du mit dem Turnier?",
-                                                            QuestionType.MULTIPLE_CHOICE.toString(),
-                                                            List.of("Sehr zufrieden", "Zufrieden", "Neutral", "Unzufrieden", "Sehr unzufrieden"),
-                                                        true,
-                                                        true, false));
+                    QuestionType.MULTIPLE_CHOICE.toString(),
+                    List.of("Sehr zufrieden", "Zufrieden", "Neutral", "Unzufrieden", "Sehr unzufrieden"),
+                    true,
+                    true, false));
             surveyService.createSurvey(new QuestionInputDTO(("Was würdest du verbessern?"),
-                                                            QuestionType.FREE_TEXT.toString(),
-                                                            null,
-                                                            true,
-                                                            true, false));
+                    QuestionType.FREE_TEXT.toString(),
+                    null,
+                    true,
+                    true, false));
 
             surveyService.createSurvey(new QuestionInputDTO("Was sind deine Lieblingscharaktere?",
-                                                            QuestionType.CHECKBOX.toString(),
-                                                            List.of("Mario", "Luigi", "Peach", "Bowser", "Toad", "Yoshi", "Donkey-Kong", "Wario", "Waluigi", "Daisy", "Rosalina", "Metall-Mario", "Shy-Guy", "Knochentrocken", "Lakitu", "König-Buu-Huu", "Koopa", "Inkling-Mädchen", "Bewohner", "Baby-Daisy", "Melinda"),
-                                                            true,
-                                                            true, false));
+                    QuestionType.CHECKBOX.toString(),
+                    List.of("Mario", "Luigi", "Peach", "Bowser", "Toad", "Yoshi", "Donkey-Kong", "Wario", "Waluigi",
+                            "Daisy", "Rosalina", "Metall-Mario", "Shy-Guy", "Knochentrocken", "Lakitu", "König-Buu-Huu",
+                            "Koopa", "Inkling-Mädchen", "Bewohner", "Baby-Daisy", "Melinda"),
+                    true,
+                    true, false));
 
-
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             System.err.print(e.getMessage());
-            }
+        }
 
     }
 
-    private void addUser(){
+    private void addUser() {
         if (userService.getUsers().isEmpty()) {
             User user = new User(System.getenv("USER_NAME"), true);
             user.setPassword(System.getenv("USER_PASSWORD"));
             userService.createAndRegisterIfNotExist(user);
         }
     }
-
 
     private void addTeams() {
         try {
@@ -209,14 +206,13 @@ public class MarioKartStartupRunner implements CommandLineRunner {
                 List<Team> selectedTeams = teams.subList(0, 4);
 
                 for (Team team : selectedTeams) {
-                     Points point = new Points();
-                     point.setGroupPoints(0);
-                     point.setFinalPoints(0);
-                     point.setTeam(team);
-                     point.setGame(game);
-                     matchPlanService.addPoints(point);
+                    Points point = new Points();
+                    point.setGroupPoints(0);
+                    point.setFinalPoints(0);
+                    point.setTeam(team);
+                    point.setGame(game);
+                    matchPlanService.addPoints(point);
                 }
-
 
             }
         }

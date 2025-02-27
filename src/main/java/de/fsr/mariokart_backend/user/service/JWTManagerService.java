@@ -1,24 +1,25 @@
 package de.fsr.mariokart_backend.user.service;
 
-import de.fsr.mariokart_backend.user.UserProperties;
-import de.fsr.mariokart_backend.user.model.User;
-import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
-import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;
-import io.jsonwebtoken.*;
-import lombok.AllArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import java.util.Date;
+
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import de.fsr.mariokart_backend.user.UserProperties;
+import de.fsr.mariokart_backend.user.model.User;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class JWTManagerService {
 
     private final UserProperties userProperties;
-
 
     public String generateJWT(User user) {
         return Jwts.builder()
@@ -29,7 +30,6 @@ public class JWTManagerService {
                 .signWith(SignatureAlgorithm.HS256, userProperties.getSecretKey())
                 .compact();
     }
-
 
     public boolean validateJWT(String token) {
         try {

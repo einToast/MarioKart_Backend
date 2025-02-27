@@ -1,8 +1,7 @@
 package de.fsr.mariokart_backend.security;
 
-import de.fsr.mariokart_backend.user.repository.UserRepository;
-import de.fsr.mariokart_backend.user.service.UserService;
-import lombok.AllArgsConstructor;
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,9 +17,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.reactive.config.CorsRegistry;
 
-import java.util.Arrays;
+import de.fsr.mariokart_backend.user.repository.UserRepository;
+import lombok.AllArgsConstructor;
 
 @EnableWebSecurity
 @Configuration
@@ -42,7 +41,6 @@ public class ApplicationSecurity {
                         .requestMatchers(HttpMethod.GET, "/teams/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/teams").permitAll()
 
-                        
                         .requestMatchers(HttpMethod.GET, "/match_plan/rounds/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/games/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/points").permitAll()
@@ -59,8 +57,9 @@ public class ApplicationSecurity {
 
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
-               .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(
+                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -79,9 +78,6 @@ public class ApplicationSecurity {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-    
-
-
 
     @Bean
     public UserDetailsService userDetailsService() {

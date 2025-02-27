@@ -1,17 +1,31 @@
 package de.fsr.mariokart_backend.match_plan.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
-import de.fsr.mariokart_backend.match_plan.model.dto.*;
+import de.fsr.mariokart_backend.match_plan.model.dto.BreakInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.BreakReturnDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.GameReturnDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.PointsInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.PointsReturnDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.bind.annotation.*;
 import lombok.AllArgsConstructor;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/match_plan")
@@ -69,19 +83,23 @@ public class MatchPlanController {
         return matchPlanService.getBreak();
     }
 
-//    @GetMapping("/rounds/{id}/games/{gameId}/teams")
-//    public List<Round> getTeamsByGameId(@PathVariable Long id, @PathVariable Long gameId) {
-//
-//        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
-//
-//    }
-//
-//    @GetMapping("/rounds/{id}/games/{gameId}/teams/{teamId}")
-//    public Round getTeamByGameId(@PathVariable Long id, @PathVariable Long gameId, @PathVariable Long teamId) {
-//
-//        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not implemented");
-//
-//    }
+    // @GetMapping("/rounds/{id}/games/{gameId}/teams")
+    // public List<Round> getTeamsByGameId(@PathVariable Long id, @PathVariable Long
+    // gameId) {
+    //
+    // throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not
+    // implemented");
+    //
+    // }
+    //
+    // @GetMapping("/rounds/{id}/games/{gameId}/teams/{teamId}")
+    // public Round getTeamByGameId(@PathVariable Long id, @PathVariable Long
+    // gameId, @PathVariable Long teamId) {
+    //
+    // throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not
+    // implemented");
+    //
+    // }
 
     @GetMapping("/create/match_plan")
     public ResponseEntity<Boolean> isMatchPlanCreated() {
@@ -122,7 +140,8 @@ public class MatchPlanController {
     }
 
     @PutMapping("/rounds/{roundId}")
-    public ResponseEntity<RoundReturnDTO> updateRoundPlayed(@PathVariable Long roundId, @RequestBody RoundInputDTO roundCreation) {
+    public ResponseEntity<RoundReturnDTO> updateRoundPlayed(@PathVariable Long roundId,
+            @RequestBody RoundInputDTO roundCreation) {
         try {
             return ResponseEntity.ok(matchPlanService.updateRoundPlayed(roundId, roundCreation));
 
@@ -134,13 +153,13 @@ public class MatchPlanController {
     }
 
     @PutMapping("/rounds/{roundId}/games/{gameId}/teams/{teamId}/points")
-    public ResponseEntity<PointsReturnDTO> updatePoints(@PathVariable Long roundId, @PathVariable Long gameId, @PathVariable Long teamId, @RequestBody PointsInputDTO pointsCreation) {
+    public ResponseEntity<PointsReturnDTO> updatePoints(@PathVariable Long roundId, @PathVariable Long gameId,
+            @PathVariable Long teamId, @RequestBody PointsInputDTO pointsCreation) {
         try {
             return ResponseEntity.ok(matchPlanService.updatePoints(roundId, gameId, teamId, pointsCreation));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
-
 
     }
 

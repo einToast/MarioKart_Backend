@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.model.subclasses;
 
+import java.util.List;
+import java.util.stream.Collectors;
 
 import de.fsr.mariokart_backend.survey.model.Answer;
 import jakarta.persistence.DiscriminatorValue;
@@ -9,9 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @NoArgsConstructor
@@ -26,8 +25,7 @@ public class CheckboxAnswer extends Answer {
     @Override
     public String getAnswerDetails() {
         return "Selected options: " + selectedOptions.stream()
-                                                     .map(String::valueOf)
-                                                     .collect(Collectors.joining(", "));
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
     }
 }
-

@@ -1,19 +1,19 @@
 package de.fsr.mariokart_backend.registration.service;
 
-import de.fsr.mariokart_backend.registration.model.Character;
-import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.stereotype.Service;
+
+import de.fsr.mariokart_backend.registration.model.Character;
+import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
+import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
@@ -38,24 +38,19 @@ public class AddCharacterService {
         registrationService.addCharacters(characters);
 
         System.out.println(registrationService.getCharacters()
-                                              .stream()
-                                              .map(CharacterReturnDTO::getCharacterName)
-                                              .collect(Collectors.toList()));
+                .stream()
+                .map(CharacterReturnDTO::getCharacterName)
+                .collect(Collectors.toList()));
 
         return characters;
 
-
-
     }
 
-    public List<String> getImageNames(String directoryPath) throws IOException{
+    public List<String> getImageNames(String directoryPath) throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-
-
 
         // Suchmuster für Dateien im Ordner "static/media"
         Resource[] resources = resolver.getResources("classpath:static/" + directoryPath + "/*.png");
-
 
         return Stream.of(resources)
                 .map(Resource::getFilename).filter(Objects::nonNull)
