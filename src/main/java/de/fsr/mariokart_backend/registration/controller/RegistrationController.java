@@ -123,7 +123,7 @@ public class RegistrationController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteTeam(@PathVariable Long id) throws RoundsAlreadyExistsException {
+    public void deleteTeam(@PathVariable Long id) throws RoundsAlreadyExistsException, EntityNotFoundException {
         registrationService.deleteTeam(id);
     }
 

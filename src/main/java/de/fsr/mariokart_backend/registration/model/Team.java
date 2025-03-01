@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,7 +36,7 @@ public class Team {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "character_ID")
+    @JoinColumn(name = "character_ID", nullable = false)
     private Character character;
 
     @Column(unique = true)
@@ -47,7 +46,7 @@ public class Team {
 
     private boolean active;
 
-    @OneToMany(mappedBy = "team", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "team", orphanRemoval = true, fetch = FetchType.EAGER)
     // @JsonManagedReference
     private Set<Points> points;
 
@@ -74,6 +73,13 @@ public class Team {
             return null;
 
         return points.stream().map(Points::getGame).collect(Collectors.toSet());
+    }
+
+    public void removeCharacter() {
+        if (this.character != null) {
+            this.character.setTeam(null);
+            this.character = null;
+        }
     }
 
 }

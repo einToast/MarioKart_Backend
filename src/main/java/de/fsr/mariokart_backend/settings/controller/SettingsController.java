@@ -44,7 +44,7 @@ public class SettingsController {
     }
 
     @DeleteMapping("/reset")
-    public void reset() {
+    public void reset() throws RoundsAlreadyExistsException {
         settingsService.reset();
     }
 

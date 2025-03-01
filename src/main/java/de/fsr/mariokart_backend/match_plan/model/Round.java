@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -42,7 +41,7 @@ public class Round {
 
     private boolean played;
 
-    @OneToMany(mappedBy = "round", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "round", orphanRemoval = true)
     @JsonManagedReference
     private Set<Game> games;
 

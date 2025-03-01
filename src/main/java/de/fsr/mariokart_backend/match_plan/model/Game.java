@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import de.fsr.mariokart_backend.registration.model.Team;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -48,7 +47,7 @@ public class Game {
     @JsonBackReference
     private Round round;
 
-    @OneToMany(mappedBy = "game", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "game", orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private Set<Points> points;
 

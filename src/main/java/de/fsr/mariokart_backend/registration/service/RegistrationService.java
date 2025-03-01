@@ -30,6 +30,7 @@ public class RegistrationService {
     private final RegistrationInputDTOService registrationInputDTOService;
     private final RegistrationReturnDTOService registrationReturnDTOService;
     private final SettingsService settingsService;
+    private final DeleteRegistrationService deleteRegistrationService;
 
     public List<TeamReturnDTO> getTeams() {
         return teamRepository.findAll().stream()
@@ -127,6 +128,7 @@ public class RegistrationService {
         Team team = registrationInputDTOService.teamInputDTOToTeam(teamCreation);
 
         team.setFinalReady(true);
+        team.setActive(true);
 
         if (team.getCharacter().getTeam() != null) {
             throw new IllegalArgumentException("Character is already in a team");
@@ -135,8 +137,9 @@ public class RegistrationService {
             throw new IllegalArgumentException("Team name already exists");
         }
 
-        return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
+        team.getCharacter().setTeam(team);
 
+        return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
     }
 
     public Character addCharacter(Character character) {
@@ -182,17 +185,24 @@ public class RegistrationService {
         return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
     }
 
-    public void deleteTeam(Long id) throws RoundsAlreadyExistsException {
+    public void deleteTeam(Long id) throws RoundsAlreadyExistsException, EntityNotFoundException {
         if (!roundRepository.findAll().isEmpty()) {
             throw new RoundsAlreadyExistsException("Match plan already exists");
         }
+        Team team = teamRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
+
+        if (team.getCharacter() != null) {
+            Character character = team.getCharacter();
+            team.removeCharacter();
+            character.removeTeam();
+        }
+
         teamRepository.deleteById(id);
     }
 
     public void deleteAllTeams() throws RoundsAlreadyExistsException {
-        if (!roundRepository.findAll().isEmpty()) {
-            throw new RoundsAlreadyExistsException("Match plan already exists");
-        }
-        teamRepository.deleteAll();
+        deleteRegistrationService.deleteAllTeams();
     }
+
 }
