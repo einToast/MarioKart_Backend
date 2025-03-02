@@ -1,12 +1,21 @@
 package de.fsr.mariokart_backend.match_plan.model;
 
-import com.fasterxml.jackson.annotation.*;
-import lombok.*;
-
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import de.fsr.mariokart_backend.registration.model.Team;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @NoArgsConstructor
@@ -27,7 +36,7 @@ public class Points {
 
     @ManyToOne
     @JoinColumn(name = "team_ID")
-//    @JsonBackReference
+    // @JsonBackReference
     private Team team;
 
     @ManyToOne
@@ -40,4 +49,3 @@ public class Points {
         return game.getId() + " " + team.getId();
     }
 }
-

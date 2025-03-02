@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.model.subclasses;
 
+import java.util.List;
+
 import de.fsr.mariokart_backend.survey.model.Question;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.ElementCollection;
@@ -8,8 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Entity
 @NoArgsConstructor

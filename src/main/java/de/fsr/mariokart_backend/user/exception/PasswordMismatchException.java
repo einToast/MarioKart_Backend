@@ -1,6 +1,6 @@
 package de.fsr.mariokart_backend.user.exception;
 
-public class PasswordMismatchException extends Exception{
+public class PasswordMismatchException extends Exception {
     public PasswordMismatchException() {
         super();
     }

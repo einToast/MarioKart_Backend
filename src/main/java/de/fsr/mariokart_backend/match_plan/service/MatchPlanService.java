@@ -1,41 +1,46 @@
 package de.fsr.mariokart_backend.match_plan.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
-import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
-import de.fsr.mariokart_backend.match_plan.model.Break;
-import de.fsr.mariokart_backend.match_plan.model.dto.*;
-import de.fsr.mariokart_backend.match_plan.repository.BreakRepository;
-import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanInputDTOService;
-import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService;
-import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
-import de.fsr.mariokart_backend.websocket.service.WebSocketService;
-import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-
-
-
-import de.fsr.mariokart_backend.match_plan.model.Round;
-import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
-import de.fsr.mariokart_backend.registration.model.Team;
-import de.fsr.mariokart_backend.registration.repository.TeamRepository;
-import de.fsr.mariokart_backend.match_plan.model.Game;
-import de.fsr.mariokart_backend.match_plan.repository.GameRepository;
-import de.fsr.mariokart_backend.match_plan.model.Points;
-import de.fsr.mariokart_backend.match_plan.repository.PointsRepository;
-
-
-import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
-
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
+import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
+import de.fsr.mariokart_backend.match_plan.model.Break;
+import de.fsr.mariokart_backend.match_plan.model.Game;
+import de.fsr.mariokart_backend.match_plan.model.Points;
+import de.fsr.mariokart_backend.match_plan.model.Round;
+import de.fsr.mariokart_backend.match_plan.model.dto.BreakInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.BreakReturnDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.GameInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.GameReturnDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.MatchPlanDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.PointsInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.PointsReturnDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
+import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
+import de.fsr.mariokart_backend.match_plan.repository.BreakRepository;
+import de.fsr.mariokart_backend.match_plan.repository.GameRepository;
+import de.fsr.mariokart_backend.match_plan.repository.PointsRepository;
+import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
+import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanInputDTOService;
+import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService;
+import de.fsr.mariokart_backend.registration.model.Team;
+import de.fsr.mariokart_backend.registration.repository.TeamRepository;
+import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
+import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
+import lombok.AllArgsConstructor;
+import reactor.core.publisher.Mono;
 
 @Service
 @AllArgsConstructor
@@ -367,6 +372,10 @@ public class MatchPlanService {
 
         int teamCount = teamRepository.findAll().size();
         MatchPlanDTO response = getGeneratedMatchPlan(teamCount);
+
+        if (!roundRepository.findAll().isEmpty()){
+            throw new RoundsAlreadyExistsException("Match plan already created");
+        }
 
         System.out.println(response);
         List<List<List<Integer>>> plan = response.getPlan();

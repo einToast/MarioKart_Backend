@@ -1,10 +1,11 @@
 package de.fsr.mariokart_backend.survey.repository;
 
-import de.fsr.mariokart_backend.survey.model.Answer;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import de.fsr.mariokart_backend.survey.model.Answer;
 
 @Repository
 public interface AnswerRepository extends JpaRepository<Answer, Long> {
@@ -13,4 +14,3 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
 
     void deleteAllByQuestionId(Long id);
 }
-

@@ -1,8 +1,7 @@
 package de.fsr.mariokart_backend.security;
 
-import de.fsr.mariokart_backend.user.repository.UserRepository;
-import de.fsr.mariokart_backend.user.service.UserService;
-import lombok.AllArgsConstructor;
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,9 +17,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.reactive.config.CorsRegistry;
 
-import java.util.Arrays;
+import de.fsr.mariokart_backend.user.repository.UserRepository;
+import lombok.AllArgsConstructor;
 
 @EnableWebSecurity
 @Configuration
@@ -35,60 +34,50 @@ public class ApplicationSecurity {
                 .authorizeHttpRequests((auth) -> auth
 
                         .requestMatchers(HttpMethod.GET, "/settings").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/settings").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/settings").authenticated()
 
-                        .requestMatchers(HttpMethod.GET, "/users").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/users").authenticated()
                         .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
                         .requestMatchers(HttpMethod.PUT, "/users/register/*").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/users/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/teams/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/teams").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/teams/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/teams/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/match_plan/rounds/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/games/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/points").permitAll()
                         .requestMatchers(HttpMethod.GET, "/match_plan/create/*").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/match_plan/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/match_plan/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/match_plan/**").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/survey").permitAll()
                         .requestMatchers(HttpMethod.GET, "/survey/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/survey/*/answers").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/survey").authenticated()
                         .requestMatchers(HttpMethod.POST, "/survey/answer").permitAll()
-                        .requestMatchers(HttpMethod.DELETE, "/survey/*").authenticated()
 
                         .requestMatchers(HttpMethod.GET, "/healthcheck").permitAll()
 
                         .requestMatchers("/ws/**").permitAll()
 
-                        .anyRequest().permitAll())
+                        .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
-//                .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(
+                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-//    @Bean
-//    UrlBasedCorsConfigurationSource corsConfigurationSource() {
-//        CorsConfiguration configuration = new CorsConfiguration();
-//        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8100", "http://127.0.0.1:8100"));
-//        configuration.setAllowedMethods(Arrays.asList("GET","POST", "PUT", "DELETE"));
-//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-//        source.registerCorsConfiguration("/**", configuration);
-//        return source;
-//    }
-
-
+    @Bean
+    UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // TODO: change to domain via env variable
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8100", "http://127.0.0.1:8100"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
     @Bean
     public UserDetailsService userDetailsService() {

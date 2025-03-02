@@ -1,12 +1,12 @@
 package de.fsr.mariokart_backend.match_plan.model.dto;
 
+import java.time.LocalDateTime;
+import java.util.Set;
+
 import de.fsr.mariokart_backend.match_plan.model.Break;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor

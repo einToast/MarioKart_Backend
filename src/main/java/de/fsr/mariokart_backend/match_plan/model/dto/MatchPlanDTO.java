@@ -1,8 +1,10 @@
 package de.fsr.mariokart_backend.match_plan.model.dto;
 
-import lombok.*;
-
 import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
@@ -10,6 +12,4 @@ import java.util.List;
 public class MatchPlanDTO {
     private int max_games_count;
     private List<List<List<Integer>>> plan;
-
-
 }

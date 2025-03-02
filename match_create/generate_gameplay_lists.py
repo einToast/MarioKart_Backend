@@ -1,13 +1,27 @@
-from helper import create_team_liste, count_in_list, create_duells, flatten, check_game_plan, create_filled_df
 import random
+
 import pandas as pd
+from helper import (
+    check_game_plan,
+    count_in_list,
+    create_duells,
+    create_filled_df,
+    create_team_liste,
+    flatten,
+)
 
 
-def create_plan(team_list, number_fields=4, number_rounds=8, max_duell_repeats=100, min_searches=0, max_searches=20,
-                seed_counter=0):
+def create_plan(
+    team_list,
+    number_fields=4,
+    number_rounds=8,
+    max_duell_repeats=100,
+    min_searches=0,
+    max_searches=20,
+    seed_counter=0,
+):
     def get_best_combination(teams, df):
-        """gets the best combinations of given teams
-        """
+        """gets the best combinations of given teams"""
         combinations = []
         pairs = []
         i = 0
@@ -18,10 +32,12 @@ def create_plan(team_list, number_fields=4, number_rounds=8, max_duell_repeats=1
             while j < len(teams):
                 t_2 = teams[j]
                 j += 1
-                row = df[((df['team_1'] == t_1) & (df['team_2'] == t_2)) |
-                         ((df['team_1'] == t_2) & (df['team_2'] == t_1))]
+                row = df[
+                    ((df["team_1"] == t_1) & (df["team_2"] == t_2))
+                    | ((df["team_1"] == t_2) & (df["team_2"] == t_1))
+                ]
                 if not row.empty:
-                    n_g = row['num_games'].values[0]
+                    n_g = row["num_games"].values[0]
                     if n_g == 0:
                         teams.remove(t_1)
                         teams.remove(t_2)
@@ -43,9 +59,11 @@ def create_plan(team_list, number_fields=4, number_rounds=8, max_duell_repeats=1
                 temp_sum = 0
                 for t_1 in p_1:
                     for t_2 in p_2:
-                        row = df[((df['team_1'] == t_1) & (df['team_2'] == t_2)) |
-                                 ((df['team_1'] == t_2) & (df['team_2'] == t_1))]
-                        temp_sum += row['num_games'].values[0]
+                        row = df[
+                            ((df["team_1"] == t_1) & (df["team_2"] == t_2))
+                            | ((df["team_1"] == t_2) & (df["team_2"] == t_1))
+                        ]
+                        temp_sum += row["num_games"].values[0]
                 if temp_sum < min_num[0] or min_num[0] == -1:
                     min_num = (temp_sum, j)
             combinations.append(list(p_1.union(pairs[min_num[1]])))
@@ -57,8 +75,10 @@ def create_plan(team_list, number_fields=4, number_rounds=8, max_duell_repeats=1
             teams_on_field.sort()
             for t_1_idx in range(len(teams_on_field)):
                 for t_2 in teams_on_field[t_1_idx:]:
-                    bedingung = (df['team_1'] == teams_on_field[t_1_idx]) & (df['team_2'] == t_2)
-                    df.loc[bedingung, 'num_games'] += 1
+                    bedingung = (df["team_1"] == teams_on_field[t_1_idx]) & (
+                        df["team_2"] == t_2
+                    )
+                    df.loc[bedingung, "num_games"] += 1
         return df
 
     def sort_game_plan(g_plan, teams):
@@ -140,27 +160,29 @@ def create_plan(team_list, number_fields=4, number_rounds=8, max_duell_repeats=1
         game_plan = []
         t_l = team_list[:]
         df_duells = create_duells(t_l)
-        idx_last = len(t_l) - 1  # all teams after this index have more games played then the ones before
+        idx_last = (
+            len(t_l) - 1
+        )  # all teams after this index have more games played then the ones before
 
         for number_round in range(number_rounds):
-            selection = t_l[0:number_fields * 4]
+            selection = t_l[0 : number_fields * 4]
             round_plan = get_best_combination(selection, df_duells)
             df_duells = sync_df(round_plan, df_duells)
-            if df_duells['num_games'].max() > max_duell_repeats:
+            if df_duells["num_games"].max() > max_duell_repeats:
                 skip = True
                 break
             game_plan.append(round_plan)
             if idx_last < number_fields * 4:
-                new_beginning = t_l[number_fields * 4:]
-                new_mid = t_l[0:idx_last + 1]
-                new_end = t_l[idx_last + 1:number_fields * 4]
+                new_beginning = t_l[number_fields * 4 :]
+                new_mid = t_l[0 : idx_last + 1]
+                new_end = t_l[idx_last + 1 : number_fields * 4]
                 extend_beginning = new_beginning + new_mid
                 random.shuffle(extend_beginning)
-                idx_last += len(t_l[number_fields * 4:])
+                idx_last += len(t_l[number_fields * 4 :])
                 t_l = extend_beginning + new_end
             else:
-                new_beginning = t_l[number_fields * 4:]
-                new_end = t_l[0:number_fields * 4]
+                new_beginning = t_l[number_fields * 4 :]
+                new_end = t_l[0 : number_fields * 4]
                 random.shuffle(new_end)
                 idx_last -= number_fields * 4
                 t_l = new_beginning + new_end
@@ -170,14 +192,31 @@ def create_plan(team_list, number_fields=4, number_rounds=8, max_duell_repeats=1
             temp_game_plan, valid = sort_game_plan(game_plan[:], team_list)
             df_duells_new = create_filled_df(team_list, temp_game_plan)
 
-            if valid and df_duells['num_games'].max() >= df_duells_new['num_games'].max() and df_duells_new[
-                'num_games'].max() <= max_duell_repeats:
-                if curr_best[1] > df_duells_new['num_games'].max() or (
-                        curr_best[1] == df_duells_new['num_games'].max() and curr_best[2] > len(
-                    df_duells_new[df_duells['num_games'] == df_duells_new['num_games'].max()])):
-                    curr_best = (temp_game_plan, df_duells_new['num_games'].max(),
-                                 len(df_duells_new[df_duells['num_games'] == df_duells_new['num_games'].max()]),
-                                 seed_counter + i - 1)
+            if (
+                valid
+                and df_duells["num_games"].max() >= df_duells_new["num_games"].max()
+                and df_duells_new["num_games"].max() <= max_duell_repeats
+            ):
+                if curr_best[1] > df_duells_new["num_games"].max() or (
+                    curr_best[1] == df_duells_new["num_games"].max()
+                    and curr_best[2]
+                    > len(
+                        df_duells_new[
+                            df_duells["num_games"] == df_duells_new["num_games"].max()
+                        ]
+                    )
+                ):
+                    curr_best = (
+                        temp_game_plan,
+                        df_duells_new["num_games"].max(),
+                        len(
+                            df_duells_new[
+                                df_duells["num_games"]
+                                == df_duells_new["num_games"].max()
+                            ]
+                        ),
+                        seed_counter + i - 1,
+                    )
 
             if valid and i >= min_searches and curr_best[1] <= max_duell_repeats:
                 print("SEED:", curr_best[3])
@@ -188,7 +227,7 @@ def create_plan(team_list, number_fields=4, number_rounds=8, max_duell_repeats=1
 
 def get_unrated_games(game_plan):
     teams = list(set(flatten(game_plan)))
-    df = pd.DataFrame({'team': teams}).assign(num_games=0)
+    df = pd.DataFrame({"team": teams}).assign(num_games=0)
     min_games = -1
     for t in teams:
         c = count_in_list(game_plan, t)
@@ -200,12 +239,13 @@ def get_unrated_games(game_plan):
         for f in r:
             rate_game_plan[-1].append([])
             for t in f:
-                if df[df['team'] == t]['num_games'].values.tolist()[0] >= min_games:
+                if df[df["team"] == t]["num_games"].values.tolist()[0] >= min_games:
                     rate_game_plan[-1][-1].append(False)
                 else:
-                    df.loc[(df['team'] == t), 'num_games'] += 1
+                    df.loc[(df["team"] == t), "num_games"] += 1
                     rate_game_plan[-1][-1].append(True)
     return rate_game_plan
+
 
 def generate_plan(num_teams=25, num_fields=4, num_rounds=8):
     team_list = create_team_liste(num_teams)
@@ -215,6 +255,7 @@ def generate_plan(num_teams=25, num_fields=4, num_rounds=8):
     print(rate_plan)
     max_games_count = check_game_plan(plan, rate_plan)
     return plan, max_games_count
+
 
 # if __name__ == '__main__':
 #     plan = create_plan(create_team_liste(25), 4, 8)

@@ -1,11 +1,11 @@
 package de.fsr.mariokart_backend.registration.model.dto;
 
+import java.util.Set;
+
 import de.fsr.mariokart_backend.match_plan.model.dto.GameFromTeamReturnDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor

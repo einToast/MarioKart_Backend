@@ -1,16 +1,14 @@
 package de.fsr.mariokart_backend.settings.model;
 
-import de.fsr.mariokart_backend.match_plan.model.Game;
-import de.fsr.mariokart_backend.match_plan.model.Points;
-import de.fsr.mariokart_backend.registration.model.Character;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Entity
 @Getter
@@ -18,7 +16,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tournament")
-//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
+// property = "id")
 public class Tournament {
 
     @Id
