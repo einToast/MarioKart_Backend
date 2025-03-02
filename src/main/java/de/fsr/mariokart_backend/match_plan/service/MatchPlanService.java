@@ -373,6 +373,10 @@ public class MatchPlanService {
         int teamCount = teamRepository.findAll().size();
         MatchPlanDTO response = getGeneratedMatchPlan(teamCount);
 
+        if (!roundRepository.findAll().isEmpty()){
+            throw new RoundsAlreadyExistsException("Match plan already created");
+        }
+
         System.out.println(response);
         List<List<List<Integer>>> plan = response.getPlan();
         int maxGamesCount = response.getMax_games_count();
