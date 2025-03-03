@@ -86,6 +86,10 @@ public class MatchPlanReadService {
         return matchPlanReturnDTOService.breakToBreakDTO(breakRepository.findAll().get(0));
     }
 
+    public Boolean isBreakFinished() {
+        return breakRepository.findAll().get(0).isBreakEnded();
+    }
+
     public Boolean isMatchPlanCreated() {
         return !roundRepository.findAll().isEmpty();
     }

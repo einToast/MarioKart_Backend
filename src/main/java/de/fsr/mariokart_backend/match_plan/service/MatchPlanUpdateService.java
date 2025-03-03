@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.Break;
 import de.fsr.mariokart_backend.match_plan.model.Game;
 import de.fsr.mariokart_backend.match_plan.model.Points;
@@ -43,78 +44,85 @@ public class MatchPlanUpdateService {
     private final TeamRepository teamRepository;
     private final MatchPlanReadService matchPlanReadService;
 
-    public RoundReturnDTO updateRoundPlayed(Long roundId, RoundInputDTO roundCreation) throws EntityNotFoundException {
-        Round round = roundRepository.findById(roundId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
-        long playMinutes = 20L;
-        List<Round> rounds = roundRepository.findByStartTimeAfter(round.getStartTime());
-        List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
-        rounds.sort(Comparator.comparing(Round::getStartTime));
-        notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
+    private static final long PLAY_MINUTES = 20L;
 
-        round.setPlayed(roundCreation.isPlayed());
-
-        round.setEndTime(LocalDateTime.now());
-
-        // if (round.isPlayed() && !rounds.isEmpty()) {
-        // for (int i = 0; i < rounds.size(); i++) {
-        // rounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(playMinutes * i));
-        // rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(playMinutes *
-        // i).plusMinutes(playMinutes));
-        // roundRepository.save(rounds.get(i));
-        // }
-        // }
-
-        if (round.isPlayed() && !notPlayedRounds.isEmpty()) {
-            notPlayedRounds.remove(round);
-        }
-
-        if (!round.isPlayed() && !notPlayedRounds.contains(round)) {
-            notPlayedRounds.add(round);
-            notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
-        }
-
+    private void updateNotPlayedRoundsSchedule(List<Round> notPlayedRounds) {
         for (int i = 0; i < notPlayedRounds.size(); i++) {
-            notPlayedRounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(playMinutes * i));
-            notPlayedRounds.get(i)
-                    .setEndTime(LocalDateTime.now().plusMinutes(playMinutes * i).plusMinutes(playMinutes));
-            roundRepository.save(notPlayedRounds.get(i));
+            Round currentRound = notPlayedRounds.get(i);
+            LocalDateTime startTime = LocalDateTime.now().plusMinutes(PLAY_MINUTES * i);
+            currentRound.setStartTime(startTime);
+            currentRound.setEndTime(startTime.plusMinutes(PLAY_MINUTES));
+            roundRepository.save(currentRound);
         }
+    }
 
-        Round breakRound = notPlayedRounds.stream()
-                .filter(r -> r.getBreakTime() != null)
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("No round with a break found."));
-
-        List<Round> roundsAfterBreak = notPlayedRounds.stream()
-                .filter(r -> r.getStartTime().isAfter(breakRound.getStartTime()))
-                .toList();
-
+    private void updateBreakAndFollowingRounds(Round breakRound, List<Round> roundsAfterBreak) {
         int breakDuration = (int) Duration
-                .between(breakRound.getBreakTime().getStartTime(), breakRound.getBreakTime().getEndTime()).toMinutes();
-
-        System.out.println(breakDuration);
-        System.out.println(breakRound.getStartTime());
+                .between(breakRound.getBreakTime().getStartTime(), breakRound.getBreakTime().getEndTime())
+                .toMinutes();
 
         breakRound.getBreakTime().setStartTime(breakRound.getStartTime());
         breakRound.getBreakTime().setEndTime(breakRound.getStartTime().plusMinutes(breakDuration));
 
         breakRound.setStartTime(breakRound.getBreakTime().getEndTime());
-        breakRound.setEndTime(breakRound.getStartTime().plusMinutes(playMinutes));
-
-        System.out.println(breakRound.getStartTime());
+        breakRound.setEndTime(breakRound.getStartTime().plusMinutes(PLAY_MINUTES));
 
         roundRepository.save(breakRound);
         breakRepository.save(breakRound.getBreakTime());
 
+        updateRoundsAfterBreak(roundsAfterBreak, breakRound);
+    }
+
+    private void updateRoundsAfterBreak(List<Round> roundsAfterBreak, Round breakRound) {
         for (int i = 0; i < roundsAfterBreak.size(); i++) {
-            roundsAfterBreak.get(i).setStartTime(breakRound.getEndTime().plusMinutes(playMinutes * i));
-            roundsAfterBreak.get(i)
-                    .setEndTime(breakRound.getEndTime().plusMinutes(playMinutes * i).plusMinutes(playMinutes));
-            roundRepository.save(roundsAfterBreak.get(i));
+            Round currentRound = roundsAfterBreak.get(i);
+            LocalDateTime startTime = breakRound.getEndTime().plusMinutes(PLAY_MINUTES * i);
+            currentRound.setStartTime(startTime);
+            currentRound.setEndTime(startTime.plusMinutes(PLAY_MINUTES));
+            roundRepository.save(currentRound);
+        }
+    }
+
+    // TODO:If played is set to false, the times of all rounds must be updated correctly
+    public RoundReturnDTO updateRoundPlayed(Long roundId, RoundInputDTO roundCreation)
+            throws EntityNotFoundException, RoundsAlreadyExistsException {
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+
+        List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
+        notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
+
+        round.setPlayed(roundCreation.isPlayed());
+        round.setEndTime(LocalDateTime.now());
+
+        if (round.isPlayed() && !notPlayedRounds.isEmpty()) {
+            notPlayedRounds.remove(round);
+        } else if (!round.isPlayed() && !notPlayedRounds.contains(round)) {
+            notPlayedRounds.add(round);
+            notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
         }
 
-        // TODO: enum for possible send/receive topics
+        if (!matchPlanReadService.isBreakFinished()
+                && !notPlayedRounds.stream().anyMatch(r -> r.getBreakTime() != null)) {
+            throw new RoundsAlreadyExistsException("Break not finished.");
+        }
+
+        updateNotPlayedRoundsSchedule(notPlayedRounds);
+
+        if (!matchPlanReadService.isBreakFinished()) {
+
+            Round breakRound = notPlayedRounds.stream()
+                    .filter(r -> r.getBreakTime() != null)
+                    .findFirst()
+                    .orElseThrow(() -> new EntityNotFoundException("No round with a break found."));
+
+            List<Round> roundsAfterBreak = notPlayedRounds.stream()
+                    .filter(r -> r.getStartTime().isAfter(breakRound.getStartTime()))
+                    .toList();
+
+            updateBreakAndFollowingRounds(breakRound, roundsAfterBreak);
+        }
+
         webSocketService.sendMessage("/topic/rounds", "update");
 
         return matchPlanReturnDTOService.roundToRoundDTO(roundRepository.save(round));
@@ -156,6 +164,7 @@ public class MatchPlanUpdateService {
         return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
     }
 
+    // TODO: check if this is correct, if break ended, the round starttime after break must be update to date of round before oder Datetime.now()
     public BreakReturnDTO updateBreak(BreakInputDTO breakCreation) throws EntityNotFoundException {
         if (!matchPlanReadService.isMatchPlanCreated()) {
             throw new EntityNotFoundException("Match plan not created yet.");

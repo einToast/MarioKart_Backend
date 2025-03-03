@@ -129,7 +129,7 @@ public class MatchPlanCreateService {
         }
 
         for (int i = 0; i < 1; i++) {
-            createFinalRounds(teams, LocalDateTime.now().plusMinutes(20 * i));
+            createFinalRounds(teams, LocalDateTime.now().plusMinutes(20L * i));
         }
 
         webSocketService.sendMessage("/topic/rounds", "create");
@@ -146,7 +146,7 @@ public class MatchPlanCreateService {
         round.setFinalGame(true);
         round.setPlayed(false);
         round.setStartTime(start_time);
-        round.setEndTime(start_time.plusMinutes(20));
+        round.setEndTime(start_time.plusMinutes(20L));
         addRound(round);
 
         for (int i = 0; i < 4; i++) {
@@ -214,7 +214,7 @@ public class MatchPlanCreateService {
         round.setRoundNumber(roundIndex + 1);
         round.setPlayed(false);
         round.setStartTime(LocalDateTime.now().plusMinutes(20L * roundIndex));
-        round.setEndTime(LocalDateTime.now().plusMinutes(20L * roundIndex).plusMinutes(20));
+        round.setEndTime(LocalDateTime.now().plusMinutes(20L * roundIndex).plusMinutes(20L));
         return addRound(round);
     }
 
@@ -251,7 +251,7 @@ public class MatchPlanCreateService {
             Round round = roundsAfterBreak.get(i);
             LocalDateTime startTime = breakRound.getStartTime().plusMinutes(20L * i).plusMinutes(i == 0 ? 30 : 0);
             round.setStartTime(startTime);
-            round.setEndTime(startTime.plusMinutes(20));
+            round.setEndTime(startTime.plusMinutes(20L));
             addRound(round);
         }
     }

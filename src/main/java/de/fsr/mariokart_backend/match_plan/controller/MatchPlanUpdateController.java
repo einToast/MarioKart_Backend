@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.match_plan.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.dto.BreakInputDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.BreakReturnDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.PointsInputDTO;
@@ -33,6 +35,8 @@ public class MatchPlanUpdateController {
             return ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
+        } catch (RoundsAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
 
