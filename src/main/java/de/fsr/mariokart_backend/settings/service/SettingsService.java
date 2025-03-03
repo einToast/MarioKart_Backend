@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.repository.BreakRepository;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
-import de.fsr.mariokart_backend.registration.service.DeleteRegistrationService;
+import de.fsr.mariokart_backend.registration.service.RegistrationDeleteService;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
@@ -23,7 +23,7 @@ public class SettingsService {
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
 
-    private final DeleteRegistrationService deleteRegistrationService;
+    private final RegistrationDeleteService registrationDeleteService;
 
     public TournamentDTO getSettings() {
         if (tournamentRepository.findAll().isEmpty()) {
@@ -74,7 +74,7 @@ public class SettingsService {
         breakRepository.flush();
         tournamentRepository.flush();
 
-        deleteRegistrationService.deleteAllTeams();
+        registrationDeleteService.deleteAllTeams();
 
         tournamentRepository.save(new Tournament());
     }
