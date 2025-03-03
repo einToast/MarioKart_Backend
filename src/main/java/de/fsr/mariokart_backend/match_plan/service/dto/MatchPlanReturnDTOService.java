@@ -42,8 +42,8 @@ public class MatchPlanReturnDTOService {
     public RoundReturnDTO roundToRoundDTO(Round round) {
         if (round == null)
             return null;
-        return new RoundReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(),
-                round.isPlayed(),
+        return new RoundReturnDTO(round.getId(), round.getRoundNumber(), round.getStartTime(), round.getEndTime(),
+                round.isFinalGame(), round.isPlayed(),
                 round.getGames() != null
                         ? round.getGames().stream().map(this::gameToGameFromRoundReturnDTO).collect(Collectors.toSet())
                         : null,
@@ -84,14 +84,16 @@ public class MatchPlanReturnDTOService {
     public RoundFromGameReturnDTO roundToRoundFromGameReturnDTO(Round round) {
         if (round == null)
             return null;
-        return new RoundFromGameReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(),
+        return new RoundFromGameReturnDTO(round.getId(), round.getRoundNumber(), round.getStartTime(),
+                round.getEndTime(), round.isFinalGame(),
                 round.isPlayed(), round.getBreakTime());
     }
 
     public RoundFromBreakReturnDTO roundToRoundFromBreakReturnDTO(Round round) {
         if (round == null)
             return null;
-        return new RoundFromBreakReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(), round.isFinalGame(),
+        return new RoundFromBreakReturnDTO(round.getId(), round.getRoundNumber(), round.getStartTime(),
+                round.getEndTime(), round.isFinalGame(),
                 round.isPlayed(),
                 round.getGames() != null
                         ? round.getGames().stream().map(this::gameToGameFromRoundReturnDTO).collect(Collectors.toSet())

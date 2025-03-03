@@ -29,8 +29,8 @@ public class MatchPlanFromRegistrationReturnDTOService {
     public RoundFromGameFromTeamReturnDTO roundToRoundFromGameFromRegistrationReturnDTO(Round round) {
         if (round == null)
             return null;
-        return new RoundFromGameFromTeamReturnDTO(round.getId(), round.getStartTime(), round.getEndTime(),
-                round.isFinalGame(), round.isPlayed());
+        return new RoundFromGameFromTeamReturnDTO(round.getId(), round.getRoundNumber(), round.getStartTime(),
+                round.getEndTime(), round.isFinalGame(), round.isPlayed());
     }
 
     public PointsFromGameFromTeamReturnDTO pointsToPointsFromGameFromTeamReturnDTO(Points points) {

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class RoundFromGameFromTeamReturnDTO {
     private Long id;
+    private int roundNumber;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private boolean finalGame;

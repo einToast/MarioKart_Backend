@@ -15,7 +15,7 @@ import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
-import de.fsr.mariokart_backend.match_plan.service.MatchPlanService;
+import de.fsr.mariokart_backend.match_plan.service.MatchPlanCreateService;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
@@ -34,7 +34,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class MarioKartStartupRunner implements CommandLineRunner {
     private final RegistrationService registrationService;
-    private final MatchPlanService matchPlanService;
+    private final MatchPlanCreateService matchPlanCreateService;
     private final RoundRepository roundRepository;
     private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
@@ -65,12 +65,12 @@ public class MarioKartStartupRunner implements CommandLineRunner {
                     QuestionType.MULTIPLE_CHOICE.toString(),
                     List.of("Sehr zufrieden", "Zufrieden", "Neutral", "Unzufrieden", "Sehr unzufrieden"),
                     true,
-                    true, false));
+                    true, false, false));
             surveyService.createSurvey(new QuestionInputDTO(("Was würdest du verbessern?"),
                     QuestionType.FREE_TEXT.toString(),
                     null,
                     true,
-                    true, false));
+                    true, false, false));
 
             surveyService.createSurvey(new QuestionInputDTO("Was sind deine Lieblingscharaktere?",
                     QuestionType.CHECKBOX.toString(),
@@ -78,7 +78,17 @@ public class MarioKartStartupRunner implements CommandLineRunner {
                             "Daisy", "Rosalina", "Metall-Mario", "Shy-Guy", "Knochentrocken", "Lakitu", "König-Buu-Huu",
                             "Koopa", "Inkling-Mädchen", "Bewohner", "Baby-Daisy", "Melinda"),
                     true,
-                    true, false));
+                    true, false, false));
+            surveyService.createSurvey(new QuestionInputDTO("Wähle dein Lieblingsteam aus",
+                    QuestionType.TEAM.toString(),
+                    null,
+                    false,
+                    false, false, false));
+            surveyService.createSurvey(new QuestionInputDTO("Welches Team wird das Finale gewinnen?",
+                    QuestionType.TEAM.toString(),
+                    null,
+                    false,
+                    false, false, true));
 
         } catch (IllegalArgumentException e) {
             System.err.print(e.getMessage());
@@ -167,13 +177,13 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addRounds() {
         RoundInputDTO round1 = new RoundInputDTO(false);
-        matchPlanService.addRound(round1);
+        matchPlanCreateService.addRound(round1);
 
         RoundInputDTO round2 = new RoundInputDTO(false);
-        matchPlanService.addRound(round2);
+        matchPlanCreateService.addRound(round2);
 
         RoundInputDTO round3 = new RoundInputDTO(false);
-        matchPlanService.addRound(round3);
+        matchPlanCreateService.addRound(round3);
 
         List<Round> rounds = roundRepository.findAll();
         for (int i = 0; i < rounds.size(); i++) {
@@ -199,7 +209,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
                     game.setSwitchGame("Weiß");
                 }
                 game.setRound(round);
-                matchPlanService.addGame(game);
+                matchPlanCreateService.addGame(game);
 
                 Collections.shuffle(teams);
 
@@ -211,7 +221,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
                     point.setFinalPoints(0);
                     point.setTeam(team);
                     point.setGame(game);
-                    matchPlanService.addPoints(point);
+                    matchPlanCreateService.addPoints(point);
                 }
 
             }
