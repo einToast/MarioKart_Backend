@@ -1,6 +1,8 @@
 package de.fsr.mariokart_backend.registration.service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -76,6 +78,15 @@ public class RegistrationService {
                 .orElseThrow(() -> new EntityNotFoundException("There is no team with this name.")));
         // return teamRepository.findByTeamName(teamName).orElseThrow(() -> new
         // EntityNotFoundException("There is no team with this name."));
+    }
+
+    public List<Team> getFinalTeams() {
+        return teamRepository.findByFinalReadyTrue().stream()
+                .sorted(Comparator.comparing(
+                        team -> team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()),
+                        Comparator.reverseOrder()))
+                .limit(4)
+                .collect(Collectors.toList());
     }
 
     public List<CharacterReturnDTO> getCharacters() {

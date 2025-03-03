@@ -18,15 +18,12 @@ import de.fsr.mariokart_backend.match_plan.model.dto.RoundFromBreakReturnDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundFromGameReturnDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationFromMatchPlanReturnDTOService;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class MatchPlanReturnDTOService {
 
-    // private final RegistrationReturnDTOService registrationReturnDTOService;
-    private final SettingsService settingsService;
     private final RegistrationFromMatchPlanReturnDTOService registrationFromMatchPlanReturnDTOService;
 
     public GameReturnDTO gameToGameDTO(Game game) {

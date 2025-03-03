@@ -16,4 +16,5 @@ public class QuestionInputDTO {
     private boolean active;
     private boolean visible;
     private boolean live;
+    private boolean finalTeamsOnly;
 }

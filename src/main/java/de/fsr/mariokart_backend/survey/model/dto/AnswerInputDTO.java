@@ -15,4 +15,5 @@ public class AnswerInputDTO {
     private String freeTextAnswer;
     private Integer multipleChoiceSelectedOption;
     private List<Integer> checkboxSelectedOptions;
+    private Integer teamSelectedOption;
 }
