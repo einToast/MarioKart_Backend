@@ -70,4 +70,14 @@ public class MatchPlanReadController {
     public BreakReturnDTO getBreak() {
         return matchPlanReadService.getBreak();
     }
+
+    @GetMapping("/create/match_plan")
+    public ResponseEntity<Boolean> isMatchPlanCreated() {
+        return ResponseEntity.ok(matchPlanReadService.isMatchPlanCreated());
+    }
+
+    @GetMapping("/create/final_plan")
+    public ResponseEntity<Boolean> isFinalPlanCreated() {
+        return ResponseEntity.ok(matchPlanReadService.isFinalPlanCreated());
+    }
 }

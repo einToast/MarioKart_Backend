@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.server.ResponseStatusException;
 
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -59,7 +61,14 @@ public class ApplicationSecurity {
                 .csrf(csrf -> csrf.disable())
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(
-                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint((request, response, e) -> {
+                            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, e.getMessage());
+                        })
+                        .accessDeniedHandler((request, response, e) -> {
+                            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
+                        }));
 
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 

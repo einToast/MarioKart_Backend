@@ -19,10 +19,7 @@ import de.fsr.mariokart_backend.match_plan.model.Points;
 import de.fsr.mariokart_backend.match_plan.model.Round;
 import de.fsr.mariokart_backend.match_plan.model.dto.BreakInputDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.BreakReturnDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.GameInputDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.GameReturnDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.MatchPlanDTO;
-import de.fsr.mariokart_backend.match_plan.model.dto.PointsReturnDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.match_plan.repository.BreakRepository;
@@ -89,8 +86,9 @@ public class MatchPlanCreateService {
     }
 
     public List<RoundReturnDTO> createFinalPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
-
-        if (!roundRepository.findByFinalGameTrue().isEmpty()) {
+        if (roundRepository.findAll().isEmpty()) {
+            throw new RoundsAlreadyExistsException("Match plan not created");
+        } else if (!roundRepository.findByFinalGameTrue().isEmpty()) {
             throw new RoundsAlreadyExistsException("Final plan already created");
         } else if (!roundRepository.findByPlayedFalse().isEmpty()) {
             throw new IllegalArgumentException("Not all rounds played");

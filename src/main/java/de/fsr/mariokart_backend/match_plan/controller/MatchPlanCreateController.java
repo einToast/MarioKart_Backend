@@ -3,8 +3,6 @@ package de.fsr.mariokart_backend.match_plan.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +13,6 @@ import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.match_plan.service.MatchPlanCreateService;
-import de.fsr.mariokart_backend.match_plan.service.MatchPlanReadService;
 import lombok.AllArgsConstructor;
 
 @RestController
@@ -24,17 +21,6 @@ import lombok.AllArgsConstructor;
 public class MatchPlanCreateController {
 
     private final MatchPlanCreateService matchPlanCreateService;
-    private final MatchPlanReadService matchPlanReadService;
-
-    @GetMapping("/create/match_plan")
-    public ResponseEntity<Boolean> isMatchPlanCreated() {
-        return ResponseEntity.ok(matchPlanReadService.isMatchPlanCreated());
-    }
-
-    @GetMapping("/create/final_plan")
-    public ResponseEntity<Boolean> isFinalPlanCreated() {
-        return ResponseEntity.ok(matchPlanReadService.isFinalPlanCreated());
-    }
 
     @PostMapping("/create/match_plan")
     public List<RoundReturnDTO> createMatchPlan() {
