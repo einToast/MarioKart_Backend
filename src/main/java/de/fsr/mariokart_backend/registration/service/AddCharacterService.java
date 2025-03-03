@@ -19,13 +19,14 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AddCharacterService {
 
-    private final RegistrationService registrationService;
+    private final RegistrationReadService registrationReadService;
+    private final RegistrationCreateService registrationCreateService;
 
     public List<Character> addCharacters(String directoryPath) throws IOException, IllegalStateException {
         List<String> imageNames = getImageNames(directoryPath);
         List<Character> characters = new ArrayList<>();
 
-        if (!registrationService.getCharacters().isEmpty()) {
+        if (!registrationReadService.getCharacters().isEmpty()) {
             throw new IllegalStateException("Characters already exist.");
         }
 
@@ -35,9 +36,9 @@ public class AddCharacterService {
             characters.add(character);
         }
 
-        registrationService.addCharacters(characters);
+        registrationCreateService.addCharacters(characters);
 
-        System.out.println(registrationService.getCharacters()
+        System.out.println(registrationReadService.getCharacters()
                 .stream()
                 .map(CharacterReturnDTO::getCharacterName)
                 .collect(Collectors.toList()));

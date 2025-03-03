@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
+import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
 import de.fsr.mariokart_backend.registration.model.Character;
@@ -14,10 +15,25 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class DeleteRegistrationService {
-
+public class RegistrationDeleteService {
     private final TeamRepository teamRepository;
     private final RoundRepository roundRepository;
+
+    public void deleteTeam(Long id) throws RoundsAlreadyExistsException, EntityNotFoundException {
+        if (!roundRepository.findAll().isEmpty()) {
+            throw new RoundsAlreadyExistsException("Match plan already exists");
+        }
+        Team team = teamRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
+
+        if (team.getCharacter() != null) {
+            Character character = team.getCharacter();
+            team.removeCharacter();
+            character.removeTeam();
+        }
+
+        teamRepository.deleteById(id);
+    }
 
     public void deleteAllTeams() throws RoundsAlreadyExistsException {
 
@@ -38,5 +54,4 @@ public class DeleteRegistrationService {
             teamRepository.delete(team);
         }
     }
-
 }
