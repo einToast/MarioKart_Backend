@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.exception;
+package de.fsr.mariokart_backend.security;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
