@@ -33,8 +33,6 @@ public class MatchPlanUpdateController {
             return ResponseEntity.ok(matchPlanUpdateService.updateRoundPlayed(roundId, roundCreation));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
         } catch (RoundsAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }

@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.survey.service;
 
 import org.springframework.stereotype.Service;
 
+import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
@@ -13,7 +14,7 @@ import de.fsr.mariokart_backend.survey.service.dto.AnswerInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerReturnDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
-import jakarta.persistence.EntityNotFoundException;
+
 import lombok.AllArgsConstructor;
 
 @Service
@@ -31,7 +32,7 @@ public class SurveyCreateService {
                 questionRepository.save(questionInputDTOService.questionInputDTOToQuestion(survey)));
     }
 
-    public AnswerReturnDTO submitAnswer(AnswerInputDTO answer) {
+    public AnswerReturnDTO submitAnswer(AnswerInputDTO answer) throws EntityNotFoundException {
         Question question = questionRepository.findById(answer.getQuestionId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
         if (!question.getActive() || !question.getVisible()) {

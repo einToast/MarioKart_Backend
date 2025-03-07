@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
@@ -44,8 +45,12 @@ public class SettingsController {
     }
 
     @DeleteMapping("/reset")
-    public void reset() throws RoundsAlreadyExistsException {
-        settingsService.reset();
+    public void reset() {
+        try {
+            settingsService.reset();
+        } catch (RoundsAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
     }
 
 }
