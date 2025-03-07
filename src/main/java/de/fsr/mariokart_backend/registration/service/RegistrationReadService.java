@@ -7,6 +7,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.match_plan.model.Game;
+import de.fsr.mariokart_backend.match_plan.model.Points;
+import de.fsr.mariokart_backend.match_plan.repository.GameRepository;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
@@ -23,6 +26,7 @@ public class RegistrationReadService {
     private final CharacterRepository characterRepository;
     private final RegistrationReturnDTOService registrationReturnDTOService;
     private final SettingsService settingsService;
+    private final GameRepository gameRepository;
 
     public List<TeamReturnDTO> getTeams() {
         return teamRepository.findAll().stream()
@@ -97,4 +101,32 @@ public class RegistrationReadService {
                 .characterToCharacterReturnDTO(characterRepository.findByCharacterName(characterName)
                         .orElseThrow(() -> new EntityNotFoundException("There is no character with this name.")));
     }
-} 
+
+    public List<TeamReturnDTO> getTeamsNotInRound(Long roundId) {
+        // Hole alle Teams
+        List<Team> allTeams = teamRepository.findAll();
+
+        List<Team> teamsInRound = getTeamsInRound(roundId);
+
+        // vergleiche alle teams in round mit allen teams
+        // wenn ein team nicht in round ist, füge es zu teamsNotInRound hinzu
+        return allTeams.stream()
+                .filter(team -> !teamsInRound.contains(team))
+                .map(registrationReturnDTOService::teamToTeamReturnDTO)
+                .toList();
+    }
+
+    public List<Team> getTeamsInRound(Long roundId) {
+        // Hole alle Spiele der Runde
+        List<Game> gamesInRound = gameRepository.findByRoundId(roundId);
+
+        // Sammle alle Teams, die in den Spielen der Runde vorkommen
+        return gamesInRound.stream()
+                .flatMap(game -> game.getPoints().stream()
+                        .map(Points::getTeam))
+                .distinct()
+                .filter(Team::isActive)
+                // .map(registrationReturnDTOService::teamToTeamReturnDTO)
+                .toList();
+    }
+}

@@ -88,4 +88,9 @@ public class RegistrationReadController {
             return ResponseEntity.notFound().build();
         }
     }
-} 
+
+    @GetMapping("/notInRound/{roundId}")
+    public List<TeamReturnDTO> getTeamsNotInRound(@PathVariable Long roundId) {
+        return registrationReadService.getTeamsNotInRound(roundId);
+    }
+}
