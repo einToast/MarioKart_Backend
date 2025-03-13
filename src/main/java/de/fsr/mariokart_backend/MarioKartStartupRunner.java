@@ -20,12 +20,13 @@ import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.AddCharacterService;
-import de.fsr.mariokart_backend.registration.service.RegistrationService;
+import de.fsr.mariokart_backend.registration.service.RegistrationCreateService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.settings.service.SettingsCreateService;
+import de.fsr.mariokart_backend.settings.service.SettingsUpdateService;
 import de.fsr.mariokart_backend.survey.model.QuestionType;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
-import de.fsr.mariokart_backend.survey.service.SurveyService;
+import de.fsr.mariokart_backend.survey.service.SurveyCreateService;
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.service.UserService;
 import lombok.AllArgsConstructor;
@@ -33,27 +34,28 @@ import lombok.AllArgsConstructor;
 @Component
 @AllArgsConstructor
 public class MarioKartStartupRunner implements CommandLineRunner {
-    private final RegistrationService registrationService;
+    private final RegistrationCreateService registrationCreateService;
     private final MatchPlanCreateService matchPlanCreateService;
     private final RoundRepository roundRepository;
     private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
     private final UserService userService;
-    private final SettingsService settingsService;
-    private final SurveyService surveyService;
+    private final SettingsCreateService settingsCreateService;
+    private final SettingsUpdateService settingsUpdateService;
+    private final SurveyCreateService surveyCreateService;
 
     @Override
     public void run(String... args) throws Exception {
         try {
             addCharacterService.addCharacters("media");
-            settingsService.createSettings();
+            settingsCreateService.createSettings();
         } catch (IllegalStateException | IOException e) {
             System.err.print(e.getMessage());
         }
 
         addUser();
-        // addTeams();
-        // addSurvey();
+        addTeams();
+        addSurvey();
         // addRounds();
         // addGames();
 
@@ -61,30 +63,30 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addSurvey() {
         try {
-            surveyService.createSurvey(new QuestionInputDTO("Wie zufrieden bist du mit dem Turnier?",
+            surveyCreateService.createSurvey(new QuestionInputDTO("Wie zufrieden bist du mit dem Turnier?",
                     QuestionType.MULTIPLE_CHOICE.toString(),
                     List.of("Sehr zufrieden", "Zufrieden", "Neutral", "Unzufrieden", "Sehr unzufrieden"),
                     true,
                     true, false, false));
-            surveyService.createSurvey(new QuestionInputDTO(("Was würdest du verbessern?"),
+            surveyCreateService.createSurvey(new QuestionInputDTO(("Was würdest du verbessern?"),
                     QuestionType.FREE_TEXT.toString(),
                     null,
                     true,
                     true, false, false));
 
-            surveyService.createSurvey(new QuestionInputDTO("Was sind deine Lieblingscharaktere?",
+            surveyCreateService.createSurvey(new QuestionInputDTO("Was sind deine Lieblingscharaktere?",
                     QuestionType.CHECKBOX.toString(),
                     List.of("Mario", "Luigi", "Peach", "Bowser", "Toad", "Yoshi", "Donkey-Kong", "Wario", "Waluigi",
                             "Daisy", "Rosalina", "Metall-Mario", "Shy-Guy", "Knochentrocken", "Lakitu", "König-Buu-Huu",
                             "Koopa", "Inkling-Mädchen", "Bewohner", "Baby-Daisy", "Melinda"),
                     true,
                     true, false, false));
-            surveyService.createSurvey(new QuestionInputDTO("Wähle dein Lieblingsteam aus",
+            surveyCreateService.createSurvey(new QuestionInputDTO("Wähle dein Lieblingsteam aus",
                     QuestionType.TEAM.toString(),
                     null,
                     false,
                     false, false, false));
-            surveyService.createSurvey(new QuestionInputDTO("Welches Team wird das Finale gewinnen?",
+            surveyCreateService.createSurvey(new QuestionInputDTO("Welches Team wird das Finale gewinnen?",
                     QuestionType.TEAM.toString(),
                     null,
                     false,
@@ -106,69 +108,69 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addTeams() {
         try {
-            settingsService.updateSettings(new TournamentDTO(true, true, 6));
+            settingsUpdateService.updateSettings(new TournamentDTO(true, true, 6));
             TeamInputDTO team1 = new TeamInputDTO("TollerTeamName", "Mario");
-            registrationService.addTeam(team1);
+            registrationCreateService.addTeam(team1);
 
             TeamInputDTO team2 = new TeamInputDTO("BlitzBoys", "Luigi");
-            registrationService.addTeam(team2);
+            registrationCreateService.addTeam(team2);
 
             TeamInputDTO team3 = new TeamInputDTO("ToadstoolTerrors", "Peach");
-            registrationService.addTeam(team3);
+            registrationCreateService.addTeam(team3);
 
             TeamInputDTO team4 = new TeamInputDTO("KoopaKings", "Bowser");
-            registrationService.addTeam(team4);
+            registrationCreateService.addTeam(team4);
 
             TeamInputDTO team5 = new TeamInputDTO("MushroomMasters", "Toad");
-            registrationService.addTeam(team5);
+            registrationCreateService.addTeam(team5);
 
             TeamInputDTO team6 = new TeamInputDTO("BulletBillBrigade", "Yoshi");
-            registrationService.addTeam(team6);
+            registrationCreateService.addTeam(team6);
 
             TeamInputDTO team7 = new TeamInputDTO("ChompChampions", "Donkey-Kong");
-            registrationService.addTeam(team7);
+            registrationCreateService.addTeam(team7);
 
             TeamInputDTO team8 = new TeamInputDTO("RainbowRiders", "Wario");
-            registrationService.addTeam(team8);
+            registrationCreateService.addTeam(team8);
 
             TeamInputDTO team9 = new TeamInputDTO("ShellShockers", "Waluigi");
-            registrationService.addTeam(team9);
+            registrationCreateService.addTeam(team9);
 
             TeamInputDTO team10 = new TeamInputDTO("BananaBandits", "Daisy");
-            registrationService.addTeam(team10);
+            registrationCreateService.addTeam(team10);
 
             TeamInputDTO team11 = new TeamInputDTO("PiranhaPals", "Rosalina");
-            registrationService.addTeam(team11);
+            registrationCreateService.addTeam(team11);
 
             TeamInputDTO team12 = new TeamInputDTO("ThwompThumpers", "Metall-Mario");
-            registrationService.addTeam(team12);
+            registrationCreateService.addTeam(team12);
 
             TeamInputDTO team13 = new TeamInputDTO("ShyGuySquad", "Shy-Guy");
-            registrationService.addTeam(team13);
+            registrationCreateService.addTeam(team13);
 
             TeamInputDTO team14 = new TeamInputDTO("DryBoneDynasty", "Knochentrocken");
-            registrationService.addTeam(team14);
+            registrationCreateService.addTeam(team14);
 
             TeamInputDTO team15 = new TeamInputDTO("LakituLegends", "Lakitu");
-            registrationService.addTeam(team15);
+            registrationCreateService.addTeam(team15);
 
             TeamInputDTO team16 = new TeamInputDTO("BooBusters", "König-Buu-Huu");
-            registrationService.addTeam(team16);
+            registrationCreateService.addTeam(team16);
 
             TeamInputDTO team17 = new TeamInputDTO("KoopaTroop", "Koopa");
-            registrationService.addTeam(team17);
+            registrationCreateService.addTeam(team17);
 
             TeamInputDTO team18 = new TeamInputDTO("InklingInvaders", "Inkling-Mädchen");
-            registrationService.addTeam(team18);
+            registrationCreateService.addTeam(team18);
 
             TeamInputDTO team19 = new TeamInputDTO("VillagerVictory", "Bewohner");
-            registrationService.addTeam(team19);
+            registrationCreateService.addTeam(team19);
 
             TeamInputDTO team20 = new TeamInputDTO("BabyBruisers", "Baby-Daisy");
-            registrationService.addTeam(team20);
+            registrationCreateService.addTeam(team20);
 
             TeamInputDTO team21 = new TeamInputDTO("Isabelle'sIsle", "Melinda");
-            registrationService.addTeam(team21);
+            registrationCreateService.addTeam(team21);
         } catch (IllegalArgumentException | EntityNotFoundException | RoundsAlreadyExistsException e) {
             System.err.print(e.getMessage());
         }
@@ -188,7 +190,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
         List<Round> rounds = roundRepository.findAll();
         for (int i = 0; i < rounds.size(); i++) {
             rounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(20L * i));
-            rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20L * i).plusMinutes(20));
+            rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20L * i).plusMinutes(20L));
             roundRepository.save(rounds.get(i));
         }
     }

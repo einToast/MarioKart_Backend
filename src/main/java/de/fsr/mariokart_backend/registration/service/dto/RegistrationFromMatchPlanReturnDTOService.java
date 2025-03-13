@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.TeamFromGameReturnDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamFromPointsReturnDTO;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.settings.service.SettingsReadService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 public class RegistrationFromMatchPlanReturnDTOService {
 
     private final RegistrationReturnDTOService registrationReturnDTOService;
-    private final SettingsService settingsService;
+    private final SettingsReadService settingsReadService;
 
     public TeamFromGameReturnDTO teamToTeamFromGameReturnDTO(Team team) {
         if (team == null)
@@ -21,7 +21,7 @@ public class RegistrationFromMatchPlanReturnDTOService {
         return new TeamFromGameReturnDTO(team.getId(), team.getTeamName(),
                 registrationReturnDTOService.characterToCharacterFromTeamReturnDTO(team.getCharacter()),
                 team.isFinalReady(), team.isActive(),
-                team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints());
+                team.getGroupPoints(settingsReadService.getSettings().getMaxGamesCount()), team.getFinalPoints());
     }
 
     public TeamFromPointsReturnDTO teamToTeamFromPointsReturnDTO(Team team) {
@@ -30,6 +30,6 @@ public class RegistrationFromMatchPlanReturnDTOService {
         return new TeamFromPointsReturnDTO(team.getId(), team.getTeamName(),
                 registrationReturnDTOService.characterToCharacterFromTeamReturnDTO(team.getCharacter()),
                 team.isFinalReady(), team.isActive(),
-                team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints());
+                team.getGroupPoints(settingsReadService.getSettings().getMaxGamesCount()), team.getFinalPoints());
     }
 }

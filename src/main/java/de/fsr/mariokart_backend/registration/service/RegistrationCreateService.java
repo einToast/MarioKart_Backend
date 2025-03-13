@@ -15,7 +15,7 @@ import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationInputDTOService;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.settings.service.SettingsReadService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -26,14 +26,14 @@ public class RegistrationCreateService {
     private final RoundRepository roundRepository;
     private final RegistrationInputDTOService registrationInputDTOService;
     private final RegistrationReturnDTOService registrationReturnDTOService;
-    private final SettingsService settingsService;
+    private final SettingsReadService settingsReadService;
 
     public TeamReturnDTO addTeam(TeamInputDTO teamCreation)
             throws IllegalArgumentException, EntityNotFoundException, RoundsAlreadyExistsException {
-        if (!settingsService.getSettings().getRegistrationOpen()) {
+        if (!settingsReadService.getSettings().getRegistrationOpen()) {
             throw new IllegalStateException("Registration is closed");
         }
-        if (!settingsService.getSettings().getTournamentOpen()) {
+        if (!settingsReadService.getSettings().getTournamentOpen()) {
             throw new IllegalStateException("Tournament is closed");
         }
 
@@ -65,4 +65,4 @@ public class RegistrationCreateService {
     public List<Character> addCharacters(List<Character> characters) {
         return characterRepository.saveAll(characters);
     }
-} 
+}

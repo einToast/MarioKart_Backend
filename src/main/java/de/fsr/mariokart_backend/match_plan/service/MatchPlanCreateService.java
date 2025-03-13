@@ -31,7 +31,7 @@ import de.fsr.mariokart_backend.match_plan.service.dto.MatchPlanReturnDTOService
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.settings.service.SettingsUpdateService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 import reactor.core.publisher.Mono;
@@ -48,7 +48,7 @@ public class MatchPlanCreateService {
     private final MatchPlanInputDTOService matchPlanInputDTOService;
     private final MatchPlanReturnDTOService matchPlanReturnDTOService;
     private final WebSocketService webSocketService;
-    private final SettingsService settingsService;
+    private final SettingsUpdateService settingsUpdateService;
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
@@ -257,7 +257,7 @@ public class MatchPlanCreateService {
     }
 
     private void updateTournamentSettings(int maxGamesCount) throws RoundsAlreadyExistsException {
-        settingsService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
+        settingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
     }
 
     public MatchPlanDTO getGeneratedMatchPlan(int teamCount) {

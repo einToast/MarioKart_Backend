@@ -11,7 +11,7 @@ import de.fsr.mariokart_backend.registration.model.dto.CharacterFromTeamReturnDT
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamFromCharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.settings.service.SettingsReadService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -19,7 +19,7 @@ import lombok.AllArgsConstructor;
 public class RegistrationReturnDTOService {
 
     private final MatchPlanFromRegistrationReturnDTOService matchPlanFromRegistrationReturnDTOService;
-    private final SettingsService settingsService;
+    private final SettingsReadService settingsReadService;
 
     public CharacterReturnDTO characterToCharacterReturnDTO(Character character) {
         if (character == null)
@@ -33,7 +33,7 @@ public class RegistrationReturnDTOService {
             return null;
         return new TeamReturnDTO(team.getId(), team.getTeamName(),
                 characterToCharacterFromTeamReturnDTO(team.getCharacter()), team.isFinalReady(), team.isActive(),
-                team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints(),
+                team.getGroupPoints(settingsReadService.getSettings().getMaxGamesCount()), team.getFinalPoints(),
                 team.getGames() != null ? team.getGames().stream()
                         .map(matchPlanFromRegistrationReturnDTOService::gameToGameFromTeamReturnDTO)
                         .collect(Collectors.toSet()) : null);
@@ -49,7 +49,7 @@ public class RegistrationReturnDTOService {
         if (team == null)
             return null;
         return new TeamFromCharacterReturnDTO(team.getId(), team.getTeamName(), team.isFinalReady(), team.isActive(),
-                team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()), team.getFinalPoints(),
+                team.getGroupPoints(settingsReadService.getSettings().getMaxGamesCount()), team.getFinalPoints(),
                 team.getGames().stream().map(matchPlanFromRegistrationReturnDTOService::gameToGameFromTeamReturnDTO)
                         .collect(Collectors.toSet()));
     }

@@ -16,7 +16,7 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
-import de.fsr.mariokart_backend.settings.service.SettingsService;
+import de.fsr.mariokart_backend.settings.service.SettingsReadService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -25,7 +25,7 @@ public class RegistrationReadService {
     private final TeamRepository teamRepository;
     private final CharacterRepository characterRepository;
     private final RegistrationReturnDTOService registrationReturnDTOService;
-    private final SettingsService settingsService;
+    private final SettingsReadService settingsReadService;
     private final GameRepository gameRepository;
 
     public List<TeamReturnDTO> getTeams() {
@@ -67,7 +67,7 @@ public class RegistrationReadService {
     public List<Team> getFinalTeams() {
         return teamRepository.findByFinalReadyTrue().stream()
                 .sorted(Comparator.comparing(
-                        team -> team.getGroupPoints(settingsService.getSettings().getMaxGamesCount()),
+                        team -> team.getGroupPoints(settingsReadService.getSettings().getMaxGamesCount()),
                         Comparator.reverseOrder()))
                 .limit(4)
                 .collect(Collectors.toList());
