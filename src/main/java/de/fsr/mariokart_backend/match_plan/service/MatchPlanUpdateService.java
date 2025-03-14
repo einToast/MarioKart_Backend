@@ -61,15 +61,43 @@ public class MatchPlanUpdateService {
                 .between(breakRound.getBreakTime().getStartTime(), breakRound.getBreakTime().getEndTime())
                 .toMinutes();
 
-        breakRound.getBreakTime().setStartTime(breakRound.getStartTime());
-        breakRound.getBreakTime().setEndTime(breakRound.getStartTime().plusMinutes(breakDuration));
-
+        // Find the previous round to use its end time for the break start time
+        List<Round> allRounds = roundRepository.findAll();
+        allRounds.sort(Comparator.comparing(Round::getRoundNumber));
+        
+        // Find the index of the break round
+        int breakRoundIndex = -1;
+        for (int i = 0; i < allRounds.size(); i++) {
+            if (allRounds.get(i).getId().equals(breakRound.getId())) {
+                breakRoundIndex = i;
+                break;
+            }
+        }
+        
+        // Calculate the start time for the break based on previous round or current time
+        LocalDateTime breakStartTime;
+        if (breakRoundIndex > 0) {
+            // Use the end time of the previous round as break start time
+            Round previousRound = allRounds.get(breakRoundIndex - 1);
+            breakStartTime = previousRound.getEndTime();
+        } else {
+            // Fallback if there's no previous round (shouldn't happen in normal use)
+            breakStartTime = LocalDateTime.now();
+        }
+        
+        // Set the break times
+        breakRound.getBreakTime().setStartTime(breakStartTime);
+        breakRound.getBreakTime().setEndTime(breakStartTime.plusMinutes(breakDuration));
+        
+        // Set the round start time to be after the break
         breakRound.setStartTime(breakRound.getBreakTime().getEndTime());
         breakRound.setEndTime(breakRound.getStartTime().plusMinutes(PLAY_MINUTES));
 
-        roundRepository.save(breakRound);
+        // Save changes
         breakRepository.save(breakRound.getBreakTime());
+        roundRepository.save(breakRound);
 
+        // Update subsequent rounds
         updateRoundsAfterBreak(roundsAfterBreak, breakRound);
     }
 
@@ -168,8 +196,6 @@ public class MatchPlanUpdateService {
         return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
     }
 
-    // TODO: check if this is correct, if break ended, the round starttime after
-    // break must be update to date of round before oder Datetime.now()
     public BreakReturnDTO updateBreak(BreakInputDTO breakCreation) throws EntityNotFoundException {
         if (!matchPlanReadService.isMatchPlanCreated()) {
             throw new EntityNotFoundException("Match plan not created yet.");
@@ -179,17 +205,90 @@ public class MatchPlanUpdateService {
         Round oldRound = aBreak.getRound();
         Round newRound = roundRepository.findById(breakCreation.getRoundId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
-        aBreak.setRound(newRound);
-        aBreak.setStartTime(newRound.getStartTime().minusMinutes(breakCreation.getBreakDuration()));
-        aBreak.setEndTime(newRound.getStartTime());
-        if (breakCreation.getBreakEnded() != null) {
+        
+        // Store old values to check if they've changed
+        boolean oldBreakEnded = aBreak.isBreakEnded();
+        int newBreakDuration = breakCreation.getBreakDuration();
+        
+        boolean breakStatusChanged = false;
+        if (breakCreation.getBreakEnded() != null && 
+            breakCreation.getBreakEnded() != oldBreakEnded) {
             aBreak.setBreakEnded(breakCreation.getBreakEnded());
+            breakStatusChanged = true;
         }
-        oldRound.setBreakTime(null);
-        roundRepository.save(oldRound);
-        Break newBreak = breakRepository.save(aBreak);
-        newRound.setBreakTime(newBreak);
+        
+        boolean locationChanged = !oldRound.getId().equals(newRound.getId());
+        
+        // Remove break from old round if location changed
+        if (locationChanged) {
+            oldRound.setBreakTime(null);
+            roundRepository.save(oldRound);
+        }
+        
+        // Update break round association
+        aBreak.setRound(newRound);
+        newRound.setBreakTime(aBreak);
         roundRepository.save(newRound);
+        
+        // Find the previous round to use its end time
+        List<Round> allRounds = roundRepository.findAll();
+        allRounds.sort(Comparator.comparing(Round::getRoundNumber));
+        
+        // Find the index of the new round with break
+        int breakRoundIndex = -1;
+        for (int i = 0; i < allRounds.size(); i++) {
+            if (allRounds.get(i).getId().equals(newRound.getId())) {
+                breakRoundIndex = i;
+                break;
+            }
+        }
+        
+        // Calculate break start time based on previous round
+        LocalDateTime breakStartTime;
+        if (breakRoundIndex > 0) {
+            // Use the end time of the previous round
+            Round previousRound = allRounds.get(breakRoundIndex - 1);
+            breakStartTime = previousRound.getEndTime();
+        } else {
+            // Fallback
+            breakStartTime = LocalDateTime.now();
+        }
+        
+        // Set the break times
+        aBreak.setStartTime(breakStartTime);
+        aBreak.setEndTime(breakStartTime.plusMinutes(newBreakDuration));
+        
+        // Update round start time to be after the break
+        newRound.setStartTime(aBreak.getEndTime());
+        newRound.setEndTime(newRound.getStartTime().plusMinutes(PLAY_MINUTES));
+        
+        // Save all changes
+        breakRepository.save(aBreak);
+        roundRepository.save(newRound);
+        
+        boolean breakDurationChanged = true; // Always recalculate subsequent rounds
+        
+        // Update rounds after break if break has ended, duration changed, or break moved
+        if (breakStatusChanged || breakDurationChanged || locationChanged) {
+            List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
+            notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
+            
+            if (aBreak.isBreakEnded()) {
+                // If break ended, update all not played rounds
+                updateNotPlayedRoundsSchedule(notPlayedRounds);
+            } else {
+                // If break is not ended but moved or duration changed, update rounds after break
+                List<Round> roundsAfterBreak = notPlayedRounds.stream()
+                        .filter(r -> !r.getId().equals(newRound.getId()) && r.getStartTime().isAfter(aBreak.getStartTime()))
+                        .toList();
+                
+                updateRoundsAfterBreak(roundsAfterBreak, newRound);
+            }
+            
+            // Notify clients about the update
+            webSocketService.sendMessage("/topic/rounds", "update");
+        }
+        
         return matchPlanReturnDTOService.breakToBreakDTO(newRound.getBreakTime());
     }
 
