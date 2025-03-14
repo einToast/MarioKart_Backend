@@ -4,6 +4,7 @@ import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.survey.model.Answer;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +20,7 @@ import lombok.Setter;
 public class TeamAnswer extends Answer {
 
     @ManyToOne
+    @JoinColumn(name = "team_id")
     private Team team;
 
     @Override

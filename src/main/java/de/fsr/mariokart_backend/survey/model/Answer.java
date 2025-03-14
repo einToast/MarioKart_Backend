@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.survey.model;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceAnswer;
@@ -44,6 +45,10 @@ public abstract class Answer {
         @ManyToOne
         @JoinColumn(name = "question_id", nullable = false)
         private Question question;
+
+        @ManyToOne
+        @JoinColumn(name = "submitting_team_id")
+        private Team submittingTeam;
 
         public abstract String getAnswerDetails();
 }

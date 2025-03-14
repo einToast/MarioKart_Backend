@@ -4,13 +4,13 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerReturnDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -21,7 +21,7 @@ public class SurveyReadService {
     private final QuestionReturnDTOService questionReturnDTOService;
     private final AnswerReturnDTOService answerReturnDTOService;
 
-    public QuestionReturnDTO getQuestion(Long id) {
+    public QuestionReturnDTO getQuestion(Long id) throws EntityNotFoundException {
         return questionReturnDTOService.questionToQuestionReturnDTO(questionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no question with this id.")));
     }
@@ -43,4 +43,4 @@ public class SurveyReadService {
                 .map(answerReturnDTOService::answerToAnswerReturnDTO)
                 .toList();
     }
-} 
+}

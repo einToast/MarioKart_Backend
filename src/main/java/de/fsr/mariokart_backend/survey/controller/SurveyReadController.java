@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.service.SurveyReadService;
@@ -34,7 +35,7 @@ public class SurveyReadController {
     public ResponseEntity<QuestionReturnDTO> getQuestion(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(surveyReadService.getQuestion(id));
-        } catch (Exception e) {
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
     }
