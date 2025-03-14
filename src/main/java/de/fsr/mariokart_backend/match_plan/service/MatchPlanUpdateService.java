@@ -83,7 +83,6 @@ public class MatchPlanUpdateService {
         }
     }
 
-    // TODO:If played is set to false, the times of all rounds must be updated correctly
     public RoundReturnDTO updateRoundPlayed(Long roundId, RoundInputDTO roundCreation)
             throws EntityNotFoundException, RoundsAlreadyExistsException {
         Round round = roundRepository.findById(roundId)
@@ -93,7 +92,12 @@ public class MatchPlanUpdateService {
         notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
 
         round.setPlayed(roundCreation.isPlayed());
-        round.setEndTime(LocalDateTime.now());
+
+        // Only set endTime to now if the round is being marked as played
+        if (roundCreation.isPlayed()) {
+            round.setEndTime(LocalDateTime.now());
+        }
+        // End time for not played rounds will be set by updateNotPlayedRoundsSchedule
 
         if (round.isPlayed() && !notPlayedRounds.isEmpty()) {
             notPlayedRounds.remove(round);
@@ -164,7 +168,8 @@ public class MatchPlanUpdateService {
         return matchPlanReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
     }
 
-    // TODO: check if this is correct, if break ended, the round starttime after break must be update to date of round before oder Datetime.now()
+    // TODO: check if this is correct, if break ended, the round starttime after
+    // break must be update to date of round before oder Datetime.now()
     public BreakReturnDTO updateBreak(BreakInputDTO breakCreation) throws EntityNotFoundException {
         if (!matchPlanReadService.isMatchPlanCreated()) {
             throw new EntityNotFoundException("Match plan not created yet.");
