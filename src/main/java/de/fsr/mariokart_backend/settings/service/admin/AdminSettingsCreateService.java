@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.settings.service;
+package de.fsr.mariokart_backend.settings.service.admin;
 
 import org.springframework.stereotype.Service;
 
@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class SettingsCreateService {
+public class AdminSettingsCreateService {
 
     private final TournamentRepository tournamentRepository;
 

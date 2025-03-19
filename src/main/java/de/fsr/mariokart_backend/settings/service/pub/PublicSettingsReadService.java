@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.settings.service;
+package de.fsr.mariokart_backend.settings.service.pub;
 
 import org.springframework.stereotype.Service;
 
@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class SettingsReadService {
+public class PublicSettingsReadService {
 
     private final TournamentRepository tournamentRepository;
 

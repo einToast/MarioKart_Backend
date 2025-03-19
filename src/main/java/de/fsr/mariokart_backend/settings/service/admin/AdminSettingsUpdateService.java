@@ -1,9 +1,9 @@
-package de.fsr.mariokart_backend.settings.service;
+package de.fsr.mariokart_backend.settings.service.admin;
 
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
-import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
+import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class SettingsUpdateService {
+public class AdminSettingsUpdateService {
 
     private final TournamentRepository tournamentRepository;
     private final RoundRepository roundRepository;

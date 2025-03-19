@@ -1,11 +1,11 @@
-package de.fsr.mariokart_backend.settings.service;
+package de.fsr.mariokart_backend.settings.service.admin;
 
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
-import de.fsr.mariokart_backend.match_plan.repository.BreakRepository;
-import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
-import de.fsr.mariokart_backend.registration.service.RegistrationDeleteService;
+import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationDeleteService;
+import de.fsr.mariokart_backend.schedule.repository.BreakRepository;
+import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
@@ -14,14 +14,14 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class SettingsDeleteService {
+public class AdminSettingsDeleteService {
 
     private final TournamentRepository tournamentRepository;
     private final BreakRepository breakRepository;
     private final RoundRepository roundRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
-    private final RegistrationDeleteService registrationDeleteService;
+    private final AdminRegistrationDeleteService adminRegistrationDeleteService;
 
     public void reset() throws RoundsAlreadyExistsException {
         roundRepository.deleteAll();
@@ -35,7 +35,7 @@ public class SettingsDeleteService {
         breakRepository.flush();
         tournamentRepository.flush();
 
-        registrationDeleteService.deleteAllTeams();
+        adminRegistrationDeleteService.deleteAllTeams();
 
         tournamentRepository.save(new Tournament());
     }
