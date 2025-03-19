@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.websocket.controller;
+package de.fsr.mariokart_backend.websocket.controller.pub;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -9,16 +9,14 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Controller
-public class WebSocketController {
+public class PublicWebSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/sendMessages") // Hier sendet der Client Nachrichten
-    @SendTo("/topic/messages") // Hierhin wird die Nachricht an die verbundenen Clients gesendet
+    @MessageMapping("/public/sendMessages")
+    @SendTo("/topic/messages")
     public String handleMessage(String message) {
         System.out.println("Received message: " + message);
-        // return message; // Einfacher Echo-Server
-        return "irgendwas"; // Einfacher Echo-Server
+        return "irgendwas";
     }
-
 }
