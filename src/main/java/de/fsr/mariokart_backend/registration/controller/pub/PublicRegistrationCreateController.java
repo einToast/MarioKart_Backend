@@ -1,32 +1,33 @@
-package de.fsr.mariokart_backend.registration.controller;
+package de.fsr.mariokart_backend.registration.controller.pub;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.fsr.mariokart_backend.controller.annotation.ApiController;
+import de.fsr.mariokart_backend.controller.annotation.ApiType;
+import de.fsr.mariokart_backend.controller.annotation.ControllerType;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
-import de.fsr.mariokart_backend.registration.service.RegistrationCreateService;
+import de.fsr.mariokart_backend.registration.service.pub.PublicRegistrationCreateService;
 import lombok.AllArgsConstructor;
 
-@CrossOrigin
 @RestController
-@RequestMapping("/teams")
 @AllArgsConstructor
-public class RegistrationCreateController {
+@ApiController(apiType = ApiType.PUBLIC, controllerType = ControllerType.REGISTRATION)
+public class PublicRegistrationCreateController {
 
-    private final RegistrationCreateService registrationCreateService;
+    private final PublicRegistrationCreateService publicRegistrationCreateService;
 
     @PostMapping
-    public ResponseEntity<TeamReturnDTO> addTeam(@RequestBody TeamInputDTO teamCreation) {
+    public ResponseEntity<TeamReturnDTO> registerTeam(@RequestBody TeamInputDTO teamCreation) {
         try {
-            return ResponseEntity.status(HttpStatus.CREATED).body(registrationCreateService.addTeam(teamCreation));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(publicRegistrationCreateService.registerTeam(teamCreation));
         } catch (RoundsAlreadyExistsException | IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         } catch (IllegalArgumentException e) {
@@ -35,4 +36,4 @@ public class RegistrationCreateController {
             return ResponseEntity.notFound().build();
         }
     }
-} 
+}

@@ -1,37 +1,37 @@
-package de.fsr.mariokart_backend.registration.controller;
+package de.fsr.mariokart_backend.registration.controller.admin;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.fsr.mariokart_backend.controller.annotation.ApiController;
+import de.fsr.mariokart_backend.controller.annotation.ApiType;
+import de.fsr.mariokart_backend.controller.annotation.ControllerType;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
-import de.fsr.mariokart_backend.registration.service.RegistrationUpdateService;
+import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationUpdateService;
 import lombok.AllArgsConstructor;
 
-@CrossOrigin
 @RestController
-@RequestMapping("/teams")
 @AllArgsConstructor
-public class RegistrationUpdateController {
+@ApiController(apiType = ApiType.ADMIN, controllerType = ControllerType.REGISTRATION)
+public class AdminRegistrationUpdateController {
 
-    private final RegistrationUpdateService registrationUpdateService;
+    private final AdminRegistrationUpdateService adminRegistrationUpdateService;
 
     @PutMapping("/{id}")
     @ResponseBody
     public ResponseEntity<TeamReturnDTO> updateTeam(@PathVariable Long id, @RequestBody TeamInputDTO teamCreation) {
         try {
-            return ResponseEntity.ok(registrationUpdateService.updateTeam(id, teamCreation));
+            return ResponseEntity.ok(adminRegistrationUpdateService.updateTeam(id, teamCreation));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
     }
-} 
+}

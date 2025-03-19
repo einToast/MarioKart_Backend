@@ -1,34 +1,29 @@
-package de.fsr.mariokart_backend.registration.service;
-
-import java.util.List;
+package de.fsr.mariokart_backend.registration.service.pub;
 
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
-import de.fsr.mariokart_backend.match_plan.repository.RoundRepository;
-import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
-import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationInputDTOService;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
-import de.fsr.mariokart_backend.settings.service.SettingsReadService;
+import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class RegistrationCreateService {
+public class PublicRegistrationCreateService {
     private final TeamRepository teamRepository;
-    private final CharacterRepository characterRepository;
     private final RoundRepository roundRepository;
     private final RegistrationInputDTOService registrationInputDTOService;
     private final RegistrationReturnDTOService registrationReturnDTOService;
-    private final SettingsReadService settingsReadService;
+    private final PublicSettingsReadService settingsReadService;
 
-    public TeamReturnDTO addTeam(TeamInputDTO teamCreation)
+    public TeamReturnDTO registerTeam(TeamInputDTO teamCreation)
             throws IllegalArgumentException, EntityNotFoundException, RoundsAlreadyExistsException {
         if (!settingsReadService.getSettings().getRegistrationOpen()) {
             throw new IllegalStateException("Registration is closed");
@@ -42,7 +37,6 @@ public class RegistrationCreateService {
         }
 
         Team team = registrationInputDTOService.teamInputDTOToTeam(teamCreation);
-
         team.setFinalReady(true);
         team.setActive(true);
 
@@ -54,15 +48,6 @@ public class RegistrationCreateService {
         }
 
         team.getCharacter().setTeam(team);
-
         return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
-    }
-
-    public Character addCharacter(Character character) {
-        return characterRepository.save(character);
-    }
-
-    public List<Character> addCharacters(List<Character> characters) {
-        return characterRepository.saveAll(characters);
     }
 }

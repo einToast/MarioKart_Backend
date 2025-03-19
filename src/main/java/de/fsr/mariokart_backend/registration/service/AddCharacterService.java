@@ -13,20 +13,22 @@ import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
+import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationCreateService;
+import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationReadService;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class AddCharacterService {
 
-    private final RegistrationReadService registrationReadService;
-    private final RegistrationCreateService registrationCreateService;
+    private final AdminRegistrationReadService adminRegistrationReadService;
+    private final AdminRegistrationCreateService adminRegistrationCreateService;
 
     public List<Character> addCharacters(String directoryPath) throws IOException, IllegalStateException {
         List<String> imageNames = getImageNames(directoryPath);
         List<Character> characters = new ArrayList<>();
 
-        if (!registrationReadService.getCharacters().isEmpty()) {
+        if (!adminRegistrationReadService.getCharacters().isEmpty()) {
             throw new IllegalStateException("Characters already exist.");
         }
 
@@ -36,9 +38,9 @@ public class AddCharacterService {
             characters.add(character);
         }
 
-        registrationCreateService.addCharacters(characters);
+        adminRegistrationCreateService.addCharacters(characters);
 
-        System.out.println(registrationReadService.getCharacters()
+        System.out.println(adminRegistrationReadService.getCharacters()
                 .stream()
                 .map(CharacterReturnDTO::getCharacterName)
                 .collect(Collectors.toList()));
