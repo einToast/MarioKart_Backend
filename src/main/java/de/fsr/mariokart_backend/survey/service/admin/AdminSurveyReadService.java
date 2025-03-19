@@ -61,7 +61,7 @@ public class AdminSurveyReadService {
             MultipleChoiceQuestion mcQuestion = (MultipleChoiceQuestion) question;
             int optionCount = mcQuestion.getOptions().size();
             statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
-            
+
             answers.stream()
                     .map(answer -> (MultipleChoiceAnswer) answer)
                     .forEach(answer -> {
@@ -75,12 +75,12 @@ public class AdminSurveyReadService {
             CheckboxQuestion cbQuestion = (CheckboxQuestion) question;
             int optionCount = cbQuestion.getOptions().size();
             statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
-            
+
             answers.stream()
                     .map(answer -> (CheckboxAnswer) answer)
                     .forEach(answer -> {
                         answer.getSelectedOptions().forEach(option -> {
-                        if (option >= 0 && option < optionCount) {
+                            if (option >= 0 && option < optionCount) {
                                 statistics.set(option, statistics.get(option) + 1);
                             }
                         });
@@ -90,7 +90,7 @@ public class AdminSurveyReadService {
             TeamQuestion teamQuestion = (TeamQuestion) question;
             int teamCount = teamQuestion.getTeams().size();
             statistics = new ArrayList<>(Collections.nCopies(teamCount, 0));
-            
+
             answers.stream()
                     .map(answer -> (TeamAnswer) answer)
                     .forEach(answer -> {

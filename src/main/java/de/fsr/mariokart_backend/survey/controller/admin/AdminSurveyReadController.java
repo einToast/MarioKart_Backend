@@ -16,8 +16,6 @@ import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.service.admin.AdminSurveyReadService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 @RestController
 @AllArgsConstructor
@@ -57,6 +55,5 @@ public class AdminSurveyReadController {
     public Integer getNumberOfAnswers(@PathVariable Long id) {
         return adminSurveyReadService.getNumberOfAnswers(id);
     }
-    
 
 }

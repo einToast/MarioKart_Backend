@@ -12,9 +12,14 @@ import de.fsr.mariokart_backend.schedule.model.Round;
 @Repository
 public interface RoundRepository extends JpaRepository<Round, Long> {
     List<Round> findByFinalGameTrue();
+
     List<Round> findByStartTimeAfter(LocalDateTime startTime);
+
     List<Round> findByStartTimeBefore(LocalDateTime startTime);
+
     List<Round> findByPlayedFalse();
+
     Optional<Round> findByRoundNumber(int roundNumber);
+
     Integer countByPlayedFalse();
 }
