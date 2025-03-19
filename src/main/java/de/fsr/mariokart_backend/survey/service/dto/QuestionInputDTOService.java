@@ -3,7 +3,7 @@ package de.fsr.mariokart_backend.survey.service.dto;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
-import de.fsr.mariokart_backend.registration.service.RegistrationReadService;
+import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationReadService;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.QuestionType;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 public class QuestionInputDTOService {
 
     private final TeamRepository teamRepository;
-    private final RegistrationReadService registrationReadService;
+    private final AdminRegistrationReadService adminRegistrationReadService;
 
     public Question questionInputDTOToQuestion(QuestionInputDTO questionInputDTO) {
         Question question = null;
@@ -35,7 +35,7 @@ public class QuestionInputDTOService {
             ((TeamQuestion) question).setFinalTeamsOnly(questionInputDTO.isFinalTeamsOnly());
 
             if (questionInputDTO.isFinalTeamsOnly()) {
-                ((TeamQuestion) question).setTeams(registrationReadService.getFinalTeams());
+                ((TeamQuestion) question).setTeams(adminRegistrationReadService.getFinalTeams());
             } else {
                 ((TeamQuestion) question).setTeams(teamRepository.findAll());
             }

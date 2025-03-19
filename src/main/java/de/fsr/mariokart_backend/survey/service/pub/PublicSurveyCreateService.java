@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.survey.service;
+package de.fsr.mariokart_backend.survey.service.pub;
 
 import org.springframework.stereotype.Service;
 
@@ -8,33 +8,22 @@ import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
-import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
-import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerReturnDTOService;
-import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
-import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class SurveyCreateService {
+public class PublicSurveyCreateService {
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
-    private final QuestionInputDTOService questionInputDTOService;
-    private final QuestionReturnDTOService questionReturnDTOService;
     private final AnswerInputDTOService answerInputDTOService;
     private final AnswerReturnDTOService answerReturnDTOService;
     private final TeamRepository teamRepository;
 
     private static final int MAX_ANSWERS_PER_TEAM = 4;
-
-    public QuestionReturnDTO createSurvey(QuestionInputDTO survey) {
-        return questionReturnDTOService.questionToQuestionReturnDTO(
-                questionRepository.save(questionInputDTOService.questionInputDTOToQuestion(survey)));
-    }
 
     public AnswerReturnDTO submitAnswer(AnswerInputDTO answer, Long teamId) throws EntityNotFoundException {
         Question question = questionRepository.findById(answer.getQuestionId())
@@ -63,4 +52,5 @@ public class SurveyCreateService {
                 .answerToAnswerReturnDTO(
                         answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer, teamId)));
     }
+
 }

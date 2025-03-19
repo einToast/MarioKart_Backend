@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.survey.service;
+package de.fsr.mariokart_backend.survey.service.admin;
 
 import org.springframework.stereotype.Service;
 
@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class SurveyDeleteService {
+public class AdminSurveyDeleteService {
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
 
@@ -21,4 +21,5 @@ public class SurveyDeleteService {
         questionRepository.deleteAll();
         answerRepository.deleteAll();
     }
-} 
+
+}

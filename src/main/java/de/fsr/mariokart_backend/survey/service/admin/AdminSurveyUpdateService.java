@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.survey.service;
+package de.fsr.mariokart_backend.survey.service.admin;
 
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class SurveyUpdateService {
+public class AdminSurveyUpdateService {
     private final QuestionRepository questionRepository;
     private final QuestionInputDTOService questionInputDTOService;
     private final QuestionReturnDTOService questionReturnDTOService;
@@ -62,4 +62,4 @@ public class SurveyUpdateService {
         }
         return questionReturnDTOService.questionToQuestionReturnDTO(questionRepository.save(questionToUpdate));
     }
-} 
+}
