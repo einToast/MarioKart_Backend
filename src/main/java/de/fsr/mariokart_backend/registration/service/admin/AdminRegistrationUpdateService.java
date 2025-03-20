@@ -9,6 +9,7 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
+import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -16,6 +17,7 @@ import lombok.AllArgsConstructor;
 public class AdminRegistrationUpdateService {
     private final TeamRepository teamRepository;
     private final CharacterRepository characterRepository;
+    private final PublicScheduleReadService publicScheduleReadService;
     private final RegistrationReturnDTOService registrationReturnDTOService;
 
     public TeamReturnDTO updateTeam(Long id, TeamInputDTO teamUpdate)
@@ -41,8 +43,10 @@ public class AdminRegistrationUpdateService {
             team.setCharacter(character);
         }
 
-        team.setFinalReady(teamUpdate.isFinalReady());
-        team.setActive(teamUpdate.isActive());
+        if (!publicScheduleReadService.isFinalPlanCreated()) {
+            team.setFinalReady(teamUpdate.isFinalReady());
+            team.setActive(teamUpdate.isActive());
+        }
 
         return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
     }
