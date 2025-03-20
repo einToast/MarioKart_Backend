@@ -30,6 +30,7 @@ import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.schedule.service.dto.ScheduleInputDTOService;
 import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
+import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
@@ -45,10 +46,12 @@ public class AdminScheduleCreateService {
     private final PointsRepository pointsRepository;
     private final BreakRepository breakRepository;
     private final TeamRepository teamRepository;
+
+    private final AdminSettingsUpdateService settingsUpdateService;
+    private final PublicScheduleReadService publicScheduleReadService;
     private final ScheduleInputDTOService scheduleInputDTOService;
     private final ScheduleReturnDTOService scheduleReturnDTOService;
     private final WebSocketService webSocketService;
-    private final AdminSettingsUpdateService settingsUpdateService;
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
@@ -86,11 +89,11 @@ public class AdminScheduleCreateService {
     }
 
     public List<RoundReturnDTO> createFinalPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
-        if (roundRepository.findAll().isEmpty()) {
-            throw new RoundsAlreadyExistsException("Match plan not created");
-        } else if (!roundRepository.findByFinalGameTrue().isEmpty()) {
-            throw new RoundsAlreadyExistsException("Final plan already created");
-        } else if (!roundRepository.findByPlayedFalse().isEmpty()) {
+        if (!publicScheduleReadService.isMatchPlanCreated()) {
+            throw new RoundsAlreadyExistsException("Match schedule not created");
+        } else if (publicScheduleReadService.isFinalPlanCreated()) {
+            throw new RoundsAlreadyExistsException("Final schedule already created");
+        } else if (publicScheduleReadService.getNumberOfRoundsUnplayed() > 0) {
             throw new IllegalArgumentException("Not all rounds played");
         } else if (teamRepository.findByFinalReadyTrue().size() < 4) {
             throw new NotEnoughTeamsException("Not enough teams ready for final");
@@ -164,8 +167,8 @@ public class AdminScheduleCreateService {
     }
 
     private void validateMatchPlanCreation() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
-        if (!roundRepository.findAll().isEmpty()) {
-            throw new RoundsAlreadyExistsException("Match plan already created");
+        if (publicScheduleReadService.isMatchPlanCreated()) {
+            throw new RoundsAlreadyExistsException("Match schedule already created");
         }
         if (teamRepository.findAll().size() < 16) {
             throw new NotEnoughTeamsException("Not enough teams");
@@ -248,7 +251,7 @@ public class AdminScheduleCreateService {
                     .retrieve()
                     .bodyToMono(String.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send request to match plan generator", e);
+            throw new RuntimeException("Failed to send request to match schedule generator", e);
         }
 
         try {

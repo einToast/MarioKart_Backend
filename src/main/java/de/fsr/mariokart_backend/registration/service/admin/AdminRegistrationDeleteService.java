@@ -10,18 +10,18 @@ import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
-import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
+import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class AdminRegistrationDeleteService {
     private final TeamRepository teamRepository;
-    private final RoundRepository roundRepository;
+    private final PublicScheduleReadService publicScheduleReadService;
 
     public void deleteTeam(Long id) throws RoundsAlreadyExistsException, EntityNotFoundException {
-        if (!roundRepository.findAll().isEmpty()) {
-            throw new RoundsAlreadyExistsException("Match plan already exists");
+        if (publicScheduleReadService.isMatchPlanCreated()) {
+            throw new RoundsAlreadyExistsException("Match schedule already exists");
         }
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
@@ -36,8 +36,8 @@ public class AdminRegistrationDeleteService {
     }
 
     public void deleteAllTeams() throws RoundsAlreadyExistsException {
-        if (!roundRepository.findAll().isEmpty()) {
-            throw new RoundsAlreadyExistsException("Match plan already exists");
+        if (publicScheduleReadService.isMatchPlanCreated()) {
+            throw new RoundsAlreadyExistsException("Match schedule already exists");
         }
 
         List<Team> teams = teamRepository.findAll();

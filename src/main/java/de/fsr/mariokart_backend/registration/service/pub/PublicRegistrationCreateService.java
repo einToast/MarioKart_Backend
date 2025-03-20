@@ -10,7 +10,7 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationInputDTOService;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
-import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
+import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import lombok.AllArgsConstructor;
 
@@ -18,10 +18,10 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class PublicRegistrationCreateService {
     private final TeamRepository teamRepository;
-    private final RoundRepository roundRepository;
+    private final PublicSettingsReadService settingsReadService;
+    private final PublicScheduleReadService publicScheduleReadService;
     private final RegistrationInputDTOService registrationInputDTOService;
     private final RegistrationReturnDTOService registrationReturnDTOService;
-    private final PublicSettingsReadService settingsReadService;
 
     public TeamReturnDTO registerTeam(TeamInputDTO teamCreation)
             throws IllegalArgumentException, EntityNotFoundException, RoundsAlreadyExistsException {
@@ -32,8 +32,8 @@ public class PublicRegistrationCreateService {
             throw new IllegalStateException("Tournament is closed");
         }
 
-        if (!roundRepository.findAll().isEmpty()) {
-            throw new RoundsAlreadyExistsException("Match plan already exists");
+        if (publicScheduleReadService.isMatchPlanCreated()) {
+            throw new RoundsAlreadyExistsException("Match schedule already exists");
         }
 
         Team team = registrationInputDTOService.teamInputDTOToTeam(teamCreation);
