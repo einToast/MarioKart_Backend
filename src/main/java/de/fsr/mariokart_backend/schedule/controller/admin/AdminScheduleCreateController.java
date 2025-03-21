@@ -37,9 +37,4 @@ public class AdminScheduleCreateController {
             throws RoundsAlreadyExistsException, NotEnoughTeamsException {
         return adminScheduleCreateService.createFinalPlan();
     }
-
-    @PostMapping("/break")
-    public BreakReturnDTO addBreak(@RequestBody BreakInputDTO breakCreation) throws EntityNotFoundException {
-        return adminScheduleCreateService.addBreak(breakCreation);
-    }
 }
