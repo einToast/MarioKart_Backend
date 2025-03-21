@@ -39,4 +39,9 @@ public class AdminScheduleReadService {
         return scheduleReturnDTOService.breakToBreakDTO(breakRepository.findAll().get(0));
     }
 
+    public Boolean isBreakFinished() {
+        return breakRepository.findAll().get(0).isBreakEnded();
+    }
+
+
 }
