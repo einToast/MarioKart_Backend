@@ -1,6 +1,12 @@
 package de.fsr.mariokart_backend.survey.service.pub;
 
+import java.util.Map;
+
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.registration.model.Team;
@@ -22,10 +28,22 @@ public class PublicSurveyCreateService {
     private final AnswerInputDTOService answerInputDTOService;
     private final AnswerReturnDTOService answerReturnDTOService;
     private final TeamRepository teamRepository;
+    private final ObjectMapper objectMapper;
 
     private static final int MAX_ANSWERS_PER_TEAM = 4;
 
-    public AnswerReturnDTO submitAnswer(AnswerInputDTO answer, Long teamId) throws EntityNotFoundException {
+    public AnswerReturnDTO submitAnswer(AnswerInputDTO answer, String userJson)
+            throws EntityNotFoundException, JsonProcessingException {
+
+        Map<String, Object> userMap = null;
+
+        if (userJson != null && !userJson.isEmpty()) {
+            userMap = objectMapper.readValue(userJson, new TypeReference<Map<String, Object>>() {
+            });
+        } else {
+            throw new IllegalArgumentException("User JSON is null or empty.");
+        }
+
         Question question = questionRepository.findById(answer.getQuestionId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
 
@@ -33,7 +51,7 @@ public class PublicSurveyCreateService {
             throw new IllegalStateException("Question is not active or visible.");
         }
 
-        final Team submittingTeam = teamRepository.findById(teamId)
+        final Team submittingTeam = teamRepository.findById((Long) userMap.get("teamId"))
                 .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
 
         // Skip team answer limit check for free text questions
@@ -50,7 +68,8 @@ public class PublicSurveyCreateService {
 
         return answerReturnDTOService
                 .answerToAnswerReturnDTO(
-                        answerRepository.save(answerInputDTOService.answerInputDTOToAnswer(answer, teamId)));
+                        answerRepository
+                                .save(answerInputDTOService.answerInputDTOToAnswer(answer, submittingTeam.getId())));
     }
 
 }
