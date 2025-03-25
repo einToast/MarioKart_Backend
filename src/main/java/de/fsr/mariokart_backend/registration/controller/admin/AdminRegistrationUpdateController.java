@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.registration.controller.admin;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,5 +35,10 @@ public class AdminRegistrationUpdateController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @PutMapping("/finalParticipation/reset")
+    public List<TeamReturnDTO> resetEveryTeamFinalParticipation() {
+        return adminRegistrationUpdateService.resetEveryTeamFinalParticipation();
     }
 }

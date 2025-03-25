@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.registration.service.admin;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
@@ -49,5 +51,16 @@ public class AdminRegistrationUpdateService {
         }
 
         return registrationReturnDTOService.teamToTeamReturnDTO(teamRepository.save(team));
+    }
+
+    public List<TeamReturnDTO> resetEveryTeamFinalParticipation() {
+        List<Team> teams = teamRepository.findAll();
+        for (Team team : teams) {
+            team.setFinalReady(true);
+            team.setActive(true);
+        }
+        return teamRepository.saveAll(teams).stream()
+                .map(registrationReturnDTOService::teamToTeamReturnDTO)
+                .toList();
     }
 }
