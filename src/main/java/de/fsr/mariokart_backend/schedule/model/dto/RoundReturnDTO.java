@@ -19,6 +19,5 @@ public class RoundReturnDTO {
     private boolean finalGame;
     private boolean played;
     private Set<GameReturnDTO> games;
-    // TODO: BreakReturnDTO
     private Break breakTime;
 }

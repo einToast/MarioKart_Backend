@@ -34,7 +34,6 @@ public class Break {
 
     private boolean breakEnded;
 
-    // TODO: Parent-Child_Relationship the other way around
     @OneToOne(mappedBy = "breakTime", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Round round;
 

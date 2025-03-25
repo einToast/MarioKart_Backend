@@ -23,7 +23,6 @@ public class AdminRegistrationReadService {
     private final RegistrationReturnDTOService registrationReturnDTOService;
     private final PublicSettingsReadService publicSettingsReadService;
 
-    // TODO: Is this even used?
     public List<TeamReturnDTO> getTeams() {
         return teamRepository.findAll().stream()
                 .map(registrationReturnDTOService::teamToTeamReturnDTO)
