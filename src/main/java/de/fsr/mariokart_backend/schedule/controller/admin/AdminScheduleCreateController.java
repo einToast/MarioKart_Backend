@@ -32,8 +32,6 @@ public class AdminScheduleCreateController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         } catch (NotEnoughTeamsException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (UnsupportedOperationException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, e.getMessage());
         }
     }
 
