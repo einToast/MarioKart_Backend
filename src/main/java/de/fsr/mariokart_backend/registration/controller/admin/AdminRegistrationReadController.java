@@ -19,11 +19,6 @@ public class AdminRegistrationReadController {
 
     private final AdminRegistrationReadService adminRegistrationReadService;
 
-    @GetMapping("/sortedByGroupPoints")
-    public List<TeamReturnDTO> getTeamsSortedByGroupPoints() {
-        return adminRegistrationReadService.getTeamsSortedByGroupPoints();
-    }
-
     @GetMapping("/sortedByFinalPoints")
     public List<TeamReturnDTO> getTeamsSortedByFinalPoints() {
         return adminRegistrationReadService.getTeamsSortedByFinalPoints();
