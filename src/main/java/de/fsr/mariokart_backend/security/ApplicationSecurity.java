@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,47 +19,45 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import de.fsr.mariokart_backend.user.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 
 @EnableWebSecurity
 @Configuration
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ApplicationSecurity {
     private final JwtTokenFilter jwtTokenFilter;
     private final UserRepository userRepository;
+    
+    @Value("${app.cors.allowed-origin}")
+    private String allowedOrigin;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((auth) -> auth
-
-                        .requestMatchers(HttpMethod.GET, "/settings").permitAll()
-
-                        .requestMatchers(HttpMethod.POST, "/users/login").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/users/register/*").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/teams/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/teams").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/match_plan/rounds/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/match_plan/games/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/match_plan/points").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/match_plan/create/*").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/survey").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/survey/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/survey/*/answers").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/survey/answer").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/healthcheck").permitAll()
-
+                        // Public endpoints
+                        .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
 
+                        // Admin endpoints require authentication
+                        .requestMatchers("/admin/**").authenticated()
+
+                        // Default for any other requests
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(
-                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                        sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint((request, response, e) -> {
+                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                            response.getWriter().write("Unauthorized: " + e.getMessage());
+                        })
+                        .accessDeniedHandler((request, response, e) -> {
+                            response.setStatus(HttpStatus.FORBIDDEN.value());
+                            response.getWriter().write("Forbidden: " + e.getMessage());
+                        }));
 
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -69,10 +67,9 @@ public class ApplicationSecurity {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // TODO: change to domain via env variable
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:8100", "http://127.0.0.1:8100"));
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigin, "http://127.0.0.1:8100"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Team-ID"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

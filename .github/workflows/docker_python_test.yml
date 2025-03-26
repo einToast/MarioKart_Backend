@@ -17,4 +17,4 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t docker-test-python ./match_create --file ./match_create/Dockerfile
+        docker build -t docker-test-python ./schedule_create --file ./schedule_create/Dockerfile

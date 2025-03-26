@@ -4,8 +4,11 @@ import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import de.fsr.mariokart_backend.match_plan.model.Game;
-import de.fsr.mariokart_backend.match_plan.model.Points;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
+import de.fsr.mariokart_backend.schedule.model.Game;
+import de.fsr.mariokart_backend.schedule.model.Points;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,8 +30,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "team")
-// @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
-// property = "id")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Team {
 
     @Id
@@ -73,6 +75,13 @@ public class Team {
             return null;
 
         return points.stream().map(Points::getGame).collect(Collectors.toSet());
+    }
+
+    public int getNumberOfgamesPlayed(int maxGames) {
+        if (points == null)
+            return 0;
+
+        return (int) getGames().stream().filter(game -> game.getRound().isPlayed()).count();
     }
 
     public void removeCharacter() {

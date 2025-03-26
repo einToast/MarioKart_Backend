@@ -24,13 +24,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, // Verwende den Wert des Typs zur Auswahl der Subklasse
-        include = JsonTypeInfo.As.PROPERTY, // Nutze ein Attribut im JSON zur Auswahl der Klasse
-        property = "questionType" // Das Feld, das den Typ definiert (MULTIPLE_CHOICE, FREE_TEXT, etc.)
+                include = JsonTypeInfo.As.PROPERTY, // Nutze ein Attribut im JSON zur Auswahl der Klasse
+                property = "questionType" // Das Feld, das den Typ definiert (MULTIPLE_CHOICE, FREE_TEXT, etc.)
 )
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = MultipleChoiceQuestion.class, name = "MULTIPLE_CHOICE"),
-        @JsonSubTypes.Type(value = FreeTextQuestion.class, name = "FREE_TEXT"),
-        @JsonSubTypes.Type(value = CheckboxQuestion.class, name = "CHECKBOX")
+                @JsonSubTypes.Type(value = MultipleChoiceQuestion.class, name = "MULTIPLE_CHOICE"),
+                @JsonSubTypes.Type(value = FreeTextQuestion.class, name = "FREE_TEXT"),
+                @JsonSubTypes.Type(value = CheckboxQuestion.class, name = "CHECKBOX")
 })
 @Entity
 @AllArgsConstructor
@@ -41,22 +41,22 @@ import lombok.Setter;
 @Table(name = "questions")
 @DiscriminatorColumn(name = "question_type_discriminator")
 public abstract class Question {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    private String questionText;
+        private String questionText;
 
-    // @Enumerated(EnumType.STRING)
-    // private QuestionType questionType;
+        // @Enumerated(EnumType.STRING)
+        // private QuestionType questionType;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Answer> answers;
+        @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+        private Set<Answer> answers;
 
-    private Boolean active;
+        private Boolean active;
 
-    private Boolean visible;
+        private Boolean visible;
 
-    private Boolean live;
+        private Boolean live;
 
 }

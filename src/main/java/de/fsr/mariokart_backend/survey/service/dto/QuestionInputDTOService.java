@@ -2,17 +2,23 @@ package de.fsr.mariokart_backend.survey.service.dto;
 
 import org.springframework.stereotype.Service;
 
+import de.fsr.mariokart_backend.registration.repository.TeamRepository;
+import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationReadService;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.QuestionType;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
 public class QuestionInputDTOService {
+
+    private final TeamRepository teamRepository;
+    private final AdminRegistrationReadService adminRegistrationReadService;
 
     public Question questionInputDTOToQuestion(QuestionInputDTO questionInputDTO) {
         Question question = null;
@@ -24,6 +30,15 @@ public class QuestionInputDTOService {
             ((CheckboxQuestion) question).setOptions(questionInputDTO.getOptions());
         } else if (questionInputDTO.getQuestionType().equals(QuestionType.FREE_TEXT.toString())) {
             question = new FreeTextQuestion();
+        } else if (questionInputDTO.getQuestionType().equals(QuestionType.TEAM.toString())) {
+            question = new TeamQuestion();
+            ((TeamQuestion) question).setFinalTeamsOnly(questionInputDTO.isFinalTeamsOnly());
+
+            if (questionInputDTO.isFinalTeamsOnly()) {
+                ((TeamQuestion) question).setTeams(adminRegistrationReadService.getFinalTeams());
+            } else {
+                ((TeamQuestion) question).setTeams(teamRepository.findAll());
+            }
         } else {
             throw new IllegalArgumentException("Invalid question type.");
         }
