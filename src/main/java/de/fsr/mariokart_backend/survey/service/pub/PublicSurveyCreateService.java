@@ -51,7 +51,7 @@ public class PublicSurveyCreateService {
             throw new IllegalStateException("Question is not active or visible.");
         }
 
-        final Team submittingTeam = teamRepository.findById((Long) userMap.get("teamId"))
+        final Team submittingTeam = teamRepository.findById(Long.valueOf(((Number) userMap.get("teamId")).longValue()))
                 .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
 
         // Skip team answer limit check for free text questions
