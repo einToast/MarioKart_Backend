@@ -108,7 +108,7 @@ public class AdminScheduleUpdateService {
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
 
         List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
-        notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
+        notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
 
         round.setPlayed(roundCreation.isPlayed());
 
@@ -122,7 +122,7 @@ public class AdminScheduleUpdateService {
             notPlayedRounds.remove(round);
         } else if (!round.isPlayed() && !notPlayedRounds.contains(round)) {
             notPlayedRounds.add(round);
-            notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
+            notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
         }
 
         if (!adminScheduleReadService.isBreakFinished()
@@ -140,7 +140,7 @@ public class AdminScheduleUpdateService {
                     .orElseThrow(() -> new EntityNotFoundException("No round with a break found."));
 
             List<Round> roundsAfterBreak = notPlayedRounds.stream()
-                    .filter(r -> r.getStartTime().isAfter(breakRound.getStartTime()))
+                    .filter(r -> r.getRoundNumber() > breakRound.getRoundNumber())
                     .toList();
 
             updateBreakAndFollowingRounds(breakRound, roundsAfterBreak);
@@ -249,7 +249,7 @@ public class AdminScheduleUpdateService {
         // moved
         if (breakStatusChanged || breakDurationChanged || locationChanged) {
             List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
-            notPlayedRounds.sort(Comparator.comparing(Round::getStartTime));
+            notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
 
             if (aBreak.isBreakEnded()) {
                 // If break ended, update all not played rounds
@@ -259,7 +259,7 @@ public class AdminScheduleUpdateService {
                 // break
                 List<Round> roundsAfterBreak = notPlayedRounds.stream()
                         .filter(r -> !r.getId().equals(newRound.getId())
-                                && r.getStartTime().isAfter(aBreak.getStartTime()))
+                                && r.getRoundNumber() > newRound.getRoundNumber())
                         .toList();
 
                 updateRoundsAfterBreak(roundsAfterBreak, newRound);
