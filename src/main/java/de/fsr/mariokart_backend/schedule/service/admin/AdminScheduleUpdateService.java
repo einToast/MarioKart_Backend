@@ -2,8 +2,11 @@ package de.fsr.mariokart_backend.schedule.service.admin;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -17,9 +20,13 @@ import de.fsr.mariokart_backend.schedule.model.Points;
 import de.fsr.mariokart_backend.schedule.model.Round;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.GameInputFullDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.GameReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.PointsInputDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.PointsInputFullDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.PointsReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundInputDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.RoundInputFullDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.repository.BreakRepository;
 import de.fsr.mariokart_backend.schedule.repository.GameRepository;
@@ -280,5 +287,91 @@ public class AdminScheduleUpdateService {
             currentRound.setEndTime(startTime.plusMinutes(PLAY_MINUTES));
             roundRepository.save(currentRound);
         }
+    }
+
+    public RoundReturnDTO updateRound(Long roundId, RoundInputFullDTO roundCreation) throws EntityNotFoundException {
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
+
+        round.setPlayed(roundCreation.isPlayed());
+
+        if (roundCreation.getGames() != null && round.getGames() != null) {
+            Map<String, Game> gamesByTeams = round.getGames().stream()
+                    .collect(Collectors.toMap(
+                            g -> g.getTeams().stream()
+                                    .map(t -> t.getCharacter().getCharacterName())
+                                    .sorted()
+                                    .collect(Collectors.joining("|")),
+                            g -> g));
+
+            for (GameInputFullDTO gameInput : roundCreation.getGames()) {
+                String inputTeamsKey = Arrays.stream(gameInput.getPoints())
+                        .map(p -> p.getTeam().getCharacterName())
+                        .sorted()
+                        .collect(Collectors.joining("|"));
+                Game game = gamesByTeams.get(inputTeamsKey);
+                if (game == null)
+                    continue;
+
+                Map<String, Points> pointsByCharacter = game.getPoints().stream()
+                        .collect(Collectors.toMap(
+                                p -> p.getTeam().getCharacter().getCharacterName(),
+                                p -> p));
+
+                for (PointsInputFullDTO pointsInput : gameInput.getPoints()) {
+                    Points point = pointsByCharacter.get(pointsInput.getTeam().getCharacterName());
+                    if (point != null) {
+                        if (round.isFinalGame()) {
+                            point.setFinalPoints(pointsInput.getPoints());
+                        } else {
+                            point.setGroupPoints(pointsInput.getPoints());
+                        }
+                        pointsRepository.save(point);
+                    }
+                }
+            }
+        }
+
+        if (round.isPlayed() && round.getEndTime() == null) {
+            round.setEndTime(LocalDateTime.now());
+        }
+
+        Round savedRound = roundRepository.save(round);
+
+        List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
+        notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
+        updateNotPlayedRoundsSchedule(notPlayedRounds);
+
+        webSocketService.sendMessage("/topic/rounds", "update");
+
+        return scheduleReturnDTOService.roundToRoundDTO(savedRound);
+    }
+
+    public GameReturnDTO updateGame(Long gameId, GameInputFullDTO gameInput) throws EntityNotFoundException {
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow(() -> new EntityNotFoundException("Es gibt kein Spiel mit dieser ID."));
+
+        // Map für schnelleren Zugriff auf Points nach CharacterName
+        Map<String, Points> pointsByCharacter = game.getPoints().stream()
+                .collect(Collectors.toMap(
+                        p -> p.getTeam().getCharacter().getCharacterName(),
+                        p -> p));
+
+        for (PointsInputFullDTO pointsInput : gameInput.getPoints()) {
+            Points point = pointsByCharacter.get(pointsInput.getTeam().getCharacterName());
+            if (point != null) {
+                // Bestimme, ob es sich um ein Finalspiel handelt
+                if (game.getRound().isFinalGame()) {
+                    point.setFinalPoints(pointsInput.getPoints());
+                } else {
+                    point.setGroupPoints(pointsInput.getPoints());
+                }
+                pointsRepository.save(point);
+            }
+        }
+
+        Game savedGame = gameRepository.save(game);
+
+        return scheduleReturnDTOService.gameToGameDTO(savedGame);
     }
 }
