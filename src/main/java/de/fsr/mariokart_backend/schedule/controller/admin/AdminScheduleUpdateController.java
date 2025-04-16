@@ -14,9 +14,12 @@ import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.GameInputFullDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.GameReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.PointsInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.PointsReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundInputDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.RoundInputFullDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.service.admin.AdminScheduleUpdateService;
 import lombok.AllArgsConstructor;
@@ -56,6 +59,24 @@ public class AdminScheduleUpdateController {
     public BreakReturnDTO updateBreak(@RequestBody BreakInputDTO breakCreation) {
         try {
             return adminScheduleUpdateService.updateBreak(breakCreation);
+        } catch (EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    @PutMapping("/rounds/{roundId}/full")
+    public RoundReturnDTO updateRoundFull(@PathVariable Long roundId, @RequestBody RoundInputFullDTO roundCreation) {
+        try {
+            return adminScheduleUpdateService.updateRound(roundId, roundCreation);
+        } catch (EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        }
+    }
+
+    @PutMapping("/games/{gameId}")
+    public GameReturnDTO updateGame(@PathVariable Long gameId, @RequestBody GameInputFullDTO gameInput) {
+        try {
+            return adminScheduleUpdateService.updateGame(gameId, gameInput);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
