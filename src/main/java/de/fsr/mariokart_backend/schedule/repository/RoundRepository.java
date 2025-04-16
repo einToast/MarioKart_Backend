@@ -22,4 +22,6 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
     Optional<Round> findByRoundNumber(int roundNumber);
 
     Integer countByPlayedFalse();
+
+    void deleteAllByFinalGameTrue();
 }

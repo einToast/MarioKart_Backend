@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.registration.model;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -9,6 +10,7 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import de.fsr.mariokart_backend.schedule.model.Game;
 import de.fsr.mariokart_backend.schedule.model.Points;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,8 +18,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -49,8 +53,23 @@ public class Team {
     private boolean active;
 
     @OneToMany(mappedBy = "team", orphanRemoval = true, fetch = FetchType.EAGER)
-    // @JsonManagedReference
     private Set<Points> points;
+
+    @ManyToMany(mappedBy = "teams")
+    private Set<TeamQuestion> teamQuestions;
+
+    @PreRemove
+    public void removeTeamAssociations() {
+        if (teamQuestions != null) {
+            for (TeamQuestion question : new ArrayList<>(teamQuestions)) {
+                question.getTeams().remove(this);
+            }
+            teamQuestions.clear();
+        }
+        if (character != null) {
+            removeCharacter();
+        }
+    }
 
     public int getGroupPoints(int maxGames) {
         if (points == null)
