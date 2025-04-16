@@ -110,7 +110,9 @@ public class AdminScheduleCreateService {
             teams = teams.subList(0, 4);
         }
 
-        for (int i = 0; i < 1; i++) {
+        createFinalBonusRound(teams, LocalDateTime.now());
+
+        for (int i = 0; i < 2; i++) {
             createFinalRounds(teams, LocalDateTime.now().plusMinutes(20L * i));
         }
 
@@ -121,6 +123,30 @@ public class AdminScheduleCreateService {
                 .toList();
     }
 
+    private void createFinalBonusRound(List<Team> teams, LocalDateTime startTime) {
+        Round round = new Round();
+        round.setRoundNumber(roundRepository.findAll().size() + 1);
+        round.setFinalGame(true);
+        round.setPlayed(true);
+        round.setStartTime(startTime);
+        round.setEndTime(startTime);
+        addRound(round);
+        for (int i = 0; i < 1; i++) {
+            Game game = new Game();
+            game.setSwitchGame("Blau");
+            game.setRound(round);
+            addGame(game);
+            for (int j = 0; j < teams.size(); j++) {
+                Points point = new Points();
+                point.setGroupPoints(0);
+                point.setFinalPoints(4 - j);
+                point.setTeam(teams.get(j));
+                point.setGame(game);
+                addPoints(point);
+            }
+        }
+    }
+
     private void createFinalRounds(List<Team> teams, LocalDateTime startTime) {
         Round round = new Round();
         round.setRoundNumber(roundRepository.findAll().size() + 1);
@@ -129,7 +155,6 @@ public class AdminScheduleCreateService {
         round.setStartTime(startTime);
         round.setEndTime(startTime.plusMinutes(20L));
         addRound(round);
-
         for (int i = 0; i < 4; i++) {
             Game game = new Game();
             game.setSwitchGame("Blau");
