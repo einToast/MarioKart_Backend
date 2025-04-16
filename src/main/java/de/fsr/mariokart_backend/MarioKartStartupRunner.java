@@ -55,7 +55,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
         addUser();
         addTeams();
-        addSurvey();
+        // addSurvey();
         // addRounds();
         // addGames();
 
@@ -100,10 +100,19 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addUser() {
         if (userService.getUsers().isEmpty()) {
+            try {
+                if (userService.getUser(System.getenv("USER_NAME")) != null) {
+                    System.err.print("User already exists!");
+                    return;
+                }
+            } catch (EntityNotFoundException e) {
+                System.err.print(e.getMessage());
+            }
             User user = new User(System.getenv("USER_NAME"), true);
             user.setPassword(System.getenv("USER_PASSWORD"));
             userService.createAndRegisterIfNotExist(user);
         }
+
     }
 
     private void addTeams() {

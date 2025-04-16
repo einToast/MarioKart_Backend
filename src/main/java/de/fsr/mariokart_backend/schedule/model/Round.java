@@ -47,7 +47,7 @@ public class Round {
     @JsonManagedReference
     private Set<Game> games;
 
-    @OneToOne
+    @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "break_ID")
     private Break breakTime;
 

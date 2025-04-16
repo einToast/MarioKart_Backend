@@ -16,6 +16,6 @@ public class AdminScheduleDeleteService {
     }
 
     public void deleteFinalPlan() {
-        roundRepository.deleteAll(roundRepository.findByFinalGameTrue());
+        roundRepository.deleteAllByFinalGameTrue();
     }
 }
