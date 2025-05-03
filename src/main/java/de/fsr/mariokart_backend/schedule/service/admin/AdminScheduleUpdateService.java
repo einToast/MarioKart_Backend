@@ -205,14 +205,24 @@ public class AdminScheduleUpdateService {
 
         // Remove break from old round if location changed
         if (locationChanged) {
+            aBreak.setRound(null);
+            breakRepository.save(aBreak);
             oldRound.setBreakTime(null);
             roundRepository.save(oldRound);
+            // Create new break if round changed
+            Break bBreak = new Break();
+            bBreak.setStartTime(aBreak.getStartTime());
+            bBreak.setEndTime(aBreak.getEndTime());
+            bBreak.setBreakEnded(aBreak.isBreakEnded());
+            breakRepository.delete(aBreak);
+            aBreak = breakRepository.save(bBreak);
         }
 
         // Update break round association
         aBreak.setRound(newRound);
         newRound.setBreakTime(aBreak);
         roundRepository.save(newRound);
+        breakRepository.save(aBreak);
 
         // Find the previous round to use its end time
         List<Round> allRounds = roundRepository.findAll();
@@ -252,18 +262,15 @@ public class AdminScheduleUpdateService {
 
         boolean breakDurationChanged = true; // Always recalculate subsequent rounds
 
-        // Update rounds after break if break has ended, duration changed, or break
-        // moved
+        // Update rounds after break if break has ended, duration changed, or break moved
         if (breakStatusChanged || breakDurationChanged || locationChanged) {
             List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
             notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
 
             if (aBreak.isBreakEnded()) {
-                // If break ended, update all not played rounds
                 updateNotPlayedRoundsSchedule(notPlayedRounds);
             } else {
-                // If break is not ended but moved or duration changed, update rounds after
-                // break
+                // If break is not ended but moved or duration changed, update rounds after break
                 List<Round> roundsAfterBreak = notPlayedRounds.stream()
                         .filter(r -> !r.getId().equals(newRound.getId())
                                 && r.getRoundNumber() > newRound.getRoundNumber())
@@ -289,11 +296,9 @@ public class AdminScheduleUpdateService {
         }
     }
 
-    public RoundReturnDTO updateRound(Long roundId, RoundInputFullDTO roundCreation) throws EntityNotFoundException {
+    public RoundReturnDTO updateRound(Long roundId, RoundInputFullDTO roundCreation) throws EntityNotFoundException, RoundsAlreadyExistsException {
         Round round = roundRepository.findById(roundId)
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
-
-        round.setPlayed(roundCreation.isPlayed());
 
         if (roundCreation.getGames() != null && round.getGames() != null) {
             Map<String, Game> gamesByTeams = round.getGames().stream()
@@ -332,19 +337,10 @@ public class AdminScheduleUpdateService {
             }
         }
 
-        if (round.isPlayed() && round.getEndTime() == null) {
-            round.setEndTime(LocalDateTime.now());
-        }
+        roundRepository.save(round);
 
-        Round savedRound = roundRepository.save(round);
+        return updateRoundPlayed(roundId, new RoundInputDTO(roundCreation.isPlayed()));
 
-        List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
-        notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
-        updateNotPlayedRoundsSchedule(notPlayedRounds);
-
-        webSocketService.sendMessage("/topic/rounds", "update");
-
-        return scheduleReturnDTOService.roundToRoundDTO(savedRound);
     }
 
     public GameReturnDTO updateGame(Long gameId, GameInputFullDTO gameInput) throws EntityNotFoundException {
