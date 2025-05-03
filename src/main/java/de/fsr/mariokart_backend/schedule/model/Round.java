@@ -48,7 +48,7 @@ public class Round {
     private Set<Game> games;
 
     @OneToOne(orphanRemoval = true)
-    @JoinColumn(name = "break_ID")
+    @JoinColumn(name = "break_ID", nullable = true)
     private Break breakTime;
 
 }

@@ -70,6 +70,8 @@ public class AdminScheduleUpdateController {
             return adminScheduleUpdateService.updateRound(roundId, roundCreation);
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (RoundsAlreadyExistsException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }
     }
 
