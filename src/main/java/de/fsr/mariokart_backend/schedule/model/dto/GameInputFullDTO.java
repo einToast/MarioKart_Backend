@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GameInputFullDTO {
+    private long id;
     private PointsInputFullDTO[] points;
 }

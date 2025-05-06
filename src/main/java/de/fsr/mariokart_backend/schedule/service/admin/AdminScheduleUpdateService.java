@@ -2,7 +2,6 @@ package de.fsr.mariokart_backend.schedule.service.admin;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -262,7 +261,8 @@ public class AdminScheduleUpdateService {
 
         boolean breakDurationChanged = true; // Always recalculate subsequent rounds
 
-        // Update rounds after break if break has ended, duration changed, or break moved
+        // Update rounds after break if break has ended, duration changed, or break
+        // moved
         if (breakStatusChanged || breakDurationChanged || locationChanged) {
             List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
             notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
@@ -270,7 +270,8 @@ public class AdminScheduleUpdateService {
             if (aBreak.isBreakEnded()) {
                 updateNotPlayedRoundsSchedule(notPlayedRounds);
             } else {
-                // If break is not ended but moved or duration changed, update rounds after break
+                // If break is not ended but moved or duration changed, update rounds after
+                // break
                 List<Round> roundsAfterBreak = notPlayedRounds.stream()
                         .filter(r -> !r.getId().equals(newRound.getId())
                                 && r.getRoundNumber() > newRound.getRoundNumber())
@@ -301,21 +302,15 @@ public class AdminScheduleUpdateService {
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
 
         if (roundCreation.getGames() != null && round.getGames() != null) {
-            Map<String, Game> gamesByTeams = round.getGames().stream()
-                    .collect(Collectors.toMap(
-                            g -> g.getTeams().stream()
-                                    .map(t -> t.getCharacter().getCharacterName())
-                                    .sorted()
-                                    .collect(Collectors.joining("|")),
-                            g -> g));
+            Map<Long, Game> gamesById = round.getGames().stream()
+                                                        .collect(Collectors.toMap(
+                                                                Game::getId,
+                                                                g -> g));
 
             for (GameInputFullDTO gameInput : roundCreation.getGames()) {
-                String inputTeamsKey = Arrays.stream(gameInput.getPoints())
-                        .map(p -> p.getTeam().getCharacterName())
-                        .sorted()
-                        .collect(Collectors.joining("|"));
-                Game game = gamesByTeams.get(inputTeamsKey);
-                if (game == null)
+                Long gameId = gameInput.getId();
+                Game game = gamesById.get(gameId);
+                            if (game == null)
                     continue;
 
                 Map<String, Points> pointsByCharacter = game.getPoints().stream()
