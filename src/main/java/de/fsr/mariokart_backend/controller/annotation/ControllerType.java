@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public enum ControllerType {
     HEALTHCHECK("/healthcheck"),
+    NOTIFICATION("/notification"),
     REGISTRATION("/teams"),
     SCHEDULE("/schedule"),
     SETTINGS("/settings"),

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
+import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
@@ -47,7 +48,8 @@ public class AdminScheduleCreateService {
     private final BreakRepository breakRepository;
     private final TeamRepository teamRepository;
 
-    private final AdminSettingsUpdateService settingsUpdateService;
+    private final AdminScheduleUpdateService adminScheduleUpdateService;
+    private final AdminSettingsUpdateService adminSettingsUpdateService;
     private final PublicScheduleReadService publicScheduleReadService;
     private final ScheduleInputDTOService scheduleInputDTOService;
     private final ScheduleReturnDTOService scheduleReturnDTOService;
@@ -88,7 +90,8 @@ public class AdminScheduleCreateService {
         return scheduleReturnDTOService.breakToBreakDTO(round.getBreakTime());
     }
 
-    public List<RoundReturnDTO> createFinalPlan() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
+    public List<RoundReturnDTO> createFinalPlan()
+            throws RoundsAlreadyExistsException, NotEnoughTeamsException, NotificationNotSentException {
         if (!publicScheduleReadService.isMatchPlanCreated()) {
             throw new RoundsAlreadyExistsException("Match schedule not created");
         } else if (publicScheduleReadService.isFinalPlanCreated()) {
@@ -117,6 +120,7 @@ public class AdminScheduleCreateService {
         }
 
         webSocketService.sendMessage("/topic/rounds", "create");
+        adminScheduleUpdateService.sendNotificationForNextRound();
 
         return roundRepository.findAll().stream()
                 .map(scheduleReturnDTOService::roundToRoundDTO)
@@ -172,7 +176,8 @@ public class AdminScheduleCreateService {
     }
 
     public List<RoundReturnDTO> createMatchPlan()
-            throws RoundsAlreadyExistsException, NotEnoughTeamsException, EntityNotFoundException {
+            throws RoundsAlreadyExistsException, NotEnoughTeamsException, EntityNotFoundException,
+            NotificationNotSentException {
         validateMatchPlanCreation();
 
         int teamCount = teamRepository.findAll().size();
@@ -185,6 +190,7 @@ public class AdminScheduleCreateService {
         updateTournamentSettings(matchPlanDTO.getMax_games_count());
 
         webSocketService.sendMessage("/topic/rounds", "create");
+        adminScheduleUpdateService.sendNotificationForNextRound();
 
         return roundRepository.findAll().stream()
                 .map(scheduleReturnDTOService::roundToRoundDTO)
@@ -262,7 +268,7 @@ public class AdminScheduleCreateService {
     }
 
     private void updateTournamentSettings(int maxGamesCount) throws RoundsAlreadyExistsException {
-        settingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
+        adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
     }
 
     private MatchPlanDTO getGeneratedMatchPlan(int teamCount) {

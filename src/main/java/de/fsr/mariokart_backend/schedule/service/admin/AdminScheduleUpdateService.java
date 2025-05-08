@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.schedule.service.admin;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +11,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
+import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.schedule.model.Break;
@@ -49,6 +52,7 @@ public class AdminScheduleUpdateService {
     private final PublicScheduleReadService publicScheduleReadService;
     private final ScheduleReturnDTOService scheduleReturnDTOService;
     private final WebSocketService webSocketService;
+    private final AdminNotificationCreateService adminNotificationCreateService;
 
     private static final long PLAY_MINUTES = 20L;
 
@@ -109,12 +113,14 @@ public class AdminScheduleUpdateService {
     }
 
     public RoundReturnDTO updateRoundPlayed(Long roundId, RoundInputDTO roundCreation)
-            throws EntityNotFoundException, RoundsAlreadyExistsException {
+            throws EntityNotFoundException, RoundsAlreadyExistsException, NotificationNotSentException {
         Round round = roundRepository.findById(roundId)
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
 
         List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
         notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
+
+        boolean roundPlayedChanged = round.isPlayed() != roundCreation.isPlayed();
 
         round.setPlayed(roundCreation.isPlayed());
 
@@ -152,9 +158,15 @@ public class AdminScheduleUpdateService {
             updateBreakAndFollowingRounds(breakRound, roundsAfterBreak);
         }
 
-        webSocketService.sendMessage("/topic/rounds", "update");
+        Round savedRound = roundRepository.save(round);
 
-        return scheduleReturnDTOService.roundToRoundDTO(roundRepository.save(round));
+        if (roundPlayedChanged) {
+            webSocketService.sendMessage("/topic/rounds", "update");
+            sendNotificationForNextRound();
+
+        }
+
+        return scheduleReturnDTOService.roundToRoundDTO(savedRound);
     }
 
     public PointsReturnDTO updatePoints(Long roundId, Long gameId, Long teamId, PointsInputDTO pointsCreation)
@@ -179,7 +191,8 @@ public class AdminScheduleUpdateService {
         return scheduleReturnDTOService.pointsToPointsDTO(pointsRepository.save(points));
     }
 
-    public BreakReturnDTO updateBreak(BreakInputDTO breakCreation) throws EntityNotFoundException {
+    public BreakReturnDTO updateBreak(BreakInputDTO breakCreation)
+            throws EntityNotFoundException, NotificationNotSentException {
         if (!publicScheduleReadService.isMatchPlanCreated()) {
             throw new EntityNotFoundException("Match plan not created yet.");
         }
@@ -280,6 +293,9 @@ public class AdminScheduleUpdateService {
 
             // Notify clients about the update
             webSocketService.sendMessage("/topic/rounds", "update");
+            if (breakStatusChanged) {
+                sendNotificationForNextRound();
+            }
         }
 
         return scheduleReturnDTOService.breakToBreakDTO(newRound.getBreakTime());
@@ -295,20 +311,21 @@ public class AdminScheduleUpdateService {
         }
     }
 
-    public RoundReturnDTO updateRound(Long roundId, RoundInputFullDTO roundCreation) throws EntityNotFoundException, RoundsAlreadyExistsException {
+    public RoundReturnDTO updateRound(Long roundId, RoundInputFullDTO roundCreation)
+            throws EntityNotFoundException, RoundsAlreadyExistsException, NotificationNotSentException {
         Round round = roundRepository.findById(roundId)
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
 
         if (roundCreation.getGames() != null && round.getGames() != null) {
             Map<Long, Game> gamesById = round.getGames().stream()
-                                                        .collect(Collectors.toMap(
-                                                                Game::getId,
-                                                                g -> g));
+                    .collect(Collectors.toMap(
+                            Game::getId,
+                            g -> g));
 
             for (GameInputFullDTO gameInput : roundCreation.getGames()) {
                 Long gameId = gameInput.getId();
                 Game game = gamesById.get(gameId);
-                            if (game == null)
+                if (game == null)
                     continue;
 
                 Map<String, Points> pointsByCharacter = game.getPoints().stream()
@@ -362,5 +379,58 @@ public class AdminScheduleUpdateService {
         Game savedGame = gameRepository.save(game);
 
         return scheduleReturnDTOService.gameToGameDTO(savedGame);
+    }
+
+    public void sendNotificationForNextRound() throws NotificationNotSentException {
+        List<Round> unplayedRounds = roundRepository.findByPlayedFalse();
+        unplayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
+        if (unplayedRounds.isEmpty()) {
+            return;
+        }
+        Round round = unplayedRounds.get(0);
+        sendNotificationForNextRound(round);
+    }
+
+    public void sendNotificationForNextRound(Round round) throws NotificationNotSentException {
+        List<Game> games = gameRepository.findByRoundId(round.getId());
+        List<Team> teamsPlaying = new ArrayList<Team>();
+
+        if (round.getBreakTime() != null) {
+            if (!round.getBreakTime().isBreakEnded()) {
+                adminNotificationCreateService.sendNotificationToAll(
+                        "It's pizza time! 🍕",
+                        "Pizzapause!");
+                return;
+            }
+        }
+
+        for (Game game : games) {
+            List<Points> points = pointsRepository.findByGameId(game.getId());
+            for (Points point : points) {
+                Team team = point.getTeam();
+                StringBuilder title = new StringBuilder("Du spielst jetzt an Switch ");
+                title.append(game.getSwitchGame())
+                        .append("!");
+
+                String message = "Streng dich an!";
+
+                adminNotificationCreateService.sendNotificationToTeam(
+                        team.getId(),
+                        title.toString(),
+                        message);
+                teamsPlaying.add(team);
+            }
+        }
+
+        List<Team> teamsNotPlaying = teamRepository.findAll().stream()
+                .filter(team -> !teamsPlaying.contains(team))
+                .collect(Collectors.toList());
+
+        for (Team team : teamsNotPlaying) {
+            adminNotificationCreateService.sendNotificationToTeam(
+                    team.getId(),
+                    "Du spielst jetzt nicht!",
+                    "Gönn dir eine Pause!");
+        }
     }
 }
