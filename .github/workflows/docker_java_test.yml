@@ -26,4 +26,12 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t docker-test-java .
+        docker build \\
+          --build-arg SECRET_KEY="$SECRET_KEY" \\
+          --build-arg DB_USER="$DB_USER" \\
+          --build-arg DB_PASSWORD="$DB_PASSWORD" \\
+          --build-arg USER_NAME="$USER_NAME" \\
+          --build-arg USER_PASSWORD="$USER_PASSWORD" \\
+          --build-arg VAPID_PUBLIC_KEY="$VAPID_PUBLIC_KEY" \\
+          --build-arg VAPID_PRIVATE_KEY="$VAPID_PRIVATE_KEY" \\
+          -t docker-test-java -f MarioKart_Backend/Dockerfile MarioKart_Backend
