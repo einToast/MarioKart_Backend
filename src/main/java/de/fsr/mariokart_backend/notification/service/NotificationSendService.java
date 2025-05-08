@@ -32,6 +32,8 @@ public class NotificationSendService {
 
     @PostConstruct
     public void init() throws GeneralSecurityException {
+        System.out.println("VAPID Public Key: " + publicKey);
+        System.out.println("VAPID Private Key: " + privateKey);
         String contactEmail = System.getenv("VAPID_CONTACT_EMAIL");
         if (contactEmail == null || contactEmail.isEmpty()) {
             contactEmail = "mailto:example@yourdomain.org"; // Fallback
