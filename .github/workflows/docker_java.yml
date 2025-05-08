@@ -23,5 +23,14 @@ jobs:
       - name: Build the Docker image and Push
         run: |
           echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin docker.io
-          docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.JAVA_DOCKER_HUB_REPOSITORY }}:latest
+          docker build . \
+            --build-arg SECRET_KEY="$SECRET_KEY" \
+            --build-arg DB_USER="$DB_USER" \
+            --build-arg DB_PASSWORD="$DB_PASSWORD" \
+            --build-arg USER_NAME="$USER_NAME" \
+            --build-arg USER_PASSWORD="$USER_PASSWORD" \
+            --build-arg VAPID_PUBLIC_KEY="$VAPID_PUBLIC_KEY" \
+            --build-arg VAPID_PRIVATE_KEY="$VAPID_PRIVATE_KEY" \
+            --file Dockerfile \
+            --tag docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.JAVA_DOCKER_HUB_REPOSITORY }}:latest
           docker push docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.JAVA_DOCKER_HUB_REPOSITORY }}:latest
