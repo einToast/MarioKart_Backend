@@ -3,6 +3,8 @@ package de.fsr.mariokart_backend.survey.service.admin;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.NotificationNotSentException;
+import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
@@ -13,6 +15,7 @@ import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -21,11 +24,19 @@ public class AdminSurveyUpdateService {
     private final QuestionRepository questionRepository;
     private final QuestionInputDTOService questionInputDTOService;
     private final QuestionReturnDTOService questionReturnDTOService;
+    private final WebSocketService webSocketService;
+    private final AdminNotificationCreateService adminNotificationCreateService;
 
-    public QuestionReturnDTO updateQuestion(Long id, QuestionInputDTO question) throws EntityNotFoundException {
+    public QuestionReturnDTO updateQuestion(Long id, QuestionInputDTO question)
+            throws EntityNotFoundException, NotificationNotSentException {
         Question questionToUpdate = questionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
         Question updatedQuestion = questionInputDTOService.questionInputDTOToQuestion(question);
+
+        boolean questionCanBeAnswered = updatedQuestion.getActive() == true
+                && updatedQuestion.getActive() != questionToUpdate.getActive() && updatedQuestion.getVisible() == true
+                && updatedQuestion.getVisible() != questionToUpdate.getVisible();
+
         if (updatedQuestion.getQuestionText() != null) {
             questionToUpdate.setQuestionText(updatedQuestion.getQuestionText());
         }
@@ -60,6 +71,14 @@ public class AdminSurveyUpdateService {
         } else {
             throw new IllegalArgumentException("Question type not supported.");
         }
-        return questionReturnDTOService.questionToQuestionReturnDTO(questionRepository.save(questionToUpdate));
+
+        Question savedQuestion = questionRepository.save(questionToUpdate);
+
+        webSocketService.sendMessage("/topic/questions", "update");
+        if (questionCanBeAnswered) {
+            adminNotificationCreateService.sendNotificationToAll("Neue Umfrage verfügbar!",
+                    questionToUpdate.getQuestionText());
+        }
+        return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);
     }
 }
