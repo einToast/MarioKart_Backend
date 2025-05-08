@@ -274,8 +274,7 @@ public class AdminScheduleUpdateService {
 
         boolean breakDurationChanged = true; // Always recalculate subsequent rounds
 
-        // Update rounds after break if break has ended, duration changed, or break
-        // moved
+        // Update rounds after break if break has ended, duration changed, or break moved
         if (breakStatusChanged || breakDurationChanged || locationChanged) {
             List<Round> notPlayedRounds = roundRepository.findByPlayedFalse();
             notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
@@ -283,8 +282,7 @@ public class AdminScheduleUpdateService {
             if (aBreak.isBreakEnded()) {
                 updateNotPlayedRoundsSchedule(notPlayedRounds);
             } else {
-                // If break is not ended but moved or duration changed, update rounds after
-                // break
+                // If break is not ended but moved or duration changed, update rounds after break
                 List<Round> roundsAfterBreak = notPlayedRounds.stream()
                         .filter(r -> !r.getId().equals(newRound.getId())
                                 && r.getRoundNumber() > newRound.getRoundNumber())
