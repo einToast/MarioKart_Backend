@@ -10,6 +10,7 @@ import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
+import de.fsr.mariokart_backend.notification.model.dto.NotificationRequestDTO;
 import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 import lombok.AllArgsConstructor;
 
@@ -21,9 +22,9 @@ public class AdminNotificationCreateController {
     private final AdminNotificationCreateService adminNotificationCreateService;
 
     @PostMapping("/send")
-    public ResponseEntity<Void> sendNotificationToAll(@RequestBody String title, @RequestBody String message) {
+    public ResponseEntity<Void> sendNotificationToAll(@RequestBody NotificationRequestDTO notification) {
         try {
-            adminNotificationCreateService.sendNotificationToAll(title, message);
+            adminNotificationCreateService.sendNotificationToAll(notification.getTitle(), notification.getMessage());
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
             return ResponseEntity.status(503).build();
@@ -31,10 +32,9 @@ public class AdminNotificationCreateController {
     }
 
     @PostMapping("/send/{teamId}")
-    public ResponseEntity<Void> sendNotificationToTeam(@PathVariable Long teamId, @RequestBody String title,
-            @RequestBody String message) {
+    public ResponseEntity<Void> sendNotificationToTeam(@PathVariable Long teamId, @RequestBody NotificationRequestDTO notification) {
         try {
-            adminNotificationCreateService.sendNotificationToTeam(teamId, title, message);
+            adminNotificationCreateService.sendNotificationToTeam(teamId, notification.getTitle(), notification.getMessage());
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
             return ResponseEntity.status(503).build();
