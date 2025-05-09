@@ -209,13 +209,14 @@ public class AdminScheduleCreateService {
     private void createRoundsAndGames(MatchPlanDTO matchPlanDTO) throws EntityNotFoundException {
         List<List<List<Integer>>> plan = matchPlanDTO.getPlan();
         List<String> switchColors = List.of("Blau", "Rot", "Grün", "Weiß");
+        List<Team> teams = teamRepository.findAll();
 
         for (int roundIndex = 0; roundIndex < plan.size(); roundIndex++) {
             Round round = createRound(roundIndex);
 
             for (int gameIndex = 0; gameIndex < plan.get(roundIndex).size(); gameIndex++) {
                 Game game = createGame(round, switchColors.get(gameIndex));
-                createPointsForGame(plan.get(roundIndex).get(gameIndex), game);
+                createPointsForGame(plan.get(roundIndex).get(gameIndex), game, teams);
             }
         }
     }
@@ -236,13 +237,12 @@ public class AdminScheduleCreateService {
         return addGame(game);
     }
 
-    private void createPointsForGame(List<Integer> teamIndices, Game game) throws EntityNotFoundException {
+    private void createPointsForGame(List<Integer> teamIndices, Game game, List<Team> teams) throws EntityNotFoundException {
         for (Integer teamIndex : teamIndices) {
             Points point = new Points();
             point.setGroupPoints(0);
             point.setFinalPoints(0);
-            point.setTeam(teamRepository.findById((long) (teamIndex + 1))
-                    .orElseThrow(() -> new EntityNotFoundException("There is no team with this ID.")));
+            point.setTeam(teams.get(teamIndex));
             point.setGame(game);
             addPoints(point);
         }
