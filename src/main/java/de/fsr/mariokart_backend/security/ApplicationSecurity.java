@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.security;
 
 import java.util.Arrays;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 
 @EnableWebSecurity
 @Configuration
@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class ApplicationSecurity {
     private final JwtTokenFilter jwtTokenFilter;
     private final UserRepository userRepository;
-    
+
     @Value("${app.cors.allowed-origin}")
     private String allowedOrigin;
 
@@ -67,6 +67,7 @@ public class ApplicationSecurity {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
+        System.out.println("Allowed Origin: " + allowedOrigin);
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigin, "http://127.0.0.1:8100"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Team-ID"));
