@@ -31,6 +31,11 @@ public class PublicRegistrationReadController {
         return publicRegistrationReadService.getTeamsSortedByGroupPoints();
     }
 
+    @GetMapping("/sortedByTeamName")
+    public List<TeamReturnDTO> getTeamsSortedByTeamName() {
+        return publicRegistrationReadService.getTeamsSortedByTeamName();
+    }
+
     @GetMapping("characters/available")
     public List<CharacterReturnDTO> getAvailableCharacters() {
         return publicRegistrationReadService.getAvailableCharacters();

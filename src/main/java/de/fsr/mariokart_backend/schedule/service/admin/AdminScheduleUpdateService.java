@@ -412,12 +412,13 @@ public class AdminScheduleUpdateService {
                 title.append(game.getSwitchGame())
                         .append("!");
 
-                String message = "Streng dich an!";
+                StringBuilder message = new StringBuilder(title);
+                message.append(" Streng dich an!");
 
                 adminNotificationCreateService.sendNotificationToTeam(
                         team.getId(),
                         title.toString(),
-                        message);
+                        message.toString());
                 teamsPlaying.add(team);
             }
         }

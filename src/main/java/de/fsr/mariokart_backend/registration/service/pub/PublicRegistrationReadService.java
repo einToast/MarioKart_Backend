@@ -74,4 +74,11 @@ public class PublicRegistrationReadService {
         teams.forEach(team -> team.setFinalPoints(0));
         return teams;
     }
+
+    public List<TeamReturnDTO> getTeamsSortedByTeamName() {
+        List<TeamReturnDTO> teams = teamRepository.findAllByOrderByTeamNameAsc().stream()
+                .map(registrationReturnDTOService::teamToTeamReturnDTO)
+                .toList();
+        return deleteUnnecessaryInformationFromTeams(teams);
+    }
 }
