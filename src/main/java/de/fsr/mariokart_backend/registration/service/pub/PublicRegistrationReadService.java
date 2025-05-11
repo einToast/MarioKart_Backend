@@ -33,7 +33,7 @@ public class PublicRegistrationReadService {
     }
 
     public List<TeamReturnDTO> getTeamsSortedByGroupPoints() {
-        List<TeamReturnDTO> teams = adminRegistrationReadService.getTeamsSortedByGroupPoints();
+        List<TeamReturnDTO> teams = adminRegistrationReadService.getTeamsReturnDTOSortedByGroupPoints();
         return deleteUnnecessaryInformationFromTeams(teams);
     }
 
