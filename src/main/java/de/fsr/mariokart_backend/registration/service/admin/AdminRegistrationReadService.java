@@ -67,6 +67,7 @@ public class AdminRegistrationReadService {
     public List<Team> getFinalTeams() {
         return getTeamsSortedByGroupPoints().stream()
                 .filter(team -> team.isFinalReady())
+                .limit(4)
                 .collect(Collectors.toList());
     }
 
