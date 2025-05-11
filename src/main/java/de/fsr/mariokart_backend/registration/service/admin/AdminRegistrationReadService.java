@@ -49,7 +49,10 @@ public class AdminRegistrationReadService {
     }
 
     public List<TeamReturnDTO> getTeamsSortedByFinalPoints() {
-        List<TeamReturnDTO> teams = teamRepository.findAllByOrderByFinalPointsDescGroupPointsDesc().stream()
+        List<TeamReturnDTO> teams = getTeamsSortedByGroupPoints().stream()
+                .sorted(Comparator.comparing(
+                        team -> team.getFinalPoints(),
+                        Comparator.reverseOrder()))
                 .map(registrationReturnDTOService::teamToTeamReturnDTO)
                 .toList();
         if (teams.isEmpty()) {
