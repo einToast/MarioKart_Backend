@@ -16,6 +16,7 @@ import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
+import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationReadService;
 import de.fsr.mariokart_backend.schedule.model.Break;
 import de.fsr.mariokart_backend.schedule.model.Game;
 import de.fsr.mariokart_backend.schedule.model.Points;
@@ -50,6 +51,7 @@ public class AdminScheduleCreateService {
 
     private final AdminScheduleUpdateService adminScheduleUpdateService;
     private final AdminSettingsUpdateService adminSettingsUpdateService;
+    private final AdminRegistrationReadService adminRegistrationReadService;
     private final PublicScheduleReadService publicScheduleReadService;
     private final ScheduleInputDTOService scheduleInputDTOService;
     private final ScheduleReturnDTOService scheduleReturnDTOService;
@@ -102,12 +104,7 @@ public class AdminScheduleCreateService {
             throw new NotEnoughTeamsException("Not enough teams ready for final");
         }
 
-        List<Team> teams = teamRepository.findByFinalReadyTrue();
-        teams.sort((t1, t2) -> {
-            int t1Points = t1.getPoints().stream().mapToInt(Points::getGroupPoints).sum();
-            int t2Points = t2.getPoints().stream().mapToInt(Points::getGroupPoints).sum();
-            return t2Points - t1Points;
-        });
+        List<Team> teams = adminRegistrationReadService.getFinalTeams();
 
         if (teams.size() > 4) {
             teams = teams.subList(0, 4);

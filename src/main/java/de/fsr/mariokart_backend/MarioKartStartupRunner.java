@@ -116,6 +116,10 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     }
 
     private void addTeams() {
+        if (teamRepository.findAll().size() > 0) {
+            System.err.print("Teams already exist!");
+            return;
+        }
         try {
             adminSettingsUpdateService.updateSettings(new TournamentDTO(true, true, 6));
             TeamInputDTO team1 = new TeamInputDTO("TollerTeamName", "Mario");
