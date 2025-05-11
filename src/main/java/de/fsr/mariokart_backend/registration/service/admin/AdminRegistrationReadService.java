@@ -29,8 +29,17 @@ public class AdminRegistrationReadService {
                 .toList();
     }
 
-    public List<TeamReturnDTO> getTeamsSortedByGroupPoints() {
-        List<TeamReturnDTO> teams = teamRepository.findAllByOrderByGroupPointsDesc().stream()
+    public List<Team> getTeamsSortedByGroupPoints() {
+        List<Team> teams = teamRepository.findAll().stream()
+                .sorted(Comparator.comparing(
+                        team -> team.getGroupPoints(publicSettingsReadService.getSettings().getMaxGamesCount()),
+                        Comparator.reverseOrder()))
+                .toList();
+        return teams;
+    }
+
+    public List<TeamReturnDTO> getTeamsReturnDTOSortedByGroupPoints() {
+        List<TeamReturnDTO> teams = getTeamsSortedByGroupPoints().stream()
                 .map(registrationReturnDTOService::teamToTeamReturnDTO)
                 .toList();
         if (teams.isEmpty()) {
@@ -56,11 +65,8 @@ public class AdminRegistrationReadService {
     }
 
     public List<Team> getFinalTeams() {
-        return teamRepository.findByFinalReadyTrue().stream()
-                .sorted(Comparator.comparing(
-                        team -> team.getGroupPoints(publicSettingsReadService.getSettings().getMaxGamesCount()),
-                        Comparator.reverseOrder()))
-                .limit(4)
+        return getTeamsSortedByGroupPoints().stream()
+                .filter(team -> team.isFinalReady())
                 .collect(Collectors.toList());
     }
 
