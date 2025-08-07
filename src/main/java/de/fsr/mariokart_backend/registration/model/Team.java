@@ -96,7 +96,7 @@ public class Team {
         return points.stream().map(Points::getGame).collect(Collectors.toSet());
     }
 
-    public int getNumberOfgamesPlayed(int maxGames) {
+    public int getNumberOfGamesPlayed(int maxGames) {
         if (points == null)
             return 0;
 
