@@ -27,7 +27,7 @@ public class RegistrationReturnDTOService {
         return new TeamReturnDTO(team.getId(), team.getTeamName(),
                 characterToCharacterReturnDTO(team.getCharacter()), team.isFinalReady(), team.isActive(),
                 team.getGroupPoints(publicSettingsReadService.getSettings().getMaxGamesCount()), team.getFinalPoints(),
-                team.getNumberOfgamesPlayed((publicSettingsReadService.getSettings().getMaxGamesCount())));
+                team.getNumberOfGamesPlayed((publicSettingsReadService.getSettings().getMaxGamesCount())));
     }
 
 }
