@@ -8,13 +8,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfiguration {
 
-    @Value("${MATCHPLAN_PROTOCOL:http}")
+    @Value("${SCHEDULE_PROTOCOL:http}")
     private String protocol;
 
-    @Value("${MATCHPLAN_HOST:localhost}")
+    @Value("${SCHEDULE_HOST:localhost}")
     private String host;
 
-    @Value("${MATCHPLAN_PORT:8000}")
+    @Value("${SCHEDULE_PORT:8000}")
     private String port;
 
     @Bean

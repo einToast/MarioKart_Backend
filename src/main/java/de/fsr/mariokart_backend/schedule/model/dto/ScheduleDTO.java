@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MatchPlanDTO {
+public class ScheduleDTO {
     private int max_games_count;
     private List<List<List<Integer>>> plan;
 }

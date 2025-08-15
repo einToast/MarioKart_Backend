@@ -22,7 +22,7 @@ public class AdminSettingsUpdateService {
             throw new IllegalStateException("Settings do not exist.");
         }
         if (tournamentDTO.getRegistrationOpen() != null && tournamentDTO.getRegistrationOpen()
-                && publicScheduleReadService.isMatchPlanCreated()) {
+                && publicScheduleReadService.isScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Matches already exist. Can't open registration.");
         }
 

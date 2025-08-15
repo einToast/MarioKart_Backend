@@ -46,16 +46,16 @@ public class PublicScheduleReadService {
         return roundRepository.countByPlayedFalse();
     }
 
-    public Boolean isMatchPlanCreated() {
+    public Boolean isScheduleCreated() {
         return !roundRepository.findAll().isEmpty();
     }
 
-    public Boolean isFinalPlanCreated() {
+    public Boolean isFinalScheduleCreated() {
         return !roundRepository.findByFinalGameTrue().isEmpty();
     }
 
     public Set<TeamReturnDTO> deleteUnnecessaryInformationFromTeams(Set<TeamReturnDTO> teams) {
-        if (!isFinalPlanCreated()) {
+        if (!isFinalScheduleCreated()) {
             teams.forEach(team -> team.setGroupPoints(0));
         }
         teams.forEach(team -> team.setFinalPoints(0));

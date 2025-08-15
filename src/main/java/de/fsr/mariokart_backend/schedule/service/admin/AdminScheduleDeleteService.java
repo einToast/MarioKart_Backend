@@ -11,11 +11,11 @@ public class AdminScheduleDeleteService {
 
     private final RoundRepository roundRepository;
 
-    public void deleteMatchPlan() {
+    public void deleteSchedule() {
         roundRepository.deleteAll();
     }
 
-    public void deleteFinalPlan() {
+    public void deleteFinalSchedule() {
         roundRepository.deleteAllByFinalGameTrue();
     }
 }

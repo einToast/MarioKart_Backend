@@ -68,7 +68,7 @@ public class PublicRegistrationReadService {
     }
 
     public List<TeamReturnDTO> deleteUnnecessaryInformationFromTeams(List<TeamReturnDTO> teams) {
-        if (!publicScheduleReadService.isFinalPlanCreated()) {
+        if (!publicScheduleReadService.isFinalScheduleCreated()) {
             teams.forEach(team -> team.setGroupPoints(0));
         }
         teams.forEach(team -> team.setFinalPoints(0));

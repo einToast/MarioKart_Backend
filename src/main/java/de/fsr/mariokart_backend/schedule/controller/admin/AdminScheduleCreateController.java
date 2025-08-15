@@ -25,10 +25,10 @@ public class AdminScheduleCreateController {
 
     private final AdminScheduleCreateService adminScheduleCreateService;
 
-    @PostMapping("/create/match_plan")
-    public List<RoundReturnDTO> createMatchPlan() {
+    @PostMapping("/create/schedule")
+    public List<RoundReturnDTO> createSchedule() {
         try {
-            return adminScheduleCreateService.createMatchPlan();
+            return adminScheduleCreateService.createSchedule();
         } catch (RoundsAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         } catch (NotEnoughTeamsException | EntityNotFoundException e) {
@@ -38,10 +38,10 @@ public class AdminScheduleCreateController {
         }
     }
 
-    @PostMapping("/create/final_plan")
-    public List<RoundReturnDTO> createFinalPlan() {
+    @PostMapping("/create/final_schedule")
+    public List<RoundReturnDTO> createFinalSchedule() {
         try {
-            return adminScheduleCreateService.createFinalPlan();
+            return adminScheduleCreateService.createFinalSchedule();
         } catch (RoundsAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         } catch (IllegalArgumentException e) {

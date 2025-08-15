@@ -19,8 +19,8 @@ public class AdminRegistrationDeleteService {
     private final PublicScheduleReadService publicScheduleReadService;
 
     public void deleteTeam(Long id) throws RoundsAlreadyExistsException, EntityNotFoundException {
-        if (publicScheduleReadService.isMatchPlanCreated()) {
-            throw new RoundsAlreadyExistsException("Match schedule already exists");
+        if (publicScheduleReadService.isScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Schedule already exists");
         }
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("There is no team with this ID."));
@@ -31,8 +31,8 @@ public class AdminRegistrationDeleteService {
     }
 
     public void deleteAllTeams() throws RoundsAlreadyExistsException {
-        if (publicScheduleReadService.isMatchPlanCreated()) {
-            throw new RoundsAlreadyExistsException("Match schedule already exists");
+        if (publicScheduleReadService.isScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Schedule already exists");
         }
 
         List<Team> teams = teamRepository.findAll();

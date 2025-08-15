@@ -29,13 +29,13 @@ public class PublicScheduleReadController {
         return publicScheduleReadService.getNumberOfRoundsUnplayed();
     }
 
-    @GetMapping("/create/match_plan")
-    public Boolean isMatchPlanCreated() {
-        return publicScheduleReadService.isMatchPlanCreated();
+    @GetMapping("/create/schedule")
+    public Boolean isScheduleCreated() {
+        return publicScheduleReadService.isScheduleCreated();
     }
 
-    @GetMapping("/create/final_plan")
-    public Boolean isFinalPlanCreated() {
-        return publicScheduleReadService.isFinalPlanCreated();
+    @GetMapping("/create/final_schedule")
+    public Boolean isFinalScheduleCreated() {
+        return publicScheduleReadService.isFinalScheduleCreated();
     }
 }
