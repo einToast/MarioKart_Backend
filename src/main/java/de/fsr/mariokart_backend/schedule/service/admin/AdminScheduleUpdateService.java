@@ -193,8 +193,8 @@ public class AdminScheduleUpdateService {
 
     public BreakReturnDTO updateBreak(BreakInputDTO breakCreation)
             throws EntityNotFoundException, NotificationNotSentException {
-        if (!publicScheduleReadService.isMatchPlanCreated()) {
-            throw new EntityNotFoundException("Match plan not created yet.");
+        if (!publicScheduleReadService.isScheduleCreated()) {
+            throw new EntityNotFoundException("Schedule not created yet.");
         }
 
         Break aBreak = breakRepository.findAll().get(0);

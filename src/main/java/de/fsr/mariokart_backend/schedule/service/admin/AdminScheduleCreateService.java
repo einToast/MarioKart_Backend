@@ -23,7 +23,7 @@ import de.fsr.mariokart_backend.schedule.model.Points;
 import de.fsr.mariokart_backend.schedule.model.Round;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakReturnDTO;
-import de.fsr.mariokart_backend.schedule.model.dto.MatchPlanDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.repository.BreakRepository;
@@ -92,11 +92,11 @@ public class AdminScheduleCreateService {
         return scheduleReturnDTOService.breakToBreakDTO(round.getBreakTime());
     }
 
-    public List<RoundReturnDTO> createFinalPlan()
+    public List<RoundReturnDTO> createFinalSchedule()
             throws RoundsAlreadyExistsException, NotEnoughTeamsException, NotificationNotSentException {
-        if (!publicScheduleReadService.isMatchPlanCreated()) {
-            throw new RoundsAlreadyExistsException("Match schedule not created");
-        } else if (publicScheduleReadService.isFinalPlanCreated()) {
+        if (!publicScheduleReadService.isScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Schedule not created");
+        } else if (publicScheduleReadService.isFinalScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Final schedule already created");
         } else if (publicScheduleReadService.getNumberOfRoundsUnplayed() > 0) {
             throw new IllegalArgumentException("Not all rounds played");
@@ -172,19 +172,19 @@ public class AdminScheduleCreateService {
         }
     }
 
-    public List<RoundReturnDTO> createMatchPlan()
+    public List<RoundReturnDTO> createSchedule()
             throws RoundsAlreadyExistsException, NotEnoughTeamsException, EntityNotFoundException,
             NotificationNotSentException {
-        validateMatchPlanCreation();
+        validateScheduleCreation();
 
         int teamCount = teamRepository.findAll().size();
-        MatchPlanDTO matchPlanDTO = getGeneratedMatchPlan(teamCount);
+        ScheduleDTO scheduleDTO = getGeneratedSchedule(teamCount);
 
-        validateMatchPlanCreation();
+        validateScheduleCreation();
 
-        createRoundsAndGames(matchPlanDTO);
+        createRoundsAndGames(scheduleDTO);
         addBreakAndUpdateTimes();
-        updateTournamentSettings(matchPlanDTO.getMax_games_count());
+        updateTournamentSettings(scheduleDTO.getMax_games_count());
 
         webSocketService.sendMessage("/topic/rounds", "create");
         adminScheduleUpdateService.sendNotificationForNextRound();
@@ -194,17 +194,17 @@ public class AdminScheduleCreateService {
                 .toList();
     }
 
-    private void validateMatchPlanCreation() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
-        if (publicScheduleReadService.isMatchPlanCreated()) {
-            throw new RoundsAlreadyExistsException("Match schedule already created");
+    private void validateScheduleCreation() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
+        if (publicScheduleReadService.isScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Schedule already created");
         }
         if (teamRepository.findAll().size() < 16) {
             throw new NotEnoughTeamsException("Not enough teams");
         }
     }
 
-    private void createRoundsAndGames(MatchPlanDTO matchPlanDTO) throws EntityNotFoundException {
-        List<List<List<Integer>>> plan = matchPlanDTO.getPlan();
+    private void createRoundsAndGames(ScheduleDTO scheduleDTO) throws EntityNotFoundException {
+        List<List<List<Integer>>> plan = scheduleDTO.getPlan();
         List<String> switchColors = List.of("Blau", "Rot", "Grün", "Weiß");
         List<Team> teams = teamRepository.findAll();
 
@@ -268,13 +268,13 @@ public class AdminScheduleCreateService {
         adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
     }
 
-    private MatchPlanDTO getGeneratedMatchPlan(int teamCount) {
+    private ScheduleDTO getGeneratedSchedule(int teamCount) {
         Map<String, Integer> requestBody = new HashMap<>();
         requestBody.put("num_teams", teamCount);
         Mono<String> response;
         try {
             response = webClient.post()
-                    .uri("/match_plan")
+                    .uri("/schedule")
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class);
@@ -283,7 +283,7 @@ public class AdminScheduleCreateService {
         }
 
         try {
-            return objectMapper.readValue(response.block(), MatchPlanDTO.class);
+            return objectMapper.readValue(response.block(), ScheduleDTO.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse JSON response", e);
         }

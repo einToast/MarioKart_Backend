@@ -32,8 +32,8 @@ public class PublicRegistrationCreateService {
             throw new IllegalStateException("Tournament is closed");
         }
 
-        if (publicScheduleReadService.isMatchPlanCreated()) {
-            throw new RoundsAlreadyExistsException("Match schedule already exists");
+        if (publicScheduleReadService.isScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Schedule already exists");
         }
 
         Team team = registrationInputDTOService.teamInputDTOToTeam(teamCreation);

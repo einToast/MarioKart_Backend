@@ -16,13 +16,13 @@ public class AdminScheduleDeleteController {
 
     private final AdminScheduleDeleteService adminScheduleDeleteService;
 
-    @DeleteMapping("/create/match_plan")
-    public void deleteMatchPlan() {
-        adminScheduleDeleteService.deleteMatchPlan();
+    @DeleteMapping("/create/schedule")
+    public void deleteSchedule() {
+        adminScheduleDeleteService.deleteSchedule();
     }
 
-    @DeleteMapping("/create/final_plan")
-    public void deleteFinalPlan() {
-        adminScheduleDeleteService.deleteFinalPlan();
+    @DeleteMapping("/create/final_schedule")
+    public void deleteFinalSchedule() {
+        adminScheduleDeleteService.deleteFinalSchedule();
     }
 }

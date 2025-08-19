@@ -45,7 +45,7 @@ public class AdminRegistrationUpdateService {
             team.setCharacter(character);
         }
 
-        if (!publicScheduleReadService.isFinalPlanCreated()) {
+        if (!publicScheduleReadService.isFinalScheduleCreated()) {
             team.setFinalReady(teamUpdate.isFinalReady());
             team.setActive(teamUpdate.isActive());
         }
