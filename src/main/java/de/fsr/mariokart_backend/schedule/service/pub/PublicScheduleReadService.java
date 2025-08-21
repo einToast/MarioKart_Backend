@@ -61,7 +61,6 @@ public class PublicScheduleReadService {
         return !roundRepository.findByFinalGameTrue().isEmpty();
     }
 
-    @Cacheable(key = "'teamsInRound_' + #roundId", sync = true)
     public Set<TeamReturnDTO> deleteUnnecessaryInformationFromTeams(Set<TeamReturnDTO> teams) {
         if (!isFinalScheduleCreated()) {
             teams.forEach(team -> team.setGroupPoints(0));

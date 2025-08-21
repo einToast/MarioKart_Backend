@@ -75,7 +75,6 @@ public class PublicRegistrationReadService {
                 .toList();
     }
 
-    @Cacheable(key = "'teamsInRoundDTO_' + #roundId", sync = true)
     public List<TeamReturnDTO> deleteUnnecessaryInformationFromTeams(List<TeamReturnDTO> teams) {
         if (!publicScheduleReadService.isFinalScheduleCreated()) {
             teams.forEach(team -> team.setGroupPoints(0));
