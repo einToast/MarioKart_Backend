@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -23,9 +25,9 @@ import de.fsr.mariokart_backend.schedule.model.Points;
 import de.fsr.mariokart_backend.schedule.model.Round;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.BreakReturnDTO;
-import de.fsr.mariokart_backend.schedule.model.dto.ScheduleDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleDTO;
 import de.fsr.mariokart_backend.schedule.repository.BreakRepository;
 import de.fsr.mariokart_backend.schedule.repository.GameRepository;
 import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
@@ -41,6 +43,8 @@ import reactor.core.publisher.Mono;
 
 @Service
 @AllArgsConstructor
+@CacheConfig(cacheNames = "schedule")
+@CacheEvict(allEntries = true)
 public class AdminScheduleCreateService {
 
     private final RoundRepository roundRepository;
@@ -234,7 +238,8 @@ public class AdminScheduleCreateService {
         return addGame(game);
     }
 
-    private void createPointsForGame(List<Integer> teamIndices, Game game, List<Team> teams) throws EntityNotFoundException {
+    private void createPointsForGame(List<Integer> teamIndices, Game game, List<Team> teams)
+            throws EntityNotFoundException {
         for (Integer teamIndex : teamIndices) {
             Points point = new Points();
             point.setGroupPoints(0);
@@ -279,7 +284,7 @@ public class AdminScheduleCreateService {
                     .retrieve()
                     .bodyToMono(String.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send request to match schedule generator", e);
+            throw new RuntimeException("Failed to send request to schedule generator", e);
         }
 
         try {

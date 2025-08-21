@@ -3,6 +3,8 @@ package de.fsr.mariokart_backend.registration.service.admin;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
@@ -14,6 +16,8 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@CacheConfig(cacheNames = "registration")
+@CacheEvict(allEntries = true)
 public class AdminRegistrationDeleteService {
     private final TeamRepository teamRepository;
     private final PublicScheduleReadService publicScheduleReadService;

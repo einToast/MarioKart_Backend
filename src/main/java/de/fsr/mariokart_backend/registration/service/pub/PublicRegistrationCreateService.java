@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.registration.service.pub;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
@@ -16,6 +18,8 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@CacheConfig(cacheNames = "registration")
+@CacheEvict(allEntries = true)
 public class PublicRegistrationCreateService {
     private final TeamRepository teamRepository;
     private final PublicSettingsReadService settingsReadService;
