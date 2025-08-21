@@ -2,6 +2,8 @@ package de.fsr.mariokart_backend.registration.service.admin;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.registration.model.Character;
@@ -10,6 +12,8 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@CacheConfig(cacheNames = "registration")
+@CacheEvict(allEntries = true)
 public class AdminRegistrationCreateService {
     private final CharacterRepository characterRepository;
 

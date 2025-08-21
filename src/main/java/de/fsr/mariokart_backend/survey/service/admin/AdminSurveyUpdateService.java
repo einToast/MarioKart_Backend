@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.service.admin;
 
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
@@ -20,6 +22,8 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@CacheConfig(cacheNames = "survey")
+@CacheEvict(allEntries = true)
 public class AdminSurveyUpdateService {
     private final QuestionRepository questionRepository;
     private final QuestionInputDTOService questionInputDTOService;
