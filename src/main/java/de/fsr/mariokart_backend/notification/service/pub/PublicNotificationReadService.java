@@ -9,7 +9,6 @@ public class PublicNotificationReadService {
     @Value("${vapid.public.key}")
     private String publicKey;
 
-
     public String getPublicKey() {
         return publicKey;
     }
