@@ -56,13 +56,13 @@ VAPID_PUBLIC_KEY=YOUR_VAPID_PUBLIC_KEY_FOR_PWA
 VAPID_PRIVATE_KEY=YOUR_VAPID_PRIVATE_KEY_FOR_PWA
 ```
 ### Run
-  - `mvn spring-boot:run`
+- `mvn spring-boot:run`
 
 ### Build
-  - `mvn clean package` (outputs `target/*.jar`)
+- `mvn clean package` (outputs `target/*.jar`)
 
 ### Run Production
-  - `SPRING_PROFILES_ACTIVE=prod java -jar target/*.jar`
+- `SPRING_PROFILES_ACTIVE=prod java -jar target/*.jar`
 - To create a tournament schedule, you must also run [MarioKart_Schedule](https://github.com/einToast/MarioKart_Schedule)
 
 ## Docker
