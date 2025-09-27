@@ -25,5 +25,4 @@ updates:
     ignore:
       - dependency-name: "eclipse-temurin"
         versions:
-        - ">= 22"
-        - "< 25"
+        - ">= 22, < 25"
