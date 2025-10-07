@@ -30,9 +30,10 @@ public class AdminRegistrationReadService {
     }
 
     public List<Team> getTeamsSortedByGroupPoints() {
+        int maxGames = publicSettingsReadService.getSettings().getMaxGamesCount();
         List<Team> teams = teamRepository.findAll().stream()
                 .sorted(Comparator.comparing(
-                        team -> team.getGroupPoints(publicSettingsReadService.getSettings().getMaxGamesCount()),
+                        team -> team.getGroupPoints(maxGames) / (double) (team.getNumberOfGamesPlayed(maxGames) == 0 ? 1 : team.getNumberOfGamesPlayed(maxGames)),
                         Comparator.reverseOrder()))
                 .toList();
         return teams;
