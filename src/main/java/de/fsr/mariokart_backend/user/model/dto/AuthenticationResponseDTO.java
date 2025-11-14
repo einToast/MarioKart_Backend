@@ -9,11 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class AuthenticationResponseDTO {
-    private String accessToken;
     private UserDTO user;
 
-    public AuthenticationResponseDTO(String accessToken, User user) {
-        setAccessToken(accessToken);
+    public AuthenticationResponseDTO(User user) {
         setUser(new UserDTO(user));
     }
 

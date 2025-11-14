@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.security;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import de.fsr.mariokart_backend.user.repository.UserRepository;
 import de.fsr.mariokart_backend.user.service.JWTManagerService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -23,6 +25,8 @@ import lombok.AllArgsConstructor;
 @Component
 @AllArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
+    private static final String AUTH_COOKIE_NAME = "authToken";
+
     private final JWTManagerService jwtManagerService;
     private final UserRepository userRepository;
 
@@ -31,12 +35,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        if (!hasAuthorizationBearer(request)) {
+        String token = resolveToken(request);
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = getAccessToken(request);
 
         if (!jwtManagerService.validateJWT(token)) {
             filterChain.doFilter(request, response);
@@ -52,19 +55,22 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private boolean hasAuthorizationBearer(HttpServletRequest request) {
+    private String resolveToken(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
-        if (ObjectUtils.isEmpty(header) || !header.startsWith("Bearer")) {
-            return false;
+        if (!ObjectUtils.isEmpty(header) && header.startsWith("Bearer")) {
+            return header.split(" ")[1].trim();
         }
 
-        return true;
-    }
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
 
-    private String getAccessToken(HttpServletRequest request) {
-        String header = request.getHeader("Authorization");
-        String token = header.split(" ")[1].trim();
-        return token;
+        return Arrays.stream(cookies)
+                .filter(cookie -> AUTH_COOKIE_NAME.equals(cookie.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElse(null);
     }
 
     private void setAuthenticationContext(String token, HttpServletRequest request) throws EntityNotFoundException {
