@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
@@ -50,7 +51,7 @@ public class PublicUserAuthController {
                     .header(HttpHeaders.SET_COOKIE, authCookie.toString())
                     .body(authentication.getResponse());
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials", ex);
         }
     }
 
@@ -58,14 +59,14 @@ public class PublicUserAuthController {
     public ResponseEntity<AuthenticationResponseDTO> checkLogin(
             @CookieValue(name = AUTH_COOKIE_NAME, required = false) String authCookie) {
         if (authCookie == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
         }
 
         try {
             AuthenticationResponseDTO response = authenticationService.authenticateUserByToken(authCookie);
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid session", ex);
         }
     }
 
