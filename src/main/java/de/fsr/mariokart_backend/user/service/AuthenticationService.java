@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.exception.PasswordMismatchException;
 import de.fsr.mariokart_backend.user.exception.TokenExpiredException;
 import de.fsr.mariokart_backend.user.exception.TokenNotFoundException;
@@ -19,6 +19,7 @@ import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.model.UserToken;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;
+import de.fsr.mariokart_backend.user.model.dto.AuthenticationResult;
 import de.fsr.mariokart_backend.user.model.dto.UserCreationDTO;
 import de.fsr.mariokart_backend.user.model.dto.UserPasswordsDTO;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
@@ -31,9 +32,8 @@ public class AuthenticationService {
     private final JWTManagerService jwtManagerService;
     private final UserTokenService userTokenService;
     private final UserRepository userRepository;
-    private final UserProperties userProperties;
 
-    public AuthenticationResponseDTO authenticateUser(AuthenticationRequestDTO request) {
+    public AuthenticationResult authenticateUser(AuthenticationRequestDTO request) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                 request.getUsername(), request.getPassword());
 
@@ -42,7 +42,19 @@ public class AuthenticationService {
         User user = (User) authentication.getPrincipal();
         String accessToken = jwtManagerService.generateJWT(user);
 
-        return new AuthenticationResponseDTO(accessToken, user);
+        return new AuthenticationResult(accessToken, new AuthenticationResponseDTO(user));
+    }
+
+    public AuthenticationResponseDTO authenticateUserByToken(String token) {
+        if (!jwtManagerService.validateJWT(token)) {
+            throw new BadCredentialsException("Invalid token");
+        }
+
+        String username = jwtManagerService.getSubjectFromToken(token);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        return new AuthenticationResponseDTO(user);
     }
 
     public User registerUser(UserPasswordsDTO userPasswords, String token)
