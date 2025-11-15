@@ -17,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
+import de.fsr.mariokart_backend.security.AuthCookieConstants;
 import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;
@@ -30,8 +31,6 @@ import lombok.AllArgsConstructor;
 @ApiController(apiType = ApiType.PUBLIC, controllerType = ControllerType.USER)
 public class PublicUserAuthController {
 
-    private static final String AUTH_COOKIE_NAME = "authToken";
-
     private final AuthenticationService authenticationService;
     private final UserProperties userProperties;
 
@@ -39,7 +38,8 @@ public class PublicUserAuthController {
     public ResponseEntity<AuthenticationResponseDTO> login(@RequestBody @Valid AuthenticationRequestDTO request) {
         try {
             AuthenticationResult authentication = authenticationService.authenticateUser(request);
-            ResponseCookie authCookie = ResponseCookie.from(AUTH_COOKIE_NAME, authentication.getAccessToken())
+            ResponseCookie authCookie = ResponseCookie.from(AuthCookieConstants.AUTH_COOKIE_NAME,
+                    authentication.getAccessToken())
                     .path("/")
                     .secure(true)
                     .httpOnly(true)
@@ -57,7 +57,7 @@ public class PublicUserAuthController {
 
     @GetMapping("/login/check")
     public ResponseEntity<AuthenticationResponseDTO> checkLogin(
-            @CookieValue(name = AUTH_COOKIE_NAME, required = false) String authCookie) {
+            @CookieValue(name = AuthCookieConstants.AUTH_COOKIE_NAME, required = false) String authCookie) {
         if (authCookie == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
         }
@@ -72,7 +72,7 @@ public class PublicUserAuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        ResponseCookie deleteAuthCookie = ResponseCookie.from(AUTH_COOKIE_NAME, "")
+        ResponseCookie deleteAuthCookie = ResponseCookie.from(AuthCookieConstants.AUTH_COOKIE_NAME, "")
                 .path("/")
                 .secure(true)
                 .httpOnly(true)

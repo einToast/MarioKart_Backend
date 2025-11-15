@@ -25,8 +25,6 @@ import lombok.AllArgsConstructor;
 @Component
 @AllArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
-    private static final String AUTH_COOKIE_NAME = "authToken";
-
     private final JWTManagerService jwtManagerService;
     private final UserRepository userRepository;
 
@@ -67,7 +65,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
 
         return Arrays.stream(cookies)
-                .filter(cookie -> AUTH_COOKIE_NAME.equals(cookie.getName()))
+                .filter(cookie -> AuthCookieConstants.AUTH_COOKIE_NAME.equals(cookie.getName()))
                 .findFirst()
                 .map(Cookie::getValue)
                 .orElse(null);
