@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import de.fsr.mariokart_backend.config.AuthCookieConstants;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.repository.UserRepository;

@@ -14,11 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import de.fsr.mariokart_backend.config.AuthCookieConstants;
 import de.fsr.mariokart_backend.config.CookieProperties;
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
-import de.fsr.mariokart_backend.security.AuthCookieConstants;
 import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;

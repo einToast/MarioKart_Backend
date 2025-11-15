@@ -1,4 +1,4 @@
-package de.fsr.mariokart_backend.security;
+package de.fsr.mariokart_backend.config;
 
 import lombok.NoArgsConstructor;
 
