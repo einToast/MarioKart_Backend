@@ -49,6 +49,7 @@ public class NotificationSendService {
 
         // pushService.send(notification);
         HttpResponse response = pushService.send(notification);
+        // TODO: remove print statement
         System.out.println(response);
     }
 
