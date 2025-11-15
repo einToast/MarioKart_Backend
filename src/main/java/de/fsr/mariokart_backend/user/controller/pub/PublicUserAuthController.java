@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import de.fsr.mariokart_backend.config.CookieProperties;
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
@@ -33,19 +34,14 @@ public class PublicUserAuthController {
 
     private final AuthenticationService authenticationService;
     private final UserProperties userProperties;
+    private final CookieProperties cookieProperties;
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponseDTO> login(@RequestBody @Valid AuthenticationRequestDTO request) {
         try {
             AuthenticationResult authentication = authenticationService.authenticateUser(request);
-            ResponseCookie authCookie = ResponseCookie.from(AuthCookieConstants.AUTH_COOKIE_NAME,
-                    authentication.getAccessToken())
-                    .path("/")
-                    .secure(true)
-                    .httpOnly(true)
-                    .sameSite("Strict")
-                    .maxAge(Duration.ofHours(userProperties.getExpiresAfter()))
-                    .build();
+            ResponseCookie authCookie = buildAuthCookie(authentication.getAccessToken(),
+                    Duration.ofHours(userProperties.getExpiresAfter()));
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, authCookie.toString())
@@ -72,16 +68,24 @@ public class PublicUserAuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        ResponseCookie deleteAuthCookie = ResponseCookie.from(AuthCookieConstants.AUTH_COOKIE_NAME, "")
-                .path("/")
-                .secure(true)
-                .httpOnly(true)
-                .sameSite("Strict")
-                .maxAge(0)
-                .build();
+        ResponseCookie deleteAuthCookie = buildAuthCookie("", Duration.ZERO);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deleteAuthCookie.toString())
                 .build();
+    }
+
+    private ResponseCookie buildAuthCookie(String value, Duration maxAge) {
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from(AuthCookieConstants.AUTH_COOKIE_NAME, value)
+                .path(cookieProperties.getPath())
+                .secure(cookieProperties.isSecure())
+                .httpOnly(true)
+                .sameSite(cookieProperties.getSameSite());
+
+        if (maxAge != null) {
+            builder.maxAge(maxAge);
+        }
+
+        return builder.build();
     }
 }
