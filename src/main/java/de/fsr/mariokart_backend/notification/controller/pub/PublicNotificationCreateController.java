@@ -1,9 +1,11 @@
 package de.fsr.mariokart_backend.notification.controller.pub;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
@@ -26,7 +28,7 @@ public class PublicNotificationCreateController {
             publicNotificationCreateService.saveSubscription(subscription);
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
-            return ResponseEntity.status(503).build();
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
         }
 
     }

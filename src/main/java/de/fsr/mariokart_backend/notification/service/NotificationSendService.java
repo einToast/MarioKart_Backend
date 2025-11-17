@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.notification.service;
 import java.security.GeneralSecurityException;
 import java.security.Security;
 
+import org.apache.http.HttpResponse;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,7 +47,10 @@ public class NotificationSendService {
                 subscription.getAuth(),
                 payload);
 
-        pushService.send(notification);
+        // pushService.send(notification);
+        HttpResponse response = pushService.send(notification);
+        // TODO: remove print statement
+        System.out.println(response);
     }
 
 }

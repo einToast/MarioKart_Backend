@@ -1,10 +1,12 @@
 package de.fsr.mariokart_backend.notification.controller.admin;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
@@ -27,7 +29,7 @@ public class AdminNotificationCreateController {
             adminNotificationCreateService.sendNotificationToAll(notification.getTitle(), notification.getMessage());
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
-            return ResponseEntity.status(503).build();
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
 
@@ -37,7 +39,7 @@ public class AdminNotificationCreateController {
             adminNotificationCreateService.sendNotificationToTeam(teamId, notification.getTitle(), notification.getMessage());
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
-            return ResponseEntity.status(503).build();
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
         }
     }
 
