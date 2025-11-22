@@ -13,7 +13,7 @@ updates:
     ignore:
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
         versions:
-        - "> 3"
+        - ">= 4"
 
   - package-ecosystem: "github-actions"
     directory: "/"
