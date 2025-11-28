@@ -67,6 +67,7 @@ public class PublicSurveyCreateService {
         }
 
         if ("TEAM_ONE_FREE_TEXT".equals(answer.getAnswerType())) {
+            // TODO: simplify
             boolean hasAnswered = answerRepository.findAll().stream()
                     .filter(a -> a.getQuestion().getId().equals(answer.getQuestionId()))
                     .filter(a -> submittingTeam.equals(a.getSubmittingTeam()))
