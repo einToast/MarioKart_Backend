@@ -26,6 +26,6 @@ public class TeamOneFreeTextAnswer extends Answer {
 
     @Override
     public String getAnswerDetails() {
-        return "Text response: " + textAnswer + ", Team: " + (team != null ? team : "No team");
+        return "Text response: " + textAnswer + ", Team: " + (team != null ? team.getTeamName() : "No team");
     }
 }
