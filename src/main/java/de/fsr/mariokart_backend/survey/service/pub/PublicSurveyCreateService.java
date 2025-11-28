@@ -66,6 +66,19 @@ public class PublicSurveyCreateService {
             }
         }
 
+        if ("TEAM_ONE_FREE_TEXT".equals(answer.getAnswerType())) {
+            // TODO: simplify
+            boolean hasAnswered = answerRepository.findAll().stream()
+                    .filter(a -> a.getQuestion().getId().equals(answer.getQuestionId()))
+                    .filter(a -> submittingTeam.equals(a.getSubmittingTeam()))
+                    .findAny()
+                    .isPresent();
+
+            if (hasAnswered) {
+                throw new IllegalArgumentException("This team has already submitted an answer for this question.");
+            }
+        }
+
         return answerReturnDTOService
                 .answerToAnswerReturnDTO(
                         answerRepository

@@ -10,6 +10,7 @@ import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamAnswer;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamOneFreeTextAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import lombok.AllArgsConstructor;
 
@@ -37,6 +38,12 @@ public class AnswerReturnDTOService {
                 throw new IllegalArgumentException("Invalid question type.");
             }
             answerReturnDTO.setAnswerType(QuestionType.TEAM.toString());
+        } else if (answer instanceof TeamOneFreeTextAnswer) {
+            answerReturnDTO.setFreeTextAnswer(
+                    ((TeamOneFreeTextAnswer) answer).getTextAnswer());
+            answerReturnDTO.setTeamSelectedOption(
+                    ((TeamOneFreeTextAnswer) answer).getTeam().getId().intValue());
+            answerReturnDTO.setAnswerType(QuestionType.TEAM_ONE_FREE_TEXT.toString());
         } else {
             throw new IllegalArgumentException("Invalid answer type.");
         }
