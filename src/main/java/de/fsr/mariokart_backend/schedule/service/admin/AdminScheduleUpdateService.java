@@ -43,7 +43,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-@CacheConfig(cacheNames = "schedule")
+@CacheConfig(cacheNames = {"schedule", "registration"})
 @CacheEvict(allEntries = true)
 public class AdminScheduleUpdateService {
 
