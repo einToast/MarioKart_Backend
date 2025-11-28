@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import de.fsr.mariokart_backend.schedule.model.Game;
@@ -55,6 +56,7 @@ public class Team {
     @OneToMany(mappedBy = "team", orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<Points> points;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "teams")
     private Set<TeamQuestion> teamQuestions;
 
