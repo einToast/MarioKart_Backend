@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-@CacheConfig(cacheNames = "registration")
+@CacheConfig(cacheNames = {"schedule", "registration"})
 @CacheEvict(allEntries = true)
 public class AdminRegistrationDeleteService {
     private final TeamRepository teamRepository;

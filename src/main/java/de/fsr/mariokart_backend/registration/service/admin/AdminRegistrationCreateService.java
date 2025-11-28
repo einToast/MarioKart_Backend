@@ -12,7 +12,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-@CacheConfig(cacheNames = "registration")
+@CacheConfig(cacheNames = {"schedule", "registration"})
 @CacheEvict(allEntries = true)
 public class AdminRegistrationCreateService {
     private final CharacterRepository characterRepository;
