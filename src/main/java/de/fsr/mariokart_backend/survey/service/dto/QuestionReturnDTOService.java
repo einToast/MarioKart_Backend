@@ -11,6 +11,7 @@ import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamOneFreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import lombok.AllArgsConstructor;
 
@@ -34,6 +35,8 @@ public class QuestionReturnDTOService {
                     .collect(Collectors.toList()));
             questionReturnDTO.setFinalTeamsOnly(((TeamQuestion) question).getFinalTeamsOnly());
             questionReturnDTO.setQuestionType(QuestionType.TEAM.toString());
+        } else if (question instanceof TeamOneFreeTextQuestion) {
+            questionReturnDTO.setQuestionType(QuestionType.TEAM_ONE_FREE_TEXT.toString());
         } else {
             throw new IllegalArgumentException("Invalid question type.");
         }

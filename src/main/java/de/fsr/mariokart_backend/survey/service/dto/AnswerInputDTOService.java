@@ -13,6 +13,7 @@ import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamAnswer;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamOneFreeTextAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import lombok.AllArgsConstructor;
@@ -48,6 +49,12 @@ public class AnswerInputDTOService {
             } else {
                 throw new IllegalArgumentException("Invalid question type.");
             }
+        } else if (answerInputDTO.getAnswerType().equals(QuestionType.TEAM_ONE_FREE_TEXT.toString())) {
+            answer = new TeamOneFreeTextAnswer();
+            ((TeamOneFreeTextAnswer) answer).setTextAnswer(answerInputDTO.getFreeTextAnswer());
+            Team team = teamRepository.findById(Long.valueOf(answerInputDTO.getTeamSelectedOption()))
+                    .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
+            ((TeamOneFreeTextAnswer) answer).setTeam(team);
         } else {
             throw new IllegalArgumentException("Invalid answer type.");
         }

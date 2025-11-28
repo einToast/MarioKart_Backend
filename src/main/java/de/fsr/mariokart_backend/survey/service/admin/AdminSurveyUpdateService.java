@@ -13,6 +13,7 @@ import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamOneFreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
@@ -72,6 +73,9 @@ public class AdminSurveyUpdateService {
             if (((TeamQuestion) updatedQuestion).getTeams() != null) {
                 ((TeamQuestion) questionToUpdate).setTeams(((TeamQuestion) updatedQuestion).getTeams());
             }
+
+        } else if (updatedQuestion instanceof TeamOneFreeTextQuestion) {
+            // nothing to update
         } else {
             throw new IllegalArgumentException("Question type not supported.");
         }

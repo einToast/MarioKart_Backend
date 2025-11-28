@@ -17,6 +17,7 @@ import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamAnswer;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamOneFreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
@@ -42,8 +43,8 @@ public class AdminSurveyReadService {
     public List<AnswerReturnDTO> getAnswersOfQuestion(Long id) throws EntityNotFoundException {
         Question question = questionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Question not found"));
-        if (!(question instanceof FreeTextQuestion)) {
-            throw new IllegalArgumentException("Question is not a FreeTextQuestion");
+        if (!(question instanceof FreeTextQuestion) && !(question instanceof TeamOneFreeTextQuestion)) {
+            throw new IllegalArgumentException("Question is not a FreeTextQuestion or TeamOneFreeTextQuestion");
         }
         return answerRepository.findAllByQuestionId(id).stream()
                 .map(answerReturnDTOService::answerToAnswerReturnDTO)

@@ -4,5 +4,6 @@ public enum QuestionType {
     MULTIPLE_CHOICE,
     FREE_TEXT,
     CHECKBOX,
-    TEAM
+    TEAM,
+    TEAM_ONE_FREE_TEXT
 }
