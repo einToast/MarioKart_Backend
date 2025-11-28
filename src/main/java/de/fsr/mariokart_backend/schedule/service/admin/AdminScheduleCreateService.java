@@ -160,7 +160,7 @@ public class AdminScheduleCreateService {
         round.setStartTime(startTime);
         round.setEndTime(startTime.plusMinutes(20L));
         addRound(round);
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 3; i++) {
             Game game = new Game();
             game.setSwitchGame("Blau");
             game.setRound(round);
