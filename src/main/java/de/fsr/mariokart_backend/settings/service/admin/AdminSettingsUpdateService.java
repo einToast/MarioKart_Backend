@@ -21,7 +21,7 @@ public class AdminSettingsUpdateService {
     private final PublicScheduleReadService publicScheduleReadService;
 
     public TournamentDTO updateSettings(TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
-        Tournament tournament = tournamentRepository.findAll().get(0);
+        Tournament tournament = tournamentRepository.findAll().getFirst();
         if (tournament == null) {
             throw new IllegalStateException("Settings do not exist.");
         }

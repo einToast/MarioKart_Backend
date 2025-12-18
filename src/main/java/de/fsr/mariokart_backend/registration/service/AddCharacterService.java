@@ -40,7 +40,7 @@ public class AddCharacterService {
 
         adminRegistrationCreateService.addCharacters(characters);
 
-        System.out.println(adminRegistrationReadService.getCharacters()
+        IO.println(adminRegistrationReadService.getCharacters()
                 .stream()
                 .map(CharacterReturnDTO::getCharacterName)
                 .collect(Collectors.toList()));

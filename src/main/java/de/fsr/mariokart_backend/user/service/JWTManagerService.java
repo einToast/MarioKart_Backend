@@ -43,7 +43,7 @@ public class JWTManagerService {
             System.err.println("JWT is invalid" + ex);
         } catch (UnsupportedJwtException ex) {
             System.err.println("JWT is not supported" + ex);
-        } catch (SignatureException ex) {
+        } catch (SignatureException _) {
             System.err.println("Signature validation failed");
         }
 

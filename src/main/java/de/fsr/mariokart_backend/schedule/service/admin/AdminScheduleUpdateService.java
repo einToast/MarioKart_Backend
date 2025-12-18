@@ -201,7 +201,7 @@ public class AdminScheduleUpdateService {
             throw new EntityNotFoundException("Schedule not created yet.");
         }
 
-        Break aBreak = breakRepository.findAll().get(0);
+        Break aBreak = breakRepository.findAll().getFirst();
         Round oldRound = aBreak.getRound();
         Round newRound = roundRepository.findById(breakCreation.getRoundId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID."));
@@ -393,7 +393,7 @@ public class AdminScheduleUpdateService {
         if (unplayedRounds.isEmpty()) {
             return;
         }
-        Round round = unplayedRounds.get(0);
+        Round round = unplayedRounds.getFirst();
         sendNotificationForNextRound(round);
     }
 
