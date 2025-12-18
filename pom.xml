@@ -129,24 +129,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.openrewrite.maven</groupId>
-				<artifactId>rewrite-maven-plugin</artifactId>
-				<version>6.26.0</version>
-				<configuration>
-				<exportDatatables>true</exportDatatables>
-				<activeRecipes>
-					<recipe>org.openrewrite.java.migrate.UpgradeToJava25</recipe>
-				</activeRecipes>
-				</configuration>
-				<dependencies>
-				<dependency>
-					<groupId>org.openrewrite.recipe</groupId>
-					<artifactId>rewrite-migrate-java</artifactId>
-					<version>3.24.0</version>
-				</dependency>
-				</dependencies>
-			</plugin>
 		</plugins>
 	</build>
 
