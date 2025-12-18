@@ -38,11 +38,11 @@ public class AnswerReturnDTOService {
                 throw new IllegalArgumentException("Invalid question type.");
             }
             answerReturnDTO.setAnswerType(QuestionType.TEAM.toString());
-        } else if (answer instanceof TeamOneFreeTextAnswer textAnswer) {
+        } else if (answer instanceof TeamOneFreeTextAnswer freetextAnswer) {
             answerReturnDTO.setFreeTextAnswer(
-                    textAnswer.getTextAnswer());
+                    freetextAnswer.getTextAnswer());
             answerReturnDTO.setTeamSelectedOption(
-                    textAnswer.getTeam().getId().intValue());
+                    freetextAnswer.getTeam().getId().intValue());
             answerReturnDTO.setAnswerType(QuestionType.TEAM_ONE_FREE_TEXT.toString());
         } else {
             throw new IllegalArgumentException("Invalid answer type.");
