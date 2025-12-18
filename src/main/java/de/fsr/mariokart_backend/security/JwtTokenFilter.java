@@ -47,7 +47,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         try {
             setAuthenticationContext(token, request);
-        } catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException _) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -51,11 +51,11 @@ public class ApplicationSecurity {
                 .sessionManagement(
                         sessionManagement -> sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptionHandling -> exceptionHandling
-                        .authenticationEntryPoint((request, response, e) -> {
+                        .authenticationEntryPoint((_, response, e) -> {
                             response.setStatus(HttpStatus.UNAUTHORIZED.value());
                             response.getWriter().write("Unauthorized: " + e.getMessage());
                         })
-                        .accessDeniedHandler((request, response, e) -> {
+                        .accessDeniedHandler((_, response, e) -> {
                             response.setStatus(HttpStatus.FORBIDDEN.value());
                             response.getWriter().write("Forbidden: " + e.getMessage());
                         }));
@@ -68,7 +68,7 @@ public class ApplicationSecurity {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        System.out.println("Allowed Origin: " + allowedOrigin);
+        IO.println("Allowed Origin: " + allowedOrigin);
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigin, "http://127.0.0.1:8100", "http://localhost:8100"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Team-ID"));

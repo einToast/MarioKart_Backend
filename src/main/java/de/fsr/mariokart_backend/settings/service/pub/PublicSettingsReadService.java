@@ -20,6 +20,6 @@ public class PublicSettingsReadService {
         if (tournamentRepository.findAll().isEmpty()) {
             throw new IllegalStateException("Settings do not exist.");
         }
-        return new TournamentDTO(tournamentRepository.findAll().get(0));
+        return new TournamentDTO(tournamentRepository.findAll().getFirst());
     }
 }

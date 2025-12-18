@@ -29,11 +29,11 @@ public class AnswerReturnDTOService {
         } else if (answer instanceof FreeTextAnswer freeTextAnswer) {
             answerReturnDTO.setFreeTextAnswer(freeTextAnswer.getTextAnswer());
             answerReturnDTO.setAnswerType(QuestionType.FREE_TEXT.toString());
-        } else if (answer instanceof TeamAnswer) {
+        } else if (answer instanceof TeamAnswer teamAnswer) {
             Question question = answer.getQuestion();
             if (question instanceof TeamQuestion teamQuestion) {
                 answerReturnDTO.setTeamSelectedOption(
-                        teamQuestion.getTeams().indexOf(((TeamAnswer) answer).getTeam()));
+                        teamQuestion.getTeams().indexOf(teamAnswer.getTeam()));
             } else {
                 throw new IllegalArgumentException("Invalid question type.");
             }

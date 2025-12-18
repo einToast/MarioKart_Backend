@@ -16,7 +16,7 @@ public class PublicWebSocketController {
     @MessageMapping("/public/sendMessages")
     @SendTo("/topic/messages")
     public String handleMessage(String message) {
-        System.out.println("Received message: " + message);
+        IO.println("Received message: " + message);
         return "irgendwas";
     }
 }

@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM maven:3.9.11-eclipse-temurin-21 AS build
+FROM maven:3.9.11-eclipse-temurin-25 AS build
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ ENV VAPID_PRIVATE_KEY=$VAPID_PRIVATE_KEY
 RUN mvn clean package
 
 # Stage 2: Run
-FROM eclipse-temurin:21.0.9_10-jre
+FROM eclipse-temurin:25.0.1_8-jre
 
 WORKDIR /app
 

@@ -12,7 +12,7 @@ public class WebSocketService {
     private final SimpMessagingTemplate messagingTemplate;
 
     public void sendMessage(String topic, String message) {
-        System.out.println(topic + ": " + message);
+        IO.println(topic + ": " + message);
         messagingTemplate.convertAndSend(topic, message);
     }
 }
