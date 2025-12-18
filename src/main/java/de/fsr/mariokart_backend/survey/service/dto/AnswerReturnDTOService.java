@@ -26,8 +26,8 @@ public class AnswerReturnDTOService {
         } else if (answer instanceof CheckboxAnswer checkboxAnswer) {
             answerReturnDTO.setCheckboxSelectedOptions(checkboxAnswer.getSelectedOptions());
             answerReturnDTO.setAnswerType(QuestionType.CHECKBOX.toString());
-        } else if (answer instanceof FreeTextAnswer textAnswer1) {
-            answerReturnDTO.setFreeTextAnswer(textAnswer1.getTextAnswer());
+        } else if (answer instanceof FreeTextAnswer freeTextAnswer) {
+            answerReturnDTO.setFreeTextAnswer(freeTextAnswer.getTextAnswer());
             answerReturnDTO.setAnswerType(QuestionType.FREE_TEXT.toString());
         } else if (answer instanceof TeamAnswer) {
             Question question = answer.getQuestion();
