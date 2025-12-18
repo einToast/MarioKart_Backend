@@ -21,19 +21,19 @@ public class QuestionReturnDTOService {
     public QuestionReturnDTO questionToQuestionReturnDTO(Question question) {
         QuestionReturnDTO questionReturnDTO = new QuestionReturnDTO();
         questionReturnDTO.setId(question.getId());
-        if (question instanceof MultipleChoiceQuestion) {
-            questionReturnDTO.setOptions(((MultipleChoiceQuestion) question).getOptions());
+        if (question instanceof MultipleChoiceQuestion choiceQuestion) {
+            questionReturnDTO.setOptions(choiceQuestion.getOptions());
             questionReturnDTO.setQuestionType(QuestionType.MULTIPLE_CHOICE.toString());
-        } else if (question instanceof CheckboxQuestion) {
-            questionReturnDTO.setOptions(((CheckboxQuestion) question).getOptions());
+        } else if (question instanceof CheckboxQuestion checkboxQuestion) {
+            questionReturnDTO.setOptions(checkboxQuestion.getOptions());
             questionReturnDTO.setQuestionType(QuestionType.CHECKBOX.toString());
         } else if (question instanceof FreeTextQuestion) {
             questionReturnDTO.setQuestionType(QuestionType.FREE_TEXT.toString());
-        } else if (question instanceof TeamQuestion) {
-            questionReturnDTO.setOptions(((TeamQuestion) question).getTeams().stream()
+        } else if (question instanceof TeamQuestion teamQuestion) {
+            questionReturnDTO.setOptions(teamQuestion.getTeams().stream()
                     .map(Team::getTeamName)
                     .collect(Collectors.toList()));
-            questionReturnDTO.setFinalTeamsOnly(((TeamQuestion) question).getFinalTeamsOnly());
+            questionReturnDTO.setFinalTeamsOnly(teamQuestion.getFinalTeamsOnly());
             questionReturnDTO.setQuestionType(QuestionType.TEAM.toString());
         } else if (question instanceof TeamOneFreeTextQuestion) {
             questionReturnDTO.setQuestionType(QuestionType.TEAM_ONE_FREE_TEXT.toString());

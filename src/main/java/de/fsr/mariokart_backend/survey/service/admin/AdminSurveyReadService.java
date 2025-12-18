@@ -58,8 +58,7 @@ public class AdminSurveyReadService {
         List<Answer> answers = answerRepository.findAllByQuestionId(id);
         final List<Integer> statistics;
 
-        if (question instanceof MultipleChoiceQuestion) {
-            MultipleChoiceQuestion mcQuestion = (MultipleChoiceQuestion) question;
+        if (question instanceof MultipleChoiceQuestion mcQuestion) {
             int optionCount = mcQuestion.getOptions().size();
             statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
 
@@ -72,8 +71,7 @@ public class AdminSurveyReadService {
                         }
                     });
 
-        } else if (question instanceof CheckboxQuestion) {
-            CheckboxQuestion cbQuestion = (CheckboxQuestion) question;
+        } else if (question instanceof CheckboxQuestion cbQuestion) {
             int optionCount = cbQuestion.getOptions().size();
             statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
 
@@ -87,8 +85,7 @@ public class AdminSurveyReadService {
                         });
                     });
 
-        } else if (question instanceof TeamQuestion) {
-            TeamQuestion teamQuestion = (TeamQuestion) question;
+        } else if (question instanceof TeamQuestion teamQuestion) {
             int teamCount = teamQuestion.getTeams().size();
             statistics = new ArrayList<>(Collections.nCopies(teamCount, 0));
 

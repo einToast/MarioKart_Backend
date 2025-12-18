@@ -7,8 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
@@ -38,7 +37,7 @@ public class PublicSurveyCreateController {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }

@@ -20,29 +20,29 @@ public class AnswerReturnDTOService {
     public AnswerReturnDTO answerToAnswerReturnDTO(Answer answer) {
         AnswerReturnDTO answerReturnDTO = new AnswerReturnDTO();
         answerReturnDTO.setQuestionId(answer.getQuestion().getId());
-        if (answer instanceof MultipleChoiceAnswer) {
-            answerReturnDTO.setMultipleChoiceSelectedOption(((MultipleChoiceAnswer) answer).getSelectedOption());
+        if (answer instanceof MultipleChoiceAnswer choiceAnswer) {
+            answerReturnDTO.setMultipleChoiceSelectedOption(choiceAnswer.getSelectedOption());
             answerReturnDTO.setAnswerType(QuestionType.MULTIPLE_CHOICE.toString());
-        } else if (answer instanceof CheckboxAnswer) {
-            answerReturnDTO.setCheckboxSelectedOptions(((CheckboxAnswer) answer).getSelectedOptions());
+        } else if (answer instanceof CheckboxAnswer checkboxAnswer) {
+            answerReturnDTO.setCheckboxSelectedOptions(checkboxAnswer.getSelectedOptions());
             answerReturnDTO.setAnswerType(QuestionType.CHECKBOX.toString());
-        } else if (answer instanceof FreeTextAnswer) {
-            answerReturnDTO.setFreeTextAnswer(((FreeTextAnswer) answer).getTextAnswer());
+        } else if (answer instanceof FreeTextAnswer textAnswer1) {
+            answerReturnDTO.setFreeTextAnswer(textAnswer1.getTextAnswer());
             answerReturnDTO.setAnswerType(QuestionType.FREE_TEXT.toString());
         } else if (answer instanceof TeamAnswer) {
             Question question = answer.getQuestion();
-            if (question instanceof TeamQuestion) {
+            if (question instanceof TeamQuestion teamQuestion) {
                 answerReturnDTO.setTeamSelectedOption(
-                        ((TeamQuestion) question).getTeams().indexOf(((TeamAnswer) answer).getTeam()));
+                        teamQuestion.getTeams().indexOf(((TeamAnswer) answer).getTeam()));
             } else {
                 throw new IllegalArgumentException("Invalid question type.");
             }
             answerReturnDTO.setAnswerType(QuestionType.TEAM.toString());
-        } else if (answer instanceof TeamOneFreeTextAnswer) {
+        } else if (answer instanceof TeamOneFreeTextAnswer textAnswer) {
             answerReturnDTO.setFreeTextAnswer(
-                    ((TeamOneFreeTextAnswer) answer).getTextAnswer());
+                    textAnswer.getTextAnswer());
             answerReturnDTO.setTeamSelectedOption(
-                    ((TeamOneFreeTextAnswer) answer).getTeam().getId().intValue());
+                    textAnswer.getTeam().getId().intValue());
             answerReturnDTO.setAnswerType(QuestionType.TEAM_ONE_FREE_TEXT.toString());
         } else {
             throw new IllegalArgumentException("Invalid answer type.");

@@ -40,9 +40,9 @@ public class AnswerInputDTOService {
             answer = new TeamAnswer();
             Question question = questionRepository.findById(answerInputDTO.getQuestionId())
                     .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
-            if (question instanceof TeamQuestion) {
+            if (question instanceof TeamQuestion teamQuestion) {
                 Team team = teamRepository
-                        .findByTeamName(((TeamQuestion) question).getTeams().get(answerInputDTO.getTeamSelectedOption())
+                        .findByTeamName(teamQuestion.getTeams().get(answerInputDTO.getTeamSelectedOption())
                                 .getTeamName())
                         .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
                 ((TeamAnswer) answer).setTeam(team);
