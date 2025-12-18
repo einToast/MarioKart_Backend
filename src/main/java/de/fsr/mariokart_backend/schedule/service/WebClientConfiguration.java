@@ -19,7 +19,7 @@ public class WebClientConfiguration {
 
     @Bean
     public WebClient webClient() {
-        String baseUrl = String.format("%s://%s:%s", protocol, host, port);
+        String baseUrl = "%s://%s:%s".formatted(protocol, host, port);
         System.out.println("baseUrl: " + baseUrl);
         return WebClient.builder().baseUrl(baseUrl).build();
     }

@@ -3,10 +3,9 @@ package de.fsr.mariokart_backend.survey.service.pub;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.registration.model.Team;
@@ -33,7 +32,7 @@ public class PublicSurveyCreateService {
     private static final int MAX_ANSWERS_PER_TEAM = 4;
 
     public AnswerReturnDTO submitAnswer(AnswerInputDTO answer, String userJson)
-            throws EntityNotFoundException, JsonProcessingException {
+            throws EntityNotFoundException, JacksonException {
 
         Map<String, Object> userMap = null;
 

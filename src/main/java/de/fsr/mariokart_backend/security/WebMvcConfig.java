@@ -1,7 +1,7 @@
 package de.fsr.mariokart_backend.security;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 

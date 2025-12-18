@@ -54,24 +54,24 @@ public class AdminSurveyUpdateService {
         if (updatedQuestion.getLive() != null) {
             questionToUpdate.setLive(updatedQuestion.getLive());
         }
-        if (updatedQuestion instanceof MultipleChoiceQuestion) {
-            if (((MultipleChoiceQuestion) updatedQuestion).getOptions() != null) {
+        if (updatedQuestion instanceof MultipleChoiceQuestion choiceQuestion) {
+            if (choiceQuestion.getOptions() != null) {
                 ((MultipleChoiceQuestion) questionToUpdate)
-                        .setOptions(((MultipleChoiceQuestion) updatedQuestion).getOptions());
+                        .setOptions(choiceQuestion.getOptions());
             }
-        } else if (updatedQuestion instanceof CheckboxQuestion) {
-            if (((CheckboxQuestion) updatedQuestion).getOptions() != null) {
-                ((CheckboxQuestion) questionToUpdate).setOptions(((CheckboxQuestion) updatedQuestion).getOptions());
+        } else if (updatedQuestion instanceof CheckboxQuestion checkboxQuestion) {
+            if (checkboxQuestion.getOptions() != null) {
+                ((CheckboxQuestion) questionToUpdate).setOptions(checkboxQuestion.getOptions());
             }
         } else if (updatedQuestion instanceof FreeTextQuestion) {
             // nothing to update
-        } else if (updatedQuestion instanceof TeamQuestion) {
-            if (((TeamQuestion) updatedQuestion).getFinalTeamsOnly() != null) {
+        } else if (updatedQuestion instanceof TeamQuestion teamQuestion) {
+            if (teamQuestion.getFinalTeamsOnly() != null) {
                 ((TeamQuestion) questionToUpdate)
-                        .setFinalTeamsOnly(((TeamQuestion) updatedQuestion).getFinalTeamsOnly());
+                        .setFinalTeamsOnly(teamQuestion.getFinalTeamsOnly());
             }
-            if (((TeamQuestion) updatedQuestion).getTeams() != null) {
-                ((TeamQuestion) questionToUpdate).setTeams(((TeamQuestion) updatedQuestion).getTeams());
+            if (teamQuestion.getTeams() != null) {
+                ((TeamQuestion) questionToUpdate).setTeams(teamQuestion.getTeams());
             }
 
         } else if (updatedQuestion instanceof TeamOneFreeTextQuestion) {
