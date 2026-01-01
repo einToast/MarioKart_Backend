@@ -102,7 +102,10 @@ public class Team {
         if (points == null)
             return 0;
 
-        return (int) getGames().stream().filter(game -> game.getRound().isPlayed()).count();
+        int gamesPlayed = (int) getGames().stream().filter(game -> game.getRound().isPlayed()).count();
+
+
+        return gamesPlayed > maxGames ? maxGames : gamesPlayed;
     }
 
     public void removeCharacter() {

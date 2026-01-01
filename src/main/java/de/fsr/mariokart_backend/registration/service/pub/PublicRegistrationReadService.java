@@ -80,6 +80,7 @@ public class PublicRegistrationReadService {
             teams.forEach(team -> team.setGroupPoints(0));
         }
         teams.forEach(team -> team.setFinalPoints(0));
+        teams.forEach(team -> team.setFinalReady(true));
         return teams;
     }
 
