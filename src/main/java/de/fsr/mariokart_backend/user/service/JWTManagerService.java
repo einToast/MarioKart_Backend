@@ -76,10 +76,17 @@ public class JWTManagerService {
     }
 
     private Claims parseJWTClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(signingKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(signingKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException ex) {
+            System.err.println("JWT expired: " + ex.getMessage());
+        } catch (JwtException | IllegalArgumentException ex) {
+            System.err.println("JWT invalid: " + ex.getMessage());
+        }
+        return null;
     }
 }
