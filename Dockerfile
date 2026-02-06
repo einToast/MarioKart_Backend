@@ -28,7 +28,7 @@ ENV VAPID_PRIVATE_KEY=$VAPID_PRIVATE_KEY
 RUN mvn clean package
 
 # Stage 2: Run
-FROM eclipse-temurin:25.0.1_8-jre
+FROM eclipse-temurin:25.0.2_10-jre
 
 WORKDIR /app
 
