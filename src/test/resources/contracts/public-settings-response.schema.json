@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tournamentOpen",
+    "registrationOpen",
+    "maxGamesCount"
+  ],
+  "properties": {
+    "tournamentOpen": {
+      "type": "boolean"
+    },
+    "registrationOpen": {
+      "type": "boolean"
+    },
+    "maxGamesCount": {
+      "type": "integer"
+    }
+  }
+}
