@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
@@ -99,17 +100,25 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     }
 
     private void addUser() {
+        String username = System.getenv("USER_NAME");
+        String password = System.getenv("USER_PASSWORD");
+
+        if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
+            System.err.println("Skipping admin bootstrap user: USER_NAME or USER_PASSWORD is not set.");
+            return;
+        }
+
         if (userService.getUsers().isEmpty()) {
             try {
-                if (userService.getUser(System.getenv("USER_NAME")) != null) {
+                if (userService.getUser(username) != null) {
                     System.err.print("User already exists!");
                     return;
                 }
             } catch (EntityNotFoundException e) {
                 System.err.print(e.getMessage());
             }
-            User user = new User(System.getenv("USER_NAME"), true);
-            user.setPassword(System.getenv("USER_PASSWORD"));
+            User user = new User(username, true);
+            user.setPassword(password);
             userService.createAndRegisterIfNotExist(user);
         }
 
