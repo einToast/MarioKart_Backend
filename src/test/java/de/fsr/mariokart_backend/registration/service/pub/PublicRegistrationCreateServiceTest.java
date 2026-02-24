@@ -94,4 +94,54 @@ class PublicRegistrationCreateServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Team name already exists");
     }
+
+    @Test
+    void registerTeamThrowsWhenRegistrationIsClosed() {
+        TeamInputDTO input = TestDataFactory.teamInput("Speedsters", "Mario");
+        when(settingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4));
+
+        assertThatThrownBy(() -> service.registerTeam(input))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Registration is closed");
+    }
+
+    @Test
+    void registerTeamThrowsWhenTournamentIsClosed() {
+        TeamInputDTO input = TestDataFactory.teamInput("Speedsters", "Mario");
+        when(settingsReadService.getSettings()).thenReturn(new TournamentDTO(false, true, 4));
+
+        assertThatThrownBy(() -> service.registerTeam(input))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Tournament is closed");
+    }
+
+    @Test
+    void registerTeamThrowsWhenCharacterAlreadyAssigned() throws EntityNotFoundException {
+        TeamInputDTO input = TestDataFactory.teamInput("Speedsters", "Mario");
+        Team team = TestDataFactory.team("Speedsters", TestDataFactory.character("Mario"));
+        Team existing = TestDataFactory.team("Existing", TestDataFactory.character("Luigi"));
+        team.getCharacter().setTeam(existing);
+
+        when(settingsReadService.getSettings()).thenReturn(TestDataFactory.openTournamentSettings());
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(registrationInputDTOService.teamInputDTOToTeam(input)).thenReturn(team);
+
+        assertThatThrownBy(() -> service.registerTeam(input))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Character is already in a team");
+    }
+
+    @Test
+    void registerTeamPropagatesWhenCharacterDoesNotExist() throws EntityNotFoundException {
+        TeamInputDTO input = TestDataFactory.teamInput("Speedsters", "Unknown");
+
+        when(settingsReadService.getSettings()).thenReturn(TestDataFactory.openTournamentSettings());
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(registrationInputDTOService.teamInputDTOToTeam(input))
+                .thenThrow(new EntityNotFoundException("There is no character with this name."));
+
+        assertThatThrownBy(() -> service.registerTeam(input))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("character with this name");
+    }
 }
