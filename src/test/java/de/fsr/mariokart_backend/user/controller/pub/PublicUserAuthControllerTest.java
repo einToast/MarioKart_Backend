@@ -1,10 +1,13 @@
 package de.fsr.mariokart_backend.user.controller.pub;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -79,5 +83,64 @@ class PublicUserAuthControllerTest extends AbstractWebMvcSliceTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void loginReturnsUnauthorizedForBadCredentials() throws Exception {
+        when(authenticationService.authenticateUser(any(AuthenticationRequestDTO.class)))
+                .thenThrow(new BadCredentialsException("bad credentials"));
+
+        AuthenticationRequestDTO request = TestDataFactory.authRequest("admin", "wrong");
+
+        mockMvc.perform(post("/public/user/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("Invalid credentials")));
+    }
+
+    @Test
+    void checkLoginReturnsUnauthorizedWhenCookieMissing() throws Exception {
+        mockMvc.perform(get("/public/user/login/check"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("Not authenticated")));
+    }
+
+    @Test
+    void checkLoginReturnsUnauthorizedForInvalidSession() throws Exception {
+        when(authenticationService.authenticateUserByToken(eq("bad-token")))
+                .thenThrow(new BadCredentialsException("invalid"));
+
+        mockMvc.perform(get("/public/user/login/check")
+                        .cookie(new org.springframework.mock.web.MockCookie(
+                                AuthCookieConstants.AUTH_COOKIE_NAME, "bad-token")))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("Invalid session")));
+    }
+
+    @Test
+    void checkLoginReturnsUserForValidCookie() throws Exception {
+        when(authenticationService.authenticateUserByToken(eq("good-token")))
+                .thenReturn(TestDataFactory.authResult("good-token", TestDataFactory.user("admin", true)).getResponse());
+
+        mockMvc.perform(get("/public/user/login/check")
+                        .cookie(new org.springframework.mock.web.MockCookie(
+                                AuthCookieConstants.AUTH_COOKIE_NAME, "good-token")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username").value("admin"));
+    }
+
+    @Test
+    void logoutClearsCookie() throws Exception {
+        when(cookieProperties.getPath()).thenReturn("/");
+        when(cookieProperties.isSecure()).thenReturn(false);
+        when(cookieProperties.getSameSite()).thenReturn("Lax");
+
+        mockMvc.perform(post("/public/user/logout"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.SET_COOKIE,
+                        containsString(AuthCookieConstants.AUTH_COOKIE_NAME + "=")))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Max-Age=0")))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("Path=/")));
     }
 }
