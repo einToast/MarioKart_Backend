@@ -1,6 +1,9 @@
 package de.fsr.mariokart_backend.healthcheck.controller.pub;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -24,5 +27,12 @@ class PublicHealthcheckControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void contextLoads() {
         assertThat(mockMvc).isNotNull();
+    }
+
+    @Test
+    void getHealthcheckReturnsOk() throws Exception {
+        mockMvc.perform(get("/public/healthcheck"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("OK"));
     }
 }
