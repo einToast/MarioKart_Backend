@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/settings/public-settings-read-controller.schema.json",
+  "$defs": {
+    "get_root_success": {
+      "type": "object",
+      "required": ["tournamentOpen", "registrationOpen", "maxGamesCount"],
+      "properties": {
+        "tournamentOpen": { "type": "boolean" },
+        "registrationOpen": { "type": "boolean" },
+        "maxGamesCount": { "type": "integer" }
+      },
+      "additionalProperties": true
+    },
+    "get_root_error_404": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

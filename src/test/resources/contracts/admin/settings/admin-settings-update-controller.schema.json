@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/settings/admin-settings-update-controller.schema.json",
+  "$defs": {
+    "put_root_success": {
+      "type": "object",
+      "required": ["tournamentOpen", "registrationOpen", "maxGamesCount"],
+      "properties": {
+        "tournamentOpen": { "type": "boolean" },
+        "registrationOpen": { "type": "boolean" },
+        "maxGamesCount": { "type": "integer" }
+      },
+      "additionalProperties": true
+    },
+    "put_root_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "put_root_error_409": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
