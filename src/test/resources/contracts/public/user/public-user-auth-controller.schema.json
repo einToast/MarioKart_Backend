@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/user/public-user-auth-controller.schema.json",
+  "$defs": {
+    "user": {
+      "type": "object",
+      "required": ["username"],
+      "properties": {
+        "username": { "type": "string" },
+        "id": { "type": "integer" },
+        "admin": { "type": "boolean" },
+        "isAdmin": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "authentication_response": {
+      "type": "object",
+      "required": ["user"],
+      "properties": {
+        "user": { "$ref": "#/$defs/user" }
+      },
+      "additionalProperties": true
+    },
+    "post_login_success": {
+      "$ref": "#/$defs/authentication_response"
+    },
+    "post_login_error_401": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_login_check_success": {
+      "$ref": "#/$defs/authentication_response"
+    },
+    "get_login_check_error_401": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_logout_success": {
+      "type": "string",
+      "maxLength": 0
+    }
+  }
+}
