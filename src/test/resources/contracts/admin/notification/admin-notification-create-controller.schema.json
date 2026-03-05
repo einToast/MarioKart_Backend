@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/notification/admin-notification-create-controller.schema.json",
+  "$defs": {
+    "post_send_success": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "post_send_error_503": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_send_teamid_success": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "post_send_teamid_error_503": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
