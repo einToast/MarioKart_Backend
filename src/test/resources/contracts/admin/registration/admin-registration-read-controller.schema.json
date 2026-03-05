@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/registration/admin-registration-read-controller.schema.json",
+  "$defs": {
+    "character_return": {
+      "type": "object",
+      "required": ["id", "characterName"],
+      "properties": {
+        "id": { "type": "integer" },
+        "characterName": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "team_return": {
+      "type": "object",
+      "required": [
+        "id",
+        "teamName",
+        "character",
+        "finalReady",
+        "active",
+        "groupPoints",
+        "finalPoints",
+        "numberOfGamesPlayed"
+      ],
+      "properties": {
+        "id": { "type": "integer" },
+        "teamName": { "type": "string" },
+        "character": { "$ref": "#/$defs/character_return" },
+        "finalReady": { "type": "boolean" },
+        "active": { "type": "boolean" },
+        "groupPoints": { "type": "integer" },
+        "finalPoints": { "type": "integer" },
+        "numberOfGamesPlayed": { "type": "integer" }
+      },
+      "additionalProperties": true
+    },
+    "get_sortedByFinalPoints_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/team_return" }
+    },
+    "get_finalTeams_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/team_return" }
+    }
+  }
+}
