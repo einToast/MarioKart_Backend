@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/survey/admin-survey-update-controller.schema.json",
+  "$defs": {
+    "question_return": {
+      "type": "object",
+      "required": [
+        "id",
+        "questionType",
+        "questionText",
+        "options",
+        "active",
+        "visible",
+        "live",
+        "finalTeamsOnly"
+      ],
+      "properties": {
+        "id": { "type": "integer" },
+        "questionType": { "type": "string" },
+        "questionText": { "type": "string" },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "active": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "live": { "type": "boolean" },
+        "finalTeamsOnly": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "put_id_success": {
+      "$ref": "#/$defs/question_return"
+    },
+    "put_id_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "put_id_error_400": {
+      "type": "string",
+      "minLength": 1
+    },
+    "put_id_error_500": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

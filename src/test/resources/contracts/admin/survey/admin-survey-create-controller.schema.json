@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/survey/admin-survey-create-controller.schema.json",
+  "$defs": {
+    "question_return": {
+      "type": "object",
+      "required": [
+        "id",
+        "questionType",
+        "questionText",
+        "options",
+        "active",
+        "visible",
+        "live",
+        "finalTeamsOnly"
+      ],
+      "properties": {
+        "id": { "type": "integer" },
+        "questionType": { "type": "string" },
+        "questionText": { "type": "string" },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "active": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "live": { "type": "boolean" },
+        "finalTeamsOnly": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "post_root_success": {
+      "$ref": "#/$defs/question_return"
+    }
+  }
+}
