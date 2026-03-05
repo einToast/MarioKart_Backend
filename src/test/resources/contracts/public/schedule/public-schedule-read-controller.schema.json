@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/schedule/public-schedule-read-controller.schema.json",
+  "$defs": {
+    "round_return": {
+      "type": "object",
+      "required": ["id", "roundNumber", "finalGame", "played", "games"],
+      "properties": {
+        "id": { "type": "integer" },
+        "roundNumber": { "type": "integer" },
+        "finalGame": { "type": "boolean" },
+        "played": { "type": "boolean" },
+        "games": { "type": "array" }
+      },
+      "additionalProperties": true
+    },
+    "get_rounds_current_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/round_return" }
+    },
+    "get_rounds_unplayed_success": {
+      "type": "integer"
+    },
+    "get_create_schedule_success": {
+      "type": "boolean"
+    },
+    "get_create_final_schedule_success": {
+      "type": "boolean"
+    }
+  }
+}

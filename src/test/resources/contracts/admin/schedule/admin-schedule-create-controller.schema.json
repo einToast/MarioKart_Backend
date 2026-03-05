@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/schedule/admin-schedule-create-controller.schema.json",
+  "$defs": {
+    "round_return": {
+      "type": "object",
+      "required": ["id", "roundNumber", "finalGame", "played", "games"],
+      "properties": {
+        "id": { "type": "integer" },
+        "roundNumber": { "type": "integer" },
+        "finalGame": { "type": "boolean" },
+        "played": { "type": "boolean" },
+        "games": { "type": "array" }
+      },
+      "additionalProperties": true
+    },
+    "post_create_schedule_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/round_return" }
+    },
+    "post_create_schedule_error_409": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_create_schedule_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_create_schedule_error_500": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_create_final_schedule_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/round_return" }
+    },
+    "post_create_final_schedule_error_409": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_create_final_schedule_error_400": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_create_final_schedule_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_create_final_schedule_error_500": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

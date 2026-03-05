@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/schedule/admin-schedule-read-controller.schema.json",
+  "$defs": {
+    "round_return": {
+      "type": "object",
+      "required": ["id", "roundNumber", "finalGame", "played", "games"],
+      "properties": {
+        "id": { "type": "integer" },
+        "roundNumber": { "type": "integer" },
+        "finalGame": { "type": "boolean" },
+        "played": { "type": "boolean" },
+        "games": { "type": "array" }
+      },
+      "additionalProperties": true
+    },
+    "break_return": {
+      "type": "object",
+      "required": ["id", "breakEnded"],
+      "properties": {
+        "id": { "type": "integer" },
+        "breakEnded": { "type": "boolean" },
+        "round": {
+          "type": ["object", "null"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "get_rounds_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/round_return" }
+    },
+    "get_rounds_roundId_success": {
+      "$ref": "#/$defs/round_return"
+    },
+    "get_rounds_roundId_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_break_success": {
+      "$ref": "#/$defs/break_return"
+    }
+  }
+}
