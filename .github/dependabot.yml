@@ -28,7 +28,7 @@ updates:
           - ">= 26, < 29"
       - dependency-name: "maven"
         versions:
-          - "3.9.15-eclipse-temurin-26"
-          - "3.9.15-eclipse-temurin-27"
-          - "3.9.15-eclipse-temurin-28"
+          # Dependabot matches 3.9.15-eclipse-temurin-26 as 3.9.15.26
+          # Update this when the Maven image version changes
+          - ">= 3.9.15.26, < 3.9.15.29"
 
