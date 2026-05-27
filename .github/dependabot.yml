@@ -26,3 +26,8 @@ updates:
       - dependency-name: "eclipse-temurin"
         versions:
         - ">= 26, < 29"
+      - dependency-name: "maven"
+        versions:
+          - "*-eclipse-temurin-26"
+          - "*-eclipse-temurin-27"
+          - "*-eclipse-temurin-28"
