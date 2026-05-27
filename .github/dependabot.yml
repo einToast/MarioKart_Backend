@@ -25,7 +25,7 @@ updates:
     ignore:
       - dependency-name: "eclipse-temurin"
         versions:
-        - ">= 26, < 29"
+          - ">= 26, < 29"
       - dependency-name: "maven"
         versions:
           - "*-eclipse-temurin-26"
