@@ -13,4 +13,8 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     List<Answer> findAllByQuestionId(Long id);
 
     void deleteAllByQuestionId(Long id);
+
+    long countByQuestionIdAndSubmittingTeamId(Long questionId, Long submittingTeamId);
+
+    boolean existsByQuestionIdAndSubmittingTeamId(Long questionId, Long submittingTeamId);
 }

@@ -55,10 +55,8 @@ public class PublicSurveyCreateService {
 
         // Skip team answer limit check for free text questions
         if (!"FREE_TEXT".equals(answer.getAnswerType())) {
-            long teamAnswerCount = answerRepository.findAll().stream()
-                    .filter(a -> a.getQuestion().getId().equals(answer.getQuestionId()))
-                    .filter(a -> submittingTeam.equals(a.getSubmittingTeam()))
-                    .count();
+            long teamAnswerCount = answerRepository.countByQuestionIdAndSubmittingTeamId(answer.getQuestionId(),
+                    submittingTeam.getId());
 
             if (teamAnswerCount >= MAX_ANSWERS_PER_TEAM) {
                 throw new IllegalArgumentException("Maximum number of answers per team reached.");
@@ -66,14 +64,7 @@ public class PublicSurveyCreateService {
         }
 
         if ("TEAM_ONE_FREE_TEXT".equals(answer.getAnswerType())) {
-            // TODO: simplify
-            boolean hasAnswered = answerRepository.findAll().stream()
-                    .filter(a -> a.getQuestion().getId().equals(answer.getQuestionId()))
-                    .filter(a -> submittingTeam.equals(a.getSubmittingTeam()))
-                    .findAny()
-                    .isPresent();
-
-            if (hasAnswered) {
+            if (answerRepository.existsByQuestionIdAndSubmittingTeamId(answer.getQuestionId(), submittingTeam.getId())) {
                 throw new IllegalArgumentException("This team has already submitted an answer for this question.");
             }
         }
