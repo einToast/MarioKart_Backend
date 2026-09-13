@@ -5,7 +5,11 @@ on:
 #  pull_request:
 #    branches: [ "master" ]
 jobs:
-  build:
+  docker-build-push:
+    needs:
+      - docker-test
+      - maven-build
+    
     runs-on: ubuntu-latest
 
     env:

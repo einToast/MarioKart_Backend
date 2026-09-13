@@ -9,13 +9,13 @@
 name: Java CI with Maven
 
 on:
-#  push:
-#    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
 jobs:
-  build:
+  maven-build:
 
     runs-on: ubuntu-latest
 
