@@ -3,10 +3,10 @@ package de.fsr.mariokart_backend.schedule.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 @Configuration
-public class WebClientConfiguration {
+public class ScheduleRestClientConfiguration {
 
     @Value("${SCHEDULE_PROTOCOL:http}")
     private String protocol;
@@ -18,9 +18,9 @@ public class WebClientConfiguration {
     private String port;
 
     @Bean
-    public WebClient webClient() {
+    public RestClient scheduleRestClient() {
         String baseUrl = "%s://%s:%s".formatted(protocol, host, port);
         IO.println("baseUrl: " + baseUrl);
-        return WebClient.builder().baseUrl(baseUrl).build();
+        return RestClient.builder().baseUrl(baseUrl).build();
     }
 }

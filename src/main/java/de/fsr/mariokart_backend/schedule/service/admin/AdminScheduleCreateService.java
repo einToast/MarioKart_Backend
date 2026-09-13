@@ -8,7 +8,7 @@ import java.util.Map;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -39,7 +39,6 @@ import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
-import reactor.core.publisher.Mono;
 
 @Service
 @AllArgsConstructor
@@ -60,7 +59,7 @@ public class AdminScheduleCreateService {
     private final ScheduleInputDTOService scheduleInputDTOService;
     private final ScheduleReturnDTOService scheduleReturnDTOService;
     private final WebSocketService webSocketService;
-    private final WebClient webClient;
+    private final RestClient scheduleRestClient;
     private final ObjectMapper objectMapper;
 
     public RoundReturnDTO addRound(RoundInputDTO roundCreation) {
@@ -276,19 +275,19 @@ public class AdminScheduleCreateService {
     private ScheduleDTO getGeneratedSchedule(int teamCount) {
         Map<String, Integer> requestBody = new HashMap<>();
         requestBody.put("num_teams", teamCount);
-        Mono<String> response;
+        String response;
         try {
-            response = webClient.post()
+            response = scheduleRestClient.post()
                     .uri("/schedule")
-                    .bodyValue(requestBody)
+                    .body(requestBody)
                     .retrieve()
-                    .bodyToMono(String.class);
+                    .body(String.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to send request to schedule generator", e);
         }
 
         try {
-            return objectMapper.readValue(response.block(), ScheduleDTO.class);
+            return objectMapper.readValue(response, ScheduleDTO.class);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse JSON response", e);
         }
