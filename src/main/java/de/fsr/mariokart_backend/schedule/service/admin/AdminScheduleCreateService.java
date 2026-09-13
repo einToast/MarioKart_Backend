@@ -28,6 +28,7 @@ import de.fsr.mariokart_backend.schedule.model.dto.BreakReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.ScheduleDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleInputDTO;
 import de.fsr.mariokart_backend.schedule.repository.BreakRepository;
 import de.fsr.mariokart_backend.schedule.repository.GameRepository;
 import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
@@ -175,15 +176,17 @@ public class AdminScheduleCreateService {
         }
     }
 
-    public List<RoundReturnDTO> createSchedule()
+    public List<RoundReturnDTO> createSchedule(ScheduleInputDTO scheduleCreation)
             throws RoundsAlreadyExistsException, NotEnoughTeamsException, EntityNotFoundException,
-            NotificationNotSentException {
-        validateScheduleCreation();
+            NotificationNotSentException, IllegalArgumentException {
+        validateScheduleCreation(scheduleCreation);
 
-        int teamCount = teamRepository.findAll().size();
-        ScheduleDTO scheduleDTO = getGeneratedSchedule(teamCount);
+        int numTeams = teamRepository.findAll().size();
+        ScheduleDTO scheduleDTO = getGeneratedSchedule(scheduleCreation.getVersion(), numTeams,
+                scheduleCreation.getNumFields(),
+                scheduleCreation.getNumRounds(), scheduleCreation.getTeamsPerGame());
 
-        validateScheduleCreation();
+        validateScheduleCreation(scheduleCreation);
 
         createRoundsAndGames(scheduleDTO);
         addBreakAndUpdateTimes();
@@ -197,12 +200,23 @@ public class AdminScheduleCreateService {
                 .toList();
     }
 
-    private void validateScheduleCreation() throws RoundsAlreadyExistsException, NotEnoughTeamsException {
+    private void validateScheduleCreation(ScheduleInputDTO scheduleCreation)
+            throws RoundsAlreadyExistsException, NotEnoughTeamsException {
         if (publicScheduleReadService.isScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Schedule already created");
         }
-        if (teamRepository.findAll().size() < 16) {
+        if (scheduleCreation.getVersion() == 1 && teamRepository.findAll().size() < 16) {
             throw new NotEnoughTeamsException("Not enough teams");
+        }
+        if (scheduleCreation.getVersion() == 2) {
+            if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumRounds() <= 0
+                    || scheduleCreation.getTeamsPerGame() <= 0) {
+                throw new IllegalArgumentException("Invalid schedule parameters");
+            }
+            if (teamRepository.findAll().size() < scheduleCreation.getTeamsPerGame()) {
+                throw new NotEnoughTeamsException(
+                        "Not enough teams for one game");
+            }
         }
     }
 
@@ -237,8 +251,7 @@ public class AdminScheduleCreateService {
         return addGame(game);
     }
 
-    private void createPointsForGame(List<Integer> teamIndices, Game game, List<Team> teams)
-            throws EntityNotFoundException {
+    private void createPointsForGame(List<Integer> teamIndices, Game game, List<Team> teams) {
         for (Integer teamIndex : teamIndices) {
             Points point = new Points();
             point.setGroupPoints(0);
@@ -272,9 +285,13 @@ public class AdminScheduleCreateService {
         adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
     }
 
-    private ScheduleDTO getGeneratedSchedule(int teamCount) {
+    private ScheduleDTO getGeneratedSchedule(int version, int numTeams, int numFields, int numRounds,
+            int teamsPerGame) {
         Map<String, Integer> requestBody = new HashMap<>();
-        requestBody.put("num_teams", teamCount);
+        requestBody.put("num_teams", numTeams);
+        requestBody.put("num_fields", numFields);
+        requestBody.put("num_rounds", numRounds);
+        requestBody.put("teams_per_game", teamsPerGame);
         String response;
         try {
             response = scheduleRestClient.post()
