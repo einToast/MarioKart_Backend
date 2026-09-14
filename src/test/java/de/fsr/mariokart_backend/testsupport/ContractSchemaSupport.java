@@ -5,23 +5,23 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Set;
+import java.util.List;
 
 import org.springframework.core.io.ClassPathResource;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
+import com.networknt.schema.Error;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SpecificationVersion;
 
 public final class ContractSchemaSupport {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final JsonSchemaFactory JSON_SCHEMA_FACTORY = JsonSchemaFactory.getInstance(
-            SpecVersion.VersionFlag.V202012);
+    private static final SchemaRegistry SCHEMA_REGISTRY = SchemaRegistry.withDefaultDialect(
+            SpecificationVersion.DRAFT_2020_12);
 
     private ContractSchemaSupport() {
     }
@@ -34,7 +34,7 @@ public final class ContractSchemaSupport {
 
     public static void assertStringMatchesDefinition(String schemaPath, String definitionKey, String responseBody)
             throws IOException {
-        assertNodeMatchesDefinition(schemaPath, definitionKey, OBJECT_MAPPER.getNodeFactory().textNode(responseBody));
+        assertNodeMatchesDefinition(schemaPath, definitionKey, OBJECT_MAPPER.getNodeFactory().stringNode(responseBody));
     }
 
     public static void assertNodeMatchesDefinition(String schemaPath, String definitionKey, JsonNode responseNode)
@@ -51,8 +51,8 @@ public final class ContractSchemaSupport {
         schemaWrapper.set("$defs", definitions);
         schemaWrapper.put("$ref", "#/$defs/" + definitionKey);
 
-        JsonSchema schema = JSON_SCHEMA_FACTORY.getSchema(schemaWrapper);
-        Set<ValidationMessage> errors = schema.validate(responseNode);
+        Schema schema = SCHEMA_REGISTRY.getSchema(schemaWrapper);
+        List<Error> errors = schema.validate(responseNode);
 
         assertThat(errors)
                 .as("Contract validation errors for %s -> %s: %s", schemaPath, definitionKey, errors)
