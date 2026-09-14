@@ -52,12 +52,12 @@ public class PublicScheduleReadService {
     }
 
     @Cacheable(key = "'isScheduleCreated'", sync = true)
-    public Boolean isScheduleCreated() {
+    public boolean isScheduleCreated() {
         return !roundRepository.findAll().isEmpty();
     }
 
     @Cacheable(key = "'isFinalScheduleCreated'", sync = true)
-    public Boolean isFinalScheduleCreated() {
+    public boolean isFinalScheduleCreated() {
         return !roundRepository.findByFinalGameTrue().isEmpty();
     }
 

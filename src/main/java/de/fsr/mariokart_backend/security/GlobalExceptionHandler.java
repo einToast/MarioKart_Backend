@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.security;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +13,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleResponseStatusException(ResponseStatusException e) {
         return ResponseEntity
                 .status(e.getStatusCode())
-                .body(e.getMessage());
+                .contentType(MediaType.TEXT_PLAIN)
+                .body(e.getReason());
     }
 }

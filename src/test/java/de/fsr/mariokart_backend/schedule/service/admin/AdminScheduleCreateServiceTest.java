@@ -26,10 +26,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestClient;
 
 import tools.jackson.databind.ObjectMapper;
-import reactor.core.publisher.Mono;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
@@ -48,6 +47,7 @@ import de.fsr.mariokart_backend.schedule.model.dto.BreakReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundInputDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.ScheduleDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleInputDTO;
 import de.fsr.mariokart_backend.schedule.repository.BreakRepository;
 import de.fsr.mariokart_backend.schedule.repository.GameRepository;
 import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
@@ -100,7 +100,7 @@ class AdminScheduleCreateServiceTest {
     private WebSocketService webSocketService;
 
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-    private WebClient webClient;
+    private RestClient scheduleRestClient;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -186,7 +186,7 @@ class AdminScheduleCreateServiceTest {
     void createScheduleThrowsWhenScheduleAlreadyExists() {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
 
-        assertThatThrownBy(() -> service.createSchedule())
+        assertThatThrownBy(() -> service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4)))
                 .isInstanceOf(RoundsAlreadyExistsException.class)
                 .hasMessageContaining("already created");
     }
@@ -196,7 +196,7 @@ class AdminScheduleCreateServiceTest {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
         when(teamRepository.findAll()).thenReturn(List.of());
 
-        assertThatThrownBy(() -> service.createSchedule())
+        assertThatThrownBy(() -> service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4)))
                 .isInstanceOf(NotEnoughTeamsException.class)
                 .hasMessageContaining("Not enough teams");
     }
@@ -206,9 +206,9 @@ class AdminScheduleCreateServiceTest {
         List<Team> teams = buildTeams(16);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
         when(teamRepository.findAll()).thenReturn(teams);
-        when(webClient.post()).thenThrow(new RuntimeException("generator down"));
+        when(scheduleRestClient.post()).thenThrow(new RuntimeException("generator down"));
 
-        assertThatThrownBy(() -> service.createSchedule())
+        assertThatThrownBy(() -> service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to send request");
     }
@@ -218,11 +218,11 @@ class AdminScheduleCreateServiceTest {
         List<Team> teams = buildTeams(16);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
         when(teamRepository.findAll()).thenReturn(teams);
-        when(webClient.post().uri("/schedule").bodyValue(anyMap()).retrieve().bodyToMono(String.class))
-                .thenReturn(Mono.just("invalid-json"));
+        when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
+                .thenReturn("invalid-json");
         when(objectMapper.readValue("invalid-json", ScheduleDTO.class)).thenThrow(new RuntimeException("bad json"));
 
-        assertThatThrownBy(() -> service.createSchedule())
+        assertThatThrownBy(() -> service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to parse JSON response");
     }
@@ -239,8 +239,8 @@ class AdminScheduleCreateServiceTest {
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false, false);
         when(teamRepository.findAll()).thenReturn(teams);
-        when(webClient.post().uri("/schedule").bodyValue(anyMap()).retrieve().bodyToMono(String.class))
-                .thenReturn(Mono.just("payload"));
+        when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
+                .thenReturn("payload");
         when(objectMapper.readValue("payload", ScheduleDTO.class)).thenReturn(scheduleDTO);
         when(scheduleInputDTOService.breakInputDTOToBreak(any(BreakInputDTO.class))).thenAnswer(invocation -> {
             Break createdBreak = new Break();
@@ -284,7 +284,7 @@ class AdminScheduleCreateServiceTest {
                     round.isFinalGame(), round.isPlayed(), null, round.getBreakTime());
         });
 
-        List<RoundReturnDTO> result = service.createSchedule();
+        List<RoundReturnDTO> result = service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4));
 
         assertThat(result).hasSize(6);
         assertThat(savedRounds).hasSize(6);

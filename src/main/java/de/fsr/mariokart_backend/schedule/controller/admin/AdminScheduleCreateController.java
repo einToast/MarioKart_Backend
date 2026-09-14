@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -15,6 +16,7 @@ import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleInputDTO;
 import de.fsr.mariokart_backend.schedule.service.admin.AdminScheduleCreateService;
 import lombok.AllArgsConstructor;
 
@@ -26,13 +28,15 @@ public class AdminScheduleCreateController {
     private final AdminScheduleCreateService adminScheduleCreateService;
 
     @PostMapping("/create/schedule")
-    public List<RoundReturnDTO> createSchedule() {
+    public List<RoundReturnDTO> createSchedule(@RequestBody ScheduleInputDTO scheduleCreation) {
         try {
-            return adminScheduleCreateService.createSchedule();
+            return adminScheduleCreateService.createSchedule(scheduleCreation);
         } catch (RoundsAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         } catch (NotEnoughTeamsException | EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (NotificationNotSentException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

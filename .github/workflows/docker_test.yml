@@ -1,14 +1,14 @@
 name: Docker Java Build
 
 on:
-  #  push:
-  #    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
 
 jobs:
-  build:
+  docker-test:
     runs-on: ubuntu-latest
 
     steps:

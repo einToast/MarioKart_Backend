@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.schedule.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,6 +27,7 @@ import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleInputDTO;
 import de.fsr.mariokart_backend.schedule.service.admin.AdminScheduleCreateService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 
@@ -47,49 +50,59 @@ class AdminScheduleCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void createScheduleReturnsRounds() throws Exception {
-        when(adminScheduleCreateService.createSchedule()).thenReturn(List.of(round(1L, 1)));
+        when(adminScheduleCreateService.createSchedule(any(ScheduleInputDTO.class))).thenReturn(List.of(round(1L, 1)));
 
-        mockMvc.perform(post("/admin/schedule/create/schedule"))
+        mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ScheduleInputDTO(1, 4, 6, 4))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1));
     }
 
     @Test
     void createScheduleReturnsConflictWhenScheduleExists() throws Exception {
-        when(adminScheduleCreateService.createSchedule())
+        when(adminScheduleCreateService.createSchedule(any(ScheduleInputDTO.class)))
                 .thenThrow(new RoundsAlreadyExistsException("Schedule already created"));
 
-        mockMvc.perform(post("/admin/schedule/create/schedule"))
+        mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ScheduleInputDTO(1, 4, 6, 4))))
                 .andExpect(status().isConflict())
                 .andExpect(content().string(containsString("Schedule already created")));
     }
 
     @Test
     void createScheduleReturnsNotFoundWhenTeamsMissing() throws Exception {
-        when(adminScheduleCreateService.createSchedule())
+        when(adminScheduleCreateService.createSchedule(any(ScheduleInputDTO.class)))
                 .thenThrow(new NotEnoughTeamsException("Not enough teams"));
 
-        mockMvc.perform(post("/admin/schedule/create/schedule"))
+        mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ScheduleInputDTO(1, 4, 6, 4))))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Not enough teams")));
     }
 
     @Test
     void createScheduleReturnsNotFoundWhenEntityMissing() throws Exception {
-        when(adminScheduleCreateService.createSchedule())
+        when(adminScheduleCreateService.createSchedule(any(ScheduleInputDTO.class)))
                 .thenThrow(new EntityNotFoundException("Missing"));
 
-        mockMvc.perform(post("/admin/schedule/create/schedule"))
+        mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ScheduleInputDTO(1, 4, 6, 4))))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Missing")));
     }
 
     @Test
     void createScheduleReturnsInternalServerErrorWhenNotificationFails() throws Exception {
-        when(adminScheduleCreateService.createSchedule())
+        when(adminScheduleCreateService.createSchedule(any(ScheduleInputDTO.class)))
                 .thenThrow(new NotificationNotSentException("Failed"));
 
-        mockMvc.perform(post("/admin/schedule/create/schedule"))
+        mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ScheduleInputDTO(1, 4, 6, 4))))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string(containsString("Failed")));
     }
