@@ -17,13 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import tools.jackson.core.type.TypeReference;
-import tools.jackson.databind.ObjectMapper;
-
-import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
-import de.fsr.mariokart_backend.survey.model.Answer;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
@@ -33,6 +28,8 @@ import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerReturnDTOService;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -94,16 +91,11 @@ class PublicSurveyCreateServiceTest {
         question.setVisible(true);
 
         AnswerInputDTO input = new AnswerInputDTO(1L, "CHECKBOX", null, null, List.of(1), null);
-        List<Answer> existing = List.of(
-                buildAnswer(question, team),
-                buildAnswer(question, team),
-                buildAnswer(question, team),
-                buildAnswer(question, team));
 
         when(objectMapper.readValue(eq("{\"teamId\":7}"), any(TypeReference.class))).thenReturn(Map.of("teamId", 7));
         when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
         when(teamRepository.findById(7L)).thenReturn(Optional.of(team));
-        when(answerRepository.findAll()).thenReturn(existing);
+        when(answerRepository.countByQuestionIdAndSubmittingTeamId(1L, 7L)).thenReturn(4L);
 
         assertThatThrownBy(() -> service.submitAnswer(input, "{\"teamId\":7}"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -120,12 +112,11 @@ class PublicSurveyCreateServiceTest {
         question.setVisible(true);
 
         AnswerInputDTO input = new AnswerInputDTO(1L, "TEAM_ONE_FREE_TEXT", "abc", null, null, 0);
-        List<Answer> existing = List.of(buildAnswer(question, team));
 
         when(objectMapper.readValue(eq("{\"teamId\":7}"), any(TypeReference.class))).thenReturn(Map.of("teamId", 7));
         when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
         when(teamRepository.findById(7L)).thenReturn(Optional.of(team));
-        when(answerRepository.findAll()).thenReturn(existing);
+        when(answerRepository.existsByQuestionIdAndSubmittingTeamId(1L, 7L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.submitAnswer(input, "{\"teamId\":7}"))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -159,13 +150,5 @@ class PublicSurveyCreateServiceTest {
         AnswerReturnDTO result = service.submitAnswer(input, "{\"teamId\":7}");
 
         assertThat(result).isEqualTo(expected);
-    }
-
-    private Answer buildAnswer(Question question, Team team) {
-        FreeTextAnswer answer = new FreeTextAnswer();
-        answer.setQuestion(question);
-        answer.setSubmittingTeam(team);
-        answer.setTextAnswer("x");
-        return answer;
     }
 }

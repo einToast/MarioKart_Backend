@@ -41,7 +41,12 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         seedSixteenTeams();
         MockCookie adminCookie = loginAsAdmin();
 
-        MvcResult createScheduleResult = mockMvc.perform(post("/admin/schedule/create/schedule").cookie(adminCookie))
+        MvcResult createScheduleResult = mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"version":1,"numFields":4,"numRounds":8,"teamsPerGame":4}
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", Matchers.hasSize(8)))
                 .andReturn();
@@ -104,7 +109,12 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         seedSixteenTeams();
         MockCookie adminCookie = loginAsAdmin();
 
-        mockMvc.perform(post("/admin/schedule/create/schedule").cookie(adminCookie))
+        mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"version":1,"numFields":4,"numRounds":8,"teamsPerGame":4}
+                                """))
                 .andExpect(status().isOk());
 
         List<Round> rounds = roundRepository.findAll();

@@ -74,7 +74,12 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         renameTeam(adminCookie, renamedTeamId, "FairPlayCrew", "Waluigi");
         teamStrength.put("FairPlayCrew", teamStrength.remove("RudeName"));
 
-        MvcResult scheduleCreateResult = mockMvc.perform(post("/admin/schedule/create/schedule").cookie(adminCookie))
+        MvcResult scheduleCreateResult = mockMvc.perform(post("/admin/schedule/create/schedule")
+                .cookie(adminCookie)
+                .contentType(APPLICATION_JSON)
+                .content("""
+                        {"version":1,"numFields":4,"numRounds":8,"teamsPerGame":4}
+                        """))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -118,7 +123,8 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
             }
 
             JsonNode currentBreak = getBreak(adminCookie);
-            if (currentBreak.path("round").path("id").asLong() == currentRoundId && !currentBreak.path("breakEnded").asBoolean()) {
+            if (currentBreak.path("round").path("id").asLong() == currentRoundId
+                    && !currentBreak.path("breakEnded").asBoolean()) {
                 JsonNode completedBreak = updateBreak(adminCookie,
                         currentBreak.path("round").path("id").asLong(),
                         30,
@@ -171,23 +177,24 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         assertThat(finalStandings.get(0).path("finalPoints").asInt()).isPositive();
     }
 
-    private void updateTournamentSettings(MockCookie adminCookie, boolean tournamentOpen, boolean registrationOpen, int maxGamesCount)
+    private void updateTournamentSettings(MockCookie adminCookie, boolean tournamentOpen, boolean registrationOpen,
+            int maxGamesCount)
             throws Exception {
         mockMvc.perform(put("/admin/settings")
-                        .cookie(adminCookie)
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                                {"tournamentOpen":%s,"registrationOpen":%s,"maxGamesCount":%d}
-                                """.formatted(tournamentOpen, registrationOpen, maxGamesCount)))
+                .cookie(adminCookie)
+                .contentType(APPLICATION_JSON)
+                .content("""
+                        {"tournamentOpen":%s,"registrationOpen":%s,"maxGamesCount":%d}
+                        """.formatted(tournamentOpen, registrationOpen, maxGamesCount)))
                 .andExpect(status().isOk());
     }
 
     private long registerTeam(String teamName, String characterName) throws Exception {
         MvcResult result = mockMvc.perform(post("/public/teams")
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                                {"teamName":"%s","characterName":"%s","finalReady":true,"active":true}
-                                """.formatted(teamName, characterName)))
+                .contentType(APPLICATION_JSON)
+                .content("""
+                        {"teamName":"%s","characterName":"%s","finalReady":true,"active":true}
+                        """.formatted(teamName, characterName)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.teamName").value(teamName))
                 .andReturn();
@@ -195,13 +202,14 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         return jsonFieldAsLong(result, "id");
     }
 
-    private void renameTeam(MockCookie adminCookie, long teamId, String newName, String characterName) throws Exception {
+    private void renameTeam(MockCookie adminCookie, long teamId, String newName, String characterName)
+            throws Exception {
         mockMvc.perform(put("/admin/teams/{id}", teamId)
-                        .cookie(adminCookie)
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                                {"teamName":"%s","characterName":"%s","finalReady":true,"active":true}
-                                """.formatted(newName, characterName)))
+                .cookie(adminCookie)
+                .contentType(APPLICATION_JSON)
+                .content("""
+                        {"teamName":"%s","characterName":"%s","finalReady":true,"active":true}
+                        """.formatted(newName, characterName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.teamName").value(newName));
     }
@@ -248,13 +256,14 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         return JSON.readTree(result.getResponse().getContentAsString());
     }
 
-    private JsonNode updateBreak(MockCookie adminCookie, long roundId, int duration, boolean breakEnded) throws Exception {
+    private JsonNode updateBreak(MockCookie adminCookie, long roundId, int duration, boolean breakEnded)
+            throws Exception {
         MvcResult result = mockMvc.perform(put("/admin/schedule/break")
-                        .cookie(adminCookie)
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                                {"roundId":%d,"breakDuration":%d,"breakEnded":%s}
-                                """.formatted(roundId, duration, breakEnded)))
+                .cookie(adminCookie)
+                .contentType(APPLICATION_JSON)
+                .content("""
+                        {"roundId":%d,"breakDuration":%d,"breakEnded":%s}
+                        """.formatted(roundId, duration, breakEnded)))
                 .andExpect(status().isOk())
                 .andReturn();
         return JSON.readTree(result.getResponse().getContentAsString());
@@ -270,12 +279,12 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                 int score = teamStrength.getOrDefault(teamName, 1);
 
                 mockMvc.perform(put("/admin/schedule/rounds/{roundId}/games/{gameId}/teams/{teamId}/points",
-                                roundDetails.path("id").asLong(), gameId, teamId)
-                                .cookie(adminCookie)
-                                .contentType(APPLICATION_JSON)
-                                .content("""
-                                        {"points":%d}
-                                        """.formatted(score)))
+                        roundDetails.path("id").asLong(), gameId, teamId)
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"points":%d}
+                                """.formatted(score)))
                         .andExpect(status().isOk());
             }
         }
@@ -283,11 +292,11 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
     private void markRoundPlayed(MockCookie adminCookie, long roundId) throws Exception {
         mockMvc.perform(put("/admin/schedule/rounds/{roundId}", roundId)
-                        .cookie(adminCookie)
-                        .contentType(APPLICATION_JSON)
-                        .content("""
-                                {"played":true}
-                                """))
+                .cookie(adminCookie)
+                .contentType(APPLICATION_JSON)
+                .content("""
+                        {"played":true}
+                        """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.played").value(true));
     }

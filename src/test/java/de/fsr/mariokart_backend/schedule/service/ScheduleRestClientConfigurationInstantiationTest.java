@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 @Tag("unit")
-class WebClientConfigurationInstantiationTest {
+class ScheduleRestClientConfigurationInstantiationTest {
 
     @Test
     void canInstantiateWithMockDependencies() throws Exception {
-        Constructor<?> constructor = Arrays.stream(WebClientConfiguration.class.getDeclaredConstructors())
+        Constructor<?> constructor = Arrays.stream(ScheduleRestClientConfiguration.class.getDeclaredConstructors())
                 .max(Comparator.comparingInt(Constructor::getParameterCount))
                 .orElseThrow();
 
