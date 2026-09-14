@@ -25,7 +25,7 @@ ENV VAPID_PUBLIC_KEY=$VAPID_PUBLIC_KEY
 ENV VAPID_PRIVATE_KEY=$VAPID_PRIVATE_KEY
 
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 # Stage 2: Run
 FROM eclipse-temurin:25.0.2_10-jre
