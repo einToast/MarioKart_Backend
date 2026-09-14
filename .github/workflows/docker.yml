@@ -5,11 +5,17 @@ on:
 #  pull_request:
 #    branches: [ "master" ]
 jobs:
+  docker-test:
+    uses: ./.github/workflows/docker_test.yml
+
+  maven-build:
+    uses: ./.github/workflows/maven.yml
+
   docker-build-push:
     needs:
       - docker-test
       - maven-build
-    
+
     runs-on: ubuntu-latest
 
     env:
@@ -20,7 +26,7 @@ jobs:
       USER_PASSWORD: ${{ vars.USER_PASSWORD }}
       VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
       VAPID_PRIVATE_KEY: ${{ vars.VAPID_PRIVATE_KEY }}
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
