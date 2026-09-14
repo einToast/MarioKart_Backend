@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/notification/public-notification-read-controller.schema.json",
+  "$defs": {
+    "get_public_key_success": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

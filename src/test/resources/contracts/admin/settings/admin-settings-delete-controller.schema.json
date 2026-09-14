@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/settings/admin-settings-delete-controller.schema.json",
+  "$defs": {
+    "delete_reset_success": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "delete_reset_error_409": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

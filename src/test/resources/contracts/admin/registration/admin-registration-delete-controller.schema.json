@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/registration/admin-registration-delete-controller.schema.json",
+  "$defs": {
+    "delete_id_success": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "delete_id_error_409": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delete_id_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delete_root_success": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "delete_root_error_409": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

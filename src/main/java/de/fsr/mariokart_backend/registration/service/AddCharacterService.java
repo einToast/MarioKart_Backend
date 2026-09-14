@@ -52,7 +52,7 @@ public class AddCharacterService {
     public List<String> getImageNames(String directoryPath) throws IOException {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 
-        // Suchmuster für Dateien im Ordner "static/media"
+        // Match PNG files in the "static/media" directory.
         Resource[] resources = resolver.getResources("classpath:static/" + directoryPath + "/*.png");
 
         return Stream.of(resources)

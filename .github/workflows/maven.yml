@@ -23,15 +23,11 @@ jobs:
       SECRET_KEY: ${{ vars.SECRET_KEY }}
       DB_USER: ${{ vars.DB_USER }}
       DB_PASSWORD: ${{ vars.DB_PASSWORD }}
-      USER_NAME: ${{ vars.USER_NAME }}
-      USER_PASSWORD: ${{ vars.USER_PASSWORD }}
-      VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
-      VAPID_PRIVATE_KEY: ${{ vars.VAPID_PRIVATE_KEY }}
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
     - name: Set up JDK 25
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v6
       with:
         java-version: '25'
         distribution: 'temurin'

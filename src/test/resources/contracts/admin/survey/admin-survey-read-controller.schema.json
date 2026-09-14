@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/survey/admin-survey-read-controller.schema.json",
+  "$defs": {
+    "question_return": {
+      "type": "object",
+      "required": [
+        "id",
+        "questionType",
+        "questionText",
+        "options",
+        "active",
+        "visible",
+        "live",
+        "finalTeamsOnly"
+      ],
+      "properties": {
+        "id": { "type": "integer" },
+        "questionType": { "type": "string" },
+        "questionText": { "type": "string" },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "active": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "live": { "type": "boolean" },
+        "finalTeamsOnly": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "answer_return": {
+      "type": "object",
+      "required": ["questionId", "answerType"],
+      "properties": {
+        "questionId": { "type": "integer" },
+        "answerType": { "type": "string" },
+        "freeTextAnswer": { "type": ["string", "null"] },
+        "multipleChoiceSelectedOption": { "type": ["integer", "null"] },
+        "checkboxSelectedOptions": {
+          "type": ["array", "null"],
+          "items": { "type": "integer" }
+        },
+        "teamSelectedOption": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "get_root_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/question_return" }
+    },
+    "get_id_answers_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/answer_return" }
+    },
+    "get_id_answers_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_id_answers_error_400": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_id_statistics_success": {
+      "type": "array",
+      "items": { "type": "integer" }
+    },
+    "get_id_statistics_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_id_statistics_error_400": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_id_answers_count_success": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/registration/public-registration-create-controller.schema.json",
+  "$defs": {
+    "character_return": {
+      "type": "object",
+      "required": ["id", "characterName"],
+      "properties": {
+        "id": { "type": "integer" },
+        "characterName": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "team_return": {
+      "type": "object",
+      "required": [
+        "id",
+        "teamName",
+        "character",
+        "finalReady",
+        "active",
+        "groupPoints",
+        "finalPoints",
+        "numberOfGamesPlayed"
+      ],
+      "properties": {
+        "id": { "type": "integer" },
+        "teamName": { "type": "string" },
+        "character": { "$ref": "#/$defs/character_return" },
+        "finalReady": { "type": "boolean" },
+        "active": { "type": "boolean" },
+        "groupPoints": { "type": "integer" },
+        "finalPoints": { "type": "integer" },
+        "numberOfGamesPlayed": { "type": "integer" }
+      },
+      "additionalProperties": true
+    },
+    "post_root_success": {
+      "$ref": "#/$defs/team_return"
+    },
+    "post_root_error_400": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_root_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_root_error_409": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

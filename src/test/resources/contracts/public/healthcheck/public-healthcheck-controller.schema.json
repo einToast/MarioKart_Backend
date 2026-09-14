@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/healthcheck/public-healthcheck-controller.schema.json",
+  "$defs": {
+    "get_root_success": {
+      "type": "string",
+      "const": "OK"
+    }
+  }
+}
