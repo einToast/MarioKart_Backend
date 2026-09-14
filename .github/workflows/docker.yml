@@ -4,6 +4,10 @@ on:
     branches: [ "master" ]
 #  pull_request:
 #    branches: [ "master" ]
+
+permissions:
+  contents: read
+
 jobs:
   docker-test:
     uses: ./.github/workflows/docker_test.yml
