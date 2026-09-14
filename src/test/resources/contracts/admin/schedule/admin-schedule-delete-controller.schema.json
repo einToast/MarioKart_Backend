@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/schedule/admin-schedule-delete-controller.schema.json",
+  "$defs": {
+    "delete_create_schedule_success": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "delete_create_final_schedule_success": {
+      "type": "string",
+      "maxLength": 0
+    }
+  }
+}

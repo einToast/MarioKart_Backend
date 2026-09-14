@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/survey/public-survey-read-controller.schema.json",
+  "$defs": {
+    "question_return": {
+      "type": "object",
+      "required": [
+        "id",
+        "questionType",
+        "questionText",
+        "options",
+        "active",
+        "visible",
+        "live",
+        "finalTeamsOnly"
+      ],
+      "properties": {
+        "id": { "type": "integer" },
+        "questionType": { "type": "string" },
+        "questionText": { "type": "string" },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "active": { "type": "boolean" },
+        "visible": { "type": "boolean" },
+        "live": { "type": "boolean" },
+        "finalTeamsOnly": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "get_visible_success": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/question_return" }
+    },
+    "get_id_statistics_success": {
+      "type": "array",
+      "items": { "type": "integer" }
+    },
+    "get_id_statistics_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_id_statistics_error_400": {
+      "type": "string",
+      "minLength": 1
+    },
+    "get_id_statistics_error_409": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

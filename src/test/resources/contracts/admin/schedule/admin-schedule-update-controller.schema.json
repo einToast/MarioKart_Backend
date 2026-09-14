@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/schedule/admin-schedule-update-controller.schema.json",
+  "$defs": {
+    "team_return": {
+      "type": "object",
+      "required": ["id", "teamName"],
+      "properties": {
+        "id": { "type": "integer" },
+        "teamName": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "points_return": {
+      "type": "object",
+      "required": ["id", "points"],
+      "properties": {
+        "id": { "type": "integer" },
+        "points": { "type": "integer" },
+        "team": {
+          "anyOf": [
+            { "$ref": "#/$defs/team_return" },
+            { "type": "null" }
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "game_return": {
+      "type": "object",
+      "required": ["id", "switchGame", "teams", "points"],
+      "properties": {
+        "id": { "type": "integer" },
+        "switchGame": { "type": "string" },
+        "teams": { "type": "array" },
+        "points": { "type": "array", "items": { "$ref": "#/$defs/points_return" } }
+      },
+      "additionalProperties": true
+    },
+    "round_return": {
+      "type": "object",
+      "required": ["id", "roundNumber", "finalGame", "played", "games"],
+      "properties": {
+        "id": { "type": "integer" },
+        "roundNumber": { "type": "integer" },
+        "finalGame": { "type": "boolean" },
+        "played": { "type": "boolean" },
+        "games": { "type": "array", "items": { "$ref": "#/$defs/game_return" } }
+      },
+      "additionalProperties": true
+    },
+    "break_return": {
+      "type": "object",
+      "required": ["id", "breakEnded"],
+      "properties": {
+        "id": { "type": "integer" },
+        "breakEnded": { "type": "boolean" },
+        "round": {
+          "type": ["object", "null"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "put_rounds_roundId_success": { "$ref": "#/$defs/round_return" },
+    "put_rounds_roundId_error_404": { "type": "string", "minLength": 1 },
+    "put_rounds_roundId_error_409": { "type": "string", "minLength": 1 },
+    "put_rounds_roundId_error_500": { "type": "string", "minLength": 1 },
+
+    "put_rounds_roundId_games_gameId_teams_teamId_points_success": { "$ref": "#/$defs/points_return" },
+    "put_rounds_roundId_games_gameId_teams_teamId_points_error_404": { "type": "string", "minLength": 1 },
+
+    "put_break_success": { "$ref": "#/$defs/break_return" },
+    "put_break_error_404": { "type": "string", "minLength": 1 },
+    "put_break_error_500": { "type": "string", "minLength": 1 },
+
+    "put_rounds_roundId_full_success": { "$ref": "#/$defs/round_return" },
+    "put_rounds_roundId_full_error_404": { "type": "string", "minLength": 1 },
+    "put_rounds_roundId_full_error_409": { "type": "string", "minLength": 1 },
+    "put_rounds_roundId_full_error_500": { "type": "string", "minLength": 1 },
+
+    "put_games_gameId_success": { "$ref": "#/$defs/game_return" },
+    "put_games_gameId_error_404": { "type": "string", "minLength": 1 }
+  }
+}

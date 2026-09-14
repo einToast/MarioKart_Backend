@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/survey/public-survey-create-controller.schema.json",
+  "$defs": {
+    "answer_return": {
+      "type": "object",
+      "required": ["questionId", "answerType"],
+      "properties": {
+        "questionId": { "type": "integer" },
+        "answerType": { "type": "string" },
+        "freeTextAnswer": { "type": ["string", "null"] },
+        "multipleChoiceSelectedOption": { "type": ["integer", "null"] },
+        "checkboxSelectedOptions": {
+          "type": ["array", "null"],
+          "items": { "type": "integer" }
+        },
+        "teamSelectedOption": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "post_answer_success": {
+      "$ref": "#/$defs/answer_return"
+    },
+    "post_answer_error_409": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_answer_error_429": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_answer_error_404": {
+      "type": "string",
+      "minLength": 1
+    },
+    "post_answer_error_400": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

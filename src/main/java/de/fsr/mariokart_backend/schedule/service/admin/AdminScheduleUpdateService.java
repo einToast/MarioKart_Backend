@@ -361,9 +361,9 @@ public class AdminScheduleUpdateService {
 
     public GameReturnDTO updateGame(Long gameId, GameInputFullDTO gameInput) throws EntityNotFoundException {
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new EntityNotFoundException("Es gibt kein Spiel mit dieser ID."));
+                .orElseThrow(() -> new EntityNotFoundException("There is no game with this ID."));
 
-        // Map für schnelleren Zugriff auf Points nach CharacterName
+        // Map points by character name for efficient lookup.
         Map<String, Points> pointsByCharacter = game.getPoints().stream()
                 .collect(Collectors.toMap(
                         p -> p.getTeam().getCharacter().getCharacterName(),
@@ -372,7 +372,7 @@ public class AdminScheduleUpdateService {
         for (PointsInputFullDTO pointsInput : gameInput.getPoints()) {
             Points point = pointsByCharacter.get(pointsInput.getTeam().getCharacterName());
             if (point != null) {
-                // Bestimme, ob es sich um ein Finalspiel handelt
+                // Decide whether the game belongs to the finals.
                 if (game.getRound().isFinalGame()) {
                     point.setFinalPoints(pointsInput.getPoints());
                 } else {

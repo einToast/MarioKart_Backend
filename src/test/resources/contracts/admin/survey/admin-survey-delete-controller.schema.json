@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/survey/admin-survey-delete-controller.schema.json",
+  "$defs": {
+    "delete_id_success": {
+      "type": "string",
+      "maxLength": 0
+    },
+    "delete_root_success": {
+      "type": "string",
+      "maxLength": 0
+    }
+  }
+}
