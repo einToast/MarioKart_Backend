@@ -199,7 +199,7 @@ class AdminScheduleUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void updateGameMapsNotFound() throws Exception {
         when(adminScheduleUpdateService.updateGame(anyLong(), any(GameInputFullDTO.class)))
-                .thenThrow(new EntityNotFoundException("Es gibt kein Spiel mit dieser ID."));
+                .thenThrow(new EntityNotFoundException("There is no game with this ID."));
 
         mockMvc.perform(put("/admin/schedule/games/2")
                         .contentType(MediaType.APPLICATION_JSON)
