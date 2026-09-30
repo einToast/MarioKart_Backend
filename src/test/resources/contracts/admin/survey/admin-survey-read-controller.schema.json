@@ -25,7 +25,8 @@
         "active": { "type": "boolean" },
         "visible": { "type": "boolean" },
         "live": { "type": "boolean" },
-        "finalTeamsOnly": { "type": "boolean" }
+        "finalTeamsOnly": { "type": "boolean" },
+        "oneAnswerPerKey": { "type": "boolean" }
       },
       "additionalProperties": true
     },

@@ -17,6 +17,7 @@ import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
+import de.fsr.mariokart_backend.survey.repository.SurveyKeyRepository;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -38,6 +39,9 @@ class AdminSettingsDeleteServiceTest {
     private AnswerRepository answerRepository;
 
     @Mock
+    private SurveyKeyRepository surveyKeyRepository;
+
+    @Mock
     private AdminRegistrationDeleteService adminRegistrationDeleteService;
 
     @InjectMocks
@@ -47,18 +51,20 @@ class AdminSettingsDeleteServiceTest {
     void resetDeletesFlushesThenRecreatesTournament() throws Exception {
         service.reset();
 
-        InOrder order = inOrder(roundRepository, questionRepository, answerRepository, breakRepository,
+        InOrder order = inOrder(roundRepository, questionRepository, answerRepository, surveyKeyRepository, breakRepository,
                 tournamentRepository, adminRegistrationDeleteService);
 
         order.verify(roundRepository).deleteAll();
         order.verify(questionRepository).deleteAll();
         order.verify(answerRepository).deleteAll();
+        order.verify(surveyKeyRepository).deleteAll();
         order.verify(breakRepository).deleteAll();
         order.verify(tournamentRepository).deleteAll();
 
         order.verify(roundRepository).flush();
         order.verify(questionRepository).flush();
         order.verify(answerRepository).flush();
+        order.verify(surveyKeyRepository).flush();
         order.verify(breakRepository).flush();
         order.verify(tournamentRepository).flush();
 

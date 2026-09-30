@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
@@ -29,7 +30,7 @@ class AdminSettingsCreateServiceTest {
 
     @Test
     void createSettingsCreatesDefaultTournamentWhenMissing() {
-        Tournament saved = new Tournament(1L, true, true, 6);
+        Tournament saved = new Tournament(1L, true, true, 6, SurveyKeyMode.DISABLED);
 
         when(tournamentRepository.findAll()).thenReturn(List.of());
         when(tournamentRepository.save(org.mockito.ArgumentMatchers.any(Tournament.class))).thenReturn(saved);
@@ -43,7 +44,7 @@ class AdminSettingsCreateServiceTest {
 
     @Test
     void createSettingsThrowsWhenAlreadyPresent() {
-        when(tournamentRepository.findAll()).thenReturn(List.of(new Tournament(1L, true, true, 6)));
+        when(tournamentRepository.findAll()).thenReturn(List.of(new Tournament(1L, true, true, 6, SurveyKeyMode.DISABLED)));
 
         assertThatThrownBy(() -> service.createSettings())
                 .isInstanceOf(IllegalStateException.class)

@@ -39,7 +39,7 @@ class PublicSettingsReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void getSettingsReturnsTournamentDto() throws Exception {
-        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 6));
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 6, null));
 
         mockMvc.perform(get("/public/settings"))
                 .andExpect(status().isOk())

@@ -33,6 +33,10 @@
       "type": "string",
       "minLength": 1
     },
+    "post_answer_error_403": {
+      "type": "string",
+      "minLength": 1
+    },
     "post_answer_error_400": {
       "type": "string",
       "minLength": 1

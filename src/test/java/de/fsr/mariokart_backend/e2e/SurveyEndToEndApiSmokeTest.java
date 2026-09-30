@@ -40,7 +40,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                {"questionText":"Best track?","questionType":"MULTIPLE_CHOICE","options":["Rainbow Road","Moo Moo Meadows","Bowser Castle"],"active":true,"visible":true,"live":false,"finalTeamsOnly":false}
+                                {"questionText":"Best track?","questionType":"MULTIPLE_CHOICE","options":["Rainbow Road","Moo Moo Meadows","Bowser Castle"],"active":true,"visible":true,"live":false,"finalTeamsOnly":false,"oneAnswerPerKey":false}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.questionText").value("Best track?"))
@@ -78,7 +78,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                {"questionText":"Best track results","questionType":"MULTIPLE_CHOICE","options":["Rainbow Road","Moo Moo Meadows","Bowser Castle"],"active":false,"visible":true,"live":false,"finalTeamsOnly":false}
+                                {"questionText":"Best track results","questionType":"MULTIPLE_CHOICE","options":["Rainbow Road","Moo Moo Meadows","Bowser Castle"],"active":false,"visible":true,"live":false,"finalTeamsOnly":false,"oneAnswerPerKey":false}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.questionText").value("Best track results"))
@@ -103,7 +103,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                {"questionText":"Feedback?","questionType":"FREE_TEXT","options":[],"active":true,"visible":true,"live":false,"finalTeamsOnly":false}
+                                {"questionText":"Feedback?","questionType":"FREE_TEXT","options":[],"active":true,"visible":true,"live":false,"finalTeamsOnly":false,"oneAnswerPerKey":false}
                                 """))
                 .andExpect(status().isOk())
                 .andReturn();

@@ -1,20 +1,29 @@
 package de.fsr.mariokart_backend.survey.service.pub;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.SurveyKeyRequiredException;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
+import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
+import de.fsr.mariokart_backend.settings.model.Tournament;
+import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
+import de.fsr.mariokart_backend.survey.model.Answer;
 import de.fsr.mariokart_backend.survey.model.Question;
+import de.fsr.mariokart_backend.survey.model.SurveyKey;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
-import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
+import de.fsr.mariokart_backend.survey.model.dto.AnswerSubmissionResult;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
+import de.fsr.mariokart_backend.survey.repository.SurveyKeyRepository;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.AnswerReturnDTOService;
 import lombok.AllArgsConstructor;
@@ -27,12 +36,15 @@ public class PublicSurveyCreateService {
     private final AnswerInputDTOService answerInputDTOService;
     private final AnswerReturnDTOService answerReturnDTOService;
     private final TeamRepository teamRepository;
+    private final TournamentRepository tournamentRepository;
+    private final SurveyKeyRepository surveyKeyRepository;
     private final ObjectMapper objectMapper;
 
     private static final int MAX_ANSWERS_PER_TEAM = 4;
 
-    public AnswerReturnDTO submitAnswer(AnswerInputDTO answer, String userJson)
-            throws EntityNotFoundException, JacksonException {
+    @Transactional(rollbackFor = Exception.class)
+    public AnswerSubmissionResult submitAnswer(AnswerInputDTO answer, String userJson, String surveyKeyToken)
+            throws EntityNotFoundException, JacksonException, SurveyKeyRequiredException {
 
         Map<String, Object> userMap = null;
 
@@ -69,10 +81,43 @@ public class PublicSurveyCreateService {
             }
         }
 
-        return answerReturnDTOService
-                .answerToAnswerReturnDTO(
-                        answerRepository
-                                .save(answerInputDTOService.answerInputDTOToAnswer(answer, submittingTeam.getId())));
+        Tournament settings = tournamentRepository.findAll().stream().findFirst().orElseGet(Tournament::new);
+        SurveyKey surveyKey = resolveSurveyKey(settings.getSurveyKeyMode(), surveyKeyToken);
+
+        if (surveyKey != null && question.isOneAnswerPerKey()
+                && answerRepository.existsByQuestionIdAndSurveyKeyId(answer.getQuestionId(), surveyKey.getId())) {
+            throw new IllegalArgumentException("This survey key has already been used to answer this question.");
+        }
+
+        // Map before issuing a key so that invalid answers never hand out a key
+        Answer answerToSave = answerInputDTOService.answerInputDTOToAnswer(answer, submittingTeam.getId());
+
+        String issuedSurveyKey = null;
+        if (surveyKey == null && settings.getSurveyKeyMode() == SurveyKeyMode.DISTRIBUTING) {
+            surveyKey = surveyKeyRepository.save(new SurveyKey(null, UUID.randomUUID().toString()));
+            issuedSurveyKey = surveyKey.getToken();
+        }
+        answerToSave.setSurveyKey(surveyKey);
+
+        return new AnswerSubmissionResult(
+                answerReturnDTOService.answerToAnswerReturnDTO(answerRepository.save(answerToSave)),
+                issuedSurveyKey);
+    }
+
+    private SurveyKey resolveSurveyKey(SurveyKeyMode mode, String surveyKeyToken) throws SurveyKeyRequiredException {
+        if (mode == SurveyKeyMode.DISABLED) {
+            return null;
+        }
+
+        SurveyKey surveyKey = null;
+        if (surveyKeyToken != null && !surveyKeyToken.isBlank()) {
+            surveyKey = surveyKeyRepository.findByToken(surveyKeyToken).orElse(null);
+        }
+
+        if (surveyKey == null && mode == SurveyKeyMode.REQUIRED) {
+            throw new SurveyKeyRequiredException("A valid survey key is required to answer this question.");
+        }
+        return surveyKey;
     }
 
 }

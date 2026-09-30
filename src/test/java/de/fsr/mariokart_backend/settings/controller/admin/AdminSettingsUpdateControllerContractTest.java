@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
+import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
@@ -37,7 +38,7 @@ class AdminSettingsUpdateControllerContractTest extends AbstractWebMvcSliceTest 
 
     @Test
     void updateSettingsSuccessMatchesContract() throws Exception {
-        TournamentDTO input = new TournamentDTO(true, false, 8);
+        TournamentDTO input = new TournamentDTO(true, false, 8, SurveyKeyMode.DISABLED);
         when(adminSettingsUpdateService.updateSettings(input)).thenReturn(input);
 
         MvcResult result = mockMvc.perform(put("/admin/settings")
@@ -54,7 +55,7 @@ class AdminSettingsUpdateControllerContractTest extends AbstractWebMvcSliceTest 
 
     @Test
     void updateSettingsNotFoundMatchesContract() throws Exception {
-        TournamentDTO input = new TournamentDTO(true, true, 4);
+        TournamentDTO input = new TournamentDTO(true, true, 4, null);
         when(adminSettingsUpdateService.updateSettings(input)).thenThrow(new IllegalStateException("Settings missing."));
 
         MvcResult result = mockMvc.perform(put("/admin/settings")
@@ -71,7 +72,7 @@ class AdminSettingsUpdateControllerContractTest extends AbstractWebMvcSliceTest 
 
     @Test
     void updateSettingsConflictMatchesContract() throws Exception {
-        TournamentDTO input = new TournamentDTO(true, true, 4);
+        TournamentDTO input = new TournamentDTO(true, true, 4, null);
         when(adminSettingsUpdateService.updateSettings(input))
                 .thenThrow(new RoundsAlreadyExistsException("Schedule already exists."));
 

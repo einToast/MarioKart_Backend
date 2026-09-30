@@ -66,7 +66,7 @@ class AdminRegistrationReadServiceTest {
         Team highAverage = mock(Team.class);
         Team lowAverage = mock(Team.class);
 
-        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 4));
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 4, null));
         when(teamRepository.findAll()).thenReturn(List.of(lowAverage, highAverage));
 
         when(lowAverage.getGroupPoints(4)).thenReturn(8);

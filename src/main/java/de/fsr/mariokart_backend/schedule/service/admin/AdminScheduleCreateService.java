@@ -282,7 +282,7 @@ public class AdminScheduleCreateService {
     }
 
     private void updateTournamentSettings(int maxGamesCount) throws RoundsAlreadyExistsException {
-        adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount));
+        adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount, null));
     }
 
     private ScheduleDTO getGeneratedSchedule(int version, int numTeams, int numFields, int numRounds,

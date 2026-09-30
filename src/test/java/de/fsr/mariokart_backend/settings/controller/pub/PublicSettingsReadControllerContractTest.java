@@ -14,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
@@ -35,7 +36,7 @@ class PublicSettingsReadControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void getSettingsSuccessMatchesContract() throws Exception {
-        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 6));
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 6, SurveyKeyMode.DISABLED));
 
         MvcResult result = mockMvc.perform(get("/public/settings"))
                 .andExpect(status().isOk())

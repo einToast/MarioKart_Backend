@@ -54,6 +54,7 @@ public class AdminSurveyUpdateService {
         if (updatedQuestion.getLive() != null) {
             questionToUpdate.setLive(updatedQuestion.getLive());
         }
+        questionToUpdate.setOneAnswerPerKey(updatedQuestion.isOneAnswerPerKey());
         if (updatedQuestion instanceof MultipleChoiceQuestion choiceQuestion) {
             if (choiceQuestion.getOptions() != null) {
                 ((MultipleChoiceQuestion) questionToUpdate)

@@ -43,8 +43,8 @@ class AdminSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void createQuestionReturnsCreatedQuestion() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", List.of(), true, true, false, false);
-        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q?", List.of(), true, true, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", List.of(), true, true, false, false, false);
+        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q?", List.of(), true, true, false, false, false);
         when(publicSurveyCreateService.createQuestion(any(QuestionInputDTO.class))).thenReturn(response);
 
         mockMvc.perform(post("/admin/survey")

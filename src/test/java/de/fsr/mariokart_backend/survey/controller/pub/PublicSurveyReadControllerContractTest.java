@@ -39,7 +39,7 @@ class PublicSurveyReadControllerContractTest extends AbstractWebMvcSliceTest {
     @Test
     void getVisibleQuestionsMatchesContract() throws Exception {
         when(publicSurveyReadService.getVisibleQuestions())
-                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false)));
+                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false)));
 
         MvcResult result = mockMvc.perform(get("/public/survey/visible"))
                 .andExpect(status().isOk())

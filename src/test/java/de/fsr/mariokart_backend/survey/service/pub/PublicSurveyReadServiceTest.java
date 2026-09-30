@@ -43,7 +43,7 @@ class PublicSurveyReadServiceTest {
         question.setId(1L);
         question.setVisible(true);
 
-        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false);
 
         when(questionRepository.findAllByVisible(true)).thenReturn(List.of(question));
         when(questionReturnDTOService.questionToQuestionReturnDTO(question)).thenReturn(dto);

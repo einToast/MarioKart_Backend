@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
@@ -30,7 +31,7 @@ class PublicSettingsReadServiceTest {
 
     @Test
     void getSettingsReturnsFirstTournament() {
-        Tournament tournament = new Tournament(1L, true, true, 6);
+        Tournament tournament = new Tournament(1L, true, true, 6, SurveyKeyMode.DISABLED);
         when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(tournament)));
 
         TournamentDTO dto = service.getSettings();

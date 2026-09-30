@@ -11,6 +11,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.testsupport.JpaSliceCacheConfig;
 import de.fsr.mariokart_backend.testsupport.PostgresTestBase;
@@ -27,7 +28,7 @@ class TournamentRepositoryTest extends PostgresTestBase {
 
     @Test
     void saveAndLoadTournamentWorks() {
-        Tournament tournament = new Tournament(null, true, true, 6);
+        Tournament tournament = new Tournament(null, true, true, 6, SurveyKeyMode.DISABLED);
         Tournament saved = tournamentRepository.save(tournament);
 
         assertThat(saved.getId()).isNotNull();

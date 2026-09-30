@@ -1,9 +1,7 @@
-package de.fsr.mariokart_backend.settings.model;
+package de.fsr.mariokart_backend.survey.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,20 +16,13 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tournament")
-public class Tournament {
+@Table(name = "survey_keys")
+public class SurveyKey {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private boolean tournamentOpen;
-
-    private boolean registrationOpen;
-
-    private int maxGamesCount;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SurveyKeyMode surveyKeyMode = SurveyKeyMode.DISABLED;
+    @Column(nullable = false, unique = true)
+    private String token;
 }

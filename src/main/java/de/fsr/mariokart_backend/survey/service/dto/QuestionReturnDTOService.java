@@ -44,6 +44,7 @@ public class QuestionReturnDTOService {
         questionReturnDTO.setActive(question.getActive());
         questionReturnDTO.setVisible(question.getVisible());
         questionReturnDTO.setLive(question.getLive());
+        questionReturnDTO.setOneAnswerPerKey(question.isOneAnswerPerKey());
         return questionReturnDTO;
     }
 }

@@ -41,12 +41,12 @@ class AdminSettingsUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void updateSettingsReturnsUpdatedTournament() throws Exception {
-        TournamentDTO response = new TournamentDTO(true, false, 8);
-        when(adminSettingsUpdateService.updateSettings(new TournamentDTO(true, false, 8))).thenReturn(response);
+        TournamentDTO response = new TournamentDTO(true, false, 8, null);
+        when(adminSettingsUpdateService.updateSettings(new TournamentDTO(true, false, 8, null))).thenReturn(response);
 
         mockMvc.perform(put("/admin/settings")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new TournamentDTO(true, false, 8))))
+                        .content(objectMapper.writeValueAsString(new TournamentDTO(true, false, 8, null))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tournamentOpen").value(true))
                 .andExpect(jsonPath("$.registrationOpen").value(false))
@@ -55,24 +55,24 @@ class AdminSettingsUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void updateSettingsReturnsNotFoundWhenSettingsMissing() throws Exception {
-        when(adminSettingsUpdateService.updateSettings(new TournamentDTO(true, true, 4)))
+        when(adminSettingsUpdateService.updateSettings(new TournamentDTO(true, true, 4, null)))
                 .thenThrow(new IllegalStateException("Settings do not exist."));
 
         mockMvc.perform(put("/admin/settings")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new TournamentDTO(true, true, 4))))
+                        .content(objectMapper.writeValueAsString(new TournamentDTO(true, true, 4, null))))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Settings do not exist")));
     }
 
     @Test
     void updateSettingsReturnsConflictWhenRoundsExist() throws Exception {
-        when(adminSettingsUpdateService.updateSettings(new TournamentDTO(true, true, 4)))
+        when(adminSettingsUpdateService.updateSettings(new TournamentDTO(true, true, 4, null)))
                 .thenThrow(new RoundsAlreadyExistsException("Matches already exist."));
 
         mockMvc.perform(put("/admin/settings")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new TournamentDTO(true, true, 4))))
+                        .content(objectMapper.writeValueAsString(new TournamentDTO(true, true, 4, null))))
                 .andExpect(status().isConflict())
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("Matches already exist")));
     }

@@ -12,6 +12,7 @@ import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
+import de.fsr.mariokart_backend.survey.repository.SurveyKeyRepository;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -25,17 +26,20 @@ public class AdminSettingsDeleteService {
     private final RoundRepository roundRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
+    private final SurveyKeyRepository surveyKeyRepository;
     private final AdminRegistrationDeleteService adminRegistrationDeleteService;
 
     public void reset() throws RoundsAlreadyExistsException {
         roundRepository.deleteAll();
         questionRepository.deleteAll();
         answerRepository.deleteAll();
+        surveyKeyRepository.deleteAll();
         breakRepository.deleteAll();
         tournamentRepository.deleteAll();
         roundRepository.flush();
         questionRepository.flush();
         answerRepository.flush();
+        surveyKeyRepository.flush();
         breakRepository.flush();
         tournamentRepository.flush();
 
