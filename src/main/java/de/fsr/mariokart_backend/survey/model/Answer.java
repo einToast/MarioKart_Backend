@@ -50,5 +50,9 @@ public abstract class Answer {
         @JoinColumn(name = "submitting_team_id")
         private Team submittingTeam;
 
+        @ManyToOne
+        @JoinColumn(name = "survey_key_id")
+        private SurveyKey surveyKey;
+
         public abstract String getAnswerDetails();
 }

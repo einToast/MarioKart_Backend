@@ -59,4 +59,6 @@ public abstract class Question {
 
         private Boolean live;
 
+        private boolean oneAnswerPerKey;
+
 }

@@ -43,6 +43,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 true,
                 false,
+                false,
                 false);
 
         Question question = service.questionInputDTOToQuestion(input);
@@ -53,6 +54,24 @@ class QuestionInputDTOServiceTest {
         assertThat(question.getActive()).isTrue();
         assertThat(question.getVisible()).isTrue();
         assertThat(question.getLive()).isFalse();
+        assertThat(question.isOneAnswerPerKey()).isFalse();
+    }
+
+    @Test
+    void mapsOneAnswerPerKeyFlag() {
+        QuestionInputDTO input = new QuestionInputDTO(
+                "Best kart?",
+                "FREE_TEXT",
+                null,
+                true,
+                true,
+                false,
+                false,
+                true);
+
+        Question question = service.questionInputDTOToQuestion(input);
+
+        assertThat(question.isOneAnswerPerKey()).isTrue();
     }
 
     @Test
@@ -65,7 +84,8 @@ class QuestionInputDTOServiceTest {
                 true,
                 true,
                 false,
-                true);
+                true,
+                false);
         when(adminRegistrationReadService.getFinalTeams()).thenReturn(List.of(alpha));
 
         Question question = service.questionInputDTOToQuestion(input);
@@ -87,6 +107,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 true,
                 false,
+                false,
                 false);
         when(teamRepository.findAll()).thenReturn(List.of(alpha, beta));
 
@@ -107,6 +128,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 true,
                 true,
+                false,
                 false);
 
         assertThatThrownBy(() -> service.questionInputDTOToQuestion(input))

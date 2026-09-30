@@ -4,11 +4,12 @@
   "$defs": {
     "put_root_success": {
       "type": "object",
-      "required": ["tournamentOpen", "registrationOpen", "maxGamesCount"],
+      "required": ["tournamentOpen", "registrationOpen", "maxGamesCount", "surveyKeyMode"],
       "properties": {
         "tournamentOpen": { "type": "boolean" },
         "registrationOpen": { "type": "boolean" },
-        "maxGamesCount": { "type": "integer" }
+        "maxGamesCount": { "type": "integer" },
+        "surveyKeyMode": { "type": "string", "enum": ["DISABLED", "DISTRIBUTING", "REQUIRED"] }
       },
       "additionalProperties": true
     },

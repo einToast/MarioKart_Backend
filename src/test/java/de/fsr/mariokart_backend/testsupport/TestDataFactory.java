@@ -17,7 +17,7 @@ public final class TestDataFactory {
     }
 
     public static TournamentDTO openTournamentSettings() {
-        return new TournamentDTO(true, true, 4);
+        return new TournamentDTO(true, true, 4, null);
     }
 
     public static Character character(String name) {

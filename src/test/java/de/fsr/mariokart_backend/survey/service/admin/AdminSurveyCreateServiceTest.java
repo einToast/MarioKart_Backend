@@ -37,9 +37,9 @@ class AdminSurveyCreateServiceTest {
 
     @Test
     void createQuestionMapsSavesAndReturnsDto() {
-        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
         Question question = org.mockito.Mockito.mock(Question.class);
-        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false);
 
         when(questionInputDTOService.questionInputDTOToQuestion(input)).thenReturn(question);
         when(questionRepository.save(question)).thenReturn(question);

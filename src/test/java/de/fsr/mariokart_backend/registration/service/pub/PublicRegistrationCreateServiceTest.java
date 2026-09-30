@@ -98,7 +98,7 @@ class PublicRegistrationCreateServiceTest {
     @Test
     void registerTeamThrowsWhenRegistrationIsClosed() {
         TeamInputDTO input = TestDataFactory.teamInput("Speedsters", "Mario");
-        when(settingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4));
+        when(settingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4, null));
 
         assertThatThrownBy(() -> service.registerTeam(input))
                 .isInstanceOf(IllegalStateException.class)
@@ -108,7 +108,7 @@ class PublicRegistrationCreateServiceTest {
     @Test
     void registerTeamThrowsWhenTournamentIsClosed() {
         TeamInputDTO input = TestDataFactory.teamInput("Speedsters", "Mario");
-        when(settingsReadService.getSettings()).thenReturn(new TournamentDTO(false, true, 4));
+        when(settingsReadService.getSettings()).thenReturn(new TournamentDTO(false, true, 4, null));
 
         assertThatThrownBy(() -> service.registerTeam(input))
                 .isInstanceOf(IllegalStateException.class)

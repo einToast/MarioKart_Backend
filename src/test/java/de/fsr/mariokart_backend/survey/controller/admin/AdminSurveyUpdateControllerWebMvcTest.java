@@ -48,8 +48,8 @@ class AdminSurveyUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void updateQuestionReturnsUpdatedQuestion() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false);
-        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
+        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false);
         when(adminSurveyUpdateService.updateQuestion(anyLong(), any(QuestionInputDTO.class))).thenReturn(response);
 
         mockMvc.perform(put("/admin/survey/1")
@@ -61,7 +61,7 @@ class AdminSurveyUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void updateQuestionMapsNotFound() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
         when(adminSurveyUpdateService.updateQuestion(anyLong(), any(QuestionInputDTO.class)))
                 .thenThrow(new EntityNotFoundException("There is no question with this id."));
 
@@ -74,7 +74,7 @@ class AdminSurveyUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void updateQuestionMapsBadRequest() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
         when(adminSurveyUpdateService.updateQuestion(anyLong(), any(QuestionInputDTO.class)))
                 .thenThrow(new IllegalArgumentException("Question type not supported."));
 
@@ -87,7 +87,7 @@ class AdminSurveyUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void updateQuestionMapsInternalServerError() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
         when(adminSurveyUpdateService.updateQuestion(anyLong(), any(QuestionInputDTO.class)))
                 .thenThrow(new NotificationNotSentException("Could not send notification"));
 

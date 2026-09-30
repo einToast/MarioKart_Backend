@@ -39,6 +39,9 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getMaxGamesCount() != null) {
             tournament.setMaxGamesCount(tournamentDTO.getMaxGamesCount());
         }
+        if (tournamentDTO.getSurveyKeyMode() != null) {
+            tournament.setSurveyKeyMode(tournamentDTO.getSurveyKeyMode());
+        }
 
         return new TournamentDTO(tournamentRepository.save(tournament));
     }

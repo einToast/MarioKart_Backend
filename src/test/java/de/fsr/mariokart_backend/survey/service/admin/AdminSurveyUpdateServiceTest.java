@@ -91,9 +91,10 @@ class AdminSurveyUpdateServiceTest {
         updated.setActive(true);
         updated.setVisible(true);
         updated.setLive(true);
+        updated.setOneAnswerPerKey(true);
         updated.setOptions(List.of("X", "Y"));
 
-        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "MULTIPLE_CHOICE", "New", List.of("X", "Y"), true, true, true, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "MULTIPLE_CHOICE", "New", List.of("X", "Y"), true, true, true, false, false);
 
         when(questionRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
@@ -106,6 +107,7 @@ class AdminSurveyUpdateServiceTest {
         assertThat(existing.getQuestionText()).isEqualTo("New");
         assertThat(existing.getOptions()).containsExactly("X", "Y");
         assertThat(existing.getLive()).isTrue();
+        assertThat(existing.isOneAnswerPerKey()).isTrue();
         verify(webSocketService).sendMessage("/topic/questions", "update");
         verifyNoInteractions(adminNotificationCreateService);
     }
@@ -123,7 +125,7 @@ class AdminSurveyUpdateServiceTest {
         updated.setActive(true);
         updated.setVisible(true);
 
-        QuestionReturnDTO dto = new QuestionReturnDTO(3L, "FREE_TEXT", "New Poll", List.of(), true, true, false, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(3L, "FREE_TEXT", "New Poll", List.of(), true, true, false, false, false);
 
         when(questionRepository.findById(3L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);

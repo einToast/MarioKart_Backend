@@ -19,9 +19,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import de.fsr.mariokart_backend.config.CookieProperties;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
+import de.fsr.mariokart_backend.exception.SurveyKeyRequiredException;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
+import de.fsr.mariokart_backend.survey.model.dto.AnswerSubmissionResult;
 import de.fsr.mariokart_backend.survey.service.pub.PublicSurveyCreateService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 import de.fsr.mariokart_backend.testsupport.ContractSchemaSupport;
@@ -41,11 +44,15 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
     @MockitoBean
     private PublicSurveyCreateService publicSurveyCreateService;
 
+    @MockitoBean
+    private CookieProperties cookieProperties;
+
     @Test
     void submitAnswerSuccessMatchesContract() throws Exception {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
         AnswerReturnDTO response = new AnswerReturnDTO(1L, "FREE_TEXT", "A", null, null, null);
-        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString())).thenReturn(response);
+        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
+                .thenReturn(new AnswerSubmissionResult(response, null));
 
         MvcResult result = mockMvc.perform(post("/public/survey/answer")
                         .cookie(new MockCookie("user", "{\"teamId\":1}"))
@@ -60,7 +67,7 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void submitAnswerConflictMatchesContract() throws Exception {
-        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString()))
+        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
                 .thenThrow(new IllegalStateException("Question is not active or visible."));
 
         MvcResult result = mockMvc.perform(post("/public/survey/answer")
@@ -76,7 +83,7 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void submitAnswerTooManyRequestsMatchesContract() throws Exception {
-        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString()))
+        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
                 .thenThrow(new IllegalArgumentException("Maximum number of answers reached."));
 
         MvcResult result = mockMvc.perform(post("/public/survey/answer")
@@ -92,7 +99,7 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void submitAnswerNotFoundMatchesContract() throws Exception {
-        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString()))
+        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
                 .thenThrow(new EntityNotFoundException("No question"));
 
         MvcResult result = mockMvc.perform(post("/public/survey/answer")
@@ -110,7 +117,7 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
     void submitAnswerBadRequestMatchesContract() throws Exception {
         JacksonException jacksonException = mock(JacksonException.class);
         when(jacksonException.getMessage()).thenReturn("Invalid JSON");
-        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString()))
+        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
                 .thenThrow(jacksonException);
 
         MvcResult result = mockMvc.perform(post("/public/survey/answer")
@@ -121,6 +128,22 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
                 .andReturn();
 
         ContractSchemaSupport.assertStringMatchesDefinition(SCHEMA, "post_answer_error_400",
+                result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void submitAnswerForbiddenMatchesContract() throws Exception {
+        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
+                .thenThrow(new SurveyKeyRequiredException("A valid survey key is required to answer this question."));
+
+        MvcResult result = mockMvc.perform(post("/public/survey/answer")
+                        .cookie(new MockCookie("user", "{\"teamId\":1}"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null))))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        ContractSchemaSupport.assertStringMatchesDefinition(SCHEMA, "post_answer_error_403",
                 result.getResponse().getContentAsString());
     }
 }

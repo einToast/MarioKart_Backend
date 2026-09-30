@@ -27,6 +27,7 @@ class QuestionReturnDTOServiceTest {
         question.setActive(true);
         question.setVisible(true);
         question.setLive(false);
+        question.setOneAnswerPerKey(true);
 
         QuestionReturnDTO dto = service.questionToQuestionReturnDTO(question);
 
@@ -34,6 +35,7 @@ class QuestionReturnDTOServiceTest {
         assertThat(dto.getQuestionType()).isEqualTo("FREE_TEXT");
         assertThat(dto.getQuestionText()).isEqualTo("Feedback?");
         assertThat(dto.isActive()).isTrue();
+        assertThat(dto.isOneAnswerPerKey()).isTrue();
     }
 
     @Test

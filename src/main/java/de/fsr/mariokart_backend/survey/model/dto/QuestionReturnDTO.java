@@ -18,4 +18,5 @@ public class QuestionReturnDTO {
     private boolean visible;
     private boolean live;
     private boolean finalTeamsOnly;
+    private boolean oneAnswerPerKey;
 }

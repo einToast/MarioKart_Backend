@@ -45,7 +45,7 @@ class AdminSurveyReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void getQuestionsReturnsList() throws Exception {
         when(adminSurveyReadService.getQuestions())
-                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false)));
+                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false)));
 
         mockMvc.perform(get("/admin/survey"))
                 .andExpect(status().isOk())

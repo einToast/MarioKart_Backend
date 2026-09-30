@@ -49,6 +49,7 @@ public class QuestionInputDTOService {
         question.setActive(questionInputDTO.isActive());
         question.setVisible(questionInputDTO.isVisible());
         question.setLive(questionInputDTO.isLive());
+        question.setOneAnswerPerKey(questionInputDTO.isOneAnswerPerKey());
         return question;
     }
 }

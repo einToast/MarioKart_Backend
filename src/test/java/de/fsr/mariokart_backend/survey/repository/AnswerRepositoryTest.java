@@ -11,6 +11,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
+import de.fsr.mariokart_backend.survey.model.SurveyKey;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.testsupport.JpaSliceCacheConfig;
@@ -28,6 +29,9 @@ class AnswerRepositoryTest extends PostgresTestBase {
 
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private SurveyKeyRepository surveyKeyRepository;
 
     @Test
     void findAndDeleteByQuestionIdWork() {
@@ -54,5 +58,28 @@ class AnswerRepositoryTest extends PostgresTestBase {
         answerRepository.deleteAllByQuestionId(question.getId());
 
         assertThat(answerRepository.findAllByQuestionId(question.getId())).isEmpty();
+    }
+
+    @Test
+    void existsByQuestionIdAndSurveyKeyIdMatchesOnlyAnswersOfThatKey() {
+        FreeTextQuestion question = new FreeTextQuestion();
+        question.setQuestionText("Best track?");
+        question.setVisible(true);
+        question.setActive(true);
+        question.setLive(false);
+        questionRepository.save(question);
+
+        SurveyKey usedKey = surveyKeyRepository.save(new SurveyKey(null, "used-key"));
+        SurveyKey unusedKey = surveyKeyRepository.save(new SurveyKey(null, "unused-key"));
+
+        FreeTextAnswer answer = new FreeTextAnswer();
+        answer.setQuestion(question);
+        answer.setTextAnswer("Rainbow Road");
+        answer.setSurveyKey(usedKey);
+        answerRepository.save(answer);
+
+        assertThat(answerRepository.existsByQuestionIdAndSurveyKeyId(question.getId(), usedKey.getId())).isTrue();
+        assertThat(answerRepository.existsByQuestionIdAndSurveyKeyId(question.getId(), unusedKey.getId())).isFalse();
+        assertThat(surveyKeyRepository.findByToken("used-key")).contains(usedKey);
     }
 }

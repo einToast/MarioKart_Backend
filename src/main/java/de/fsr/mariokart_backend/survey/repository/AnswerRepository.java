@@ -17,4 +17,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Long> {
     long countByQuestionIdAndSubmittingTeamId(Long questionId, Long submittingTeamId);
 
     boolean existsByQuestionIdAndSubmittingTeamId(Long questionId, Long submittingTeamId);
+
+    boolean existsByQuestionIdAndSurveyKeyId(Long questionId, Long surveyKeyId);
 }

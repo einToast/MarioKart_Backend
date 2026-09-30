@@ -53,7 +53,7 @@ class RegistrationReturnDTOServiceTest {
         Team team = mock(Team.class);
         Character peach = new Character(2L, "Peach", null);
 
-        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 6));
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 6, null));
         when(team.getId()).thenReturn(1L);
         when(team.getTeamName()).thenReturn("Turbo");
         when(team.getCharacter()).thenReturn(peach);
