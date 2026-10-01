@@ -32,3 +32,8 @@ updates:
           # Update this when the Maven image version changes
           - ">= 3.9.15.26, < 3.9.15.29"
 
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    open-pull-requests-limit: 10
