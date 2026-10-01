@@ -67,7 +67,7 @@ class PublicNotificationCreateServiceTest {
 
         service.sendTestNotification(subscription);
 
-        ArgumentCaptor<Map<String, String>> mapCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, String>> mapCaptor = ArgumentCaptor.captor();
         verify(objectMapper).writeValueAsString(mapCaptor.capture());
         assertThat(mapCaptor.getValue()).containsEntry("title", "Mario Kart Turnier");
         assertThat(mapCaptor.getValue().get("body")).contains("Testbenachrichtigung");

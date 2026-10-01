@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -90,7 +91,8 @@ class PublicSurveyCreateServiceTest {
         question.setActive(false);
         question.setVisible(true);
 
-        when(objectMapper.readValue(eq(USER_JSON), any(TypeReference.class))).thenReturn(Map.of("teamId", 7));
+        when(objectMapper.readValue(eq(USER_JSON), ArgumentMatchers.<TypeReference<Map<String, Object>>>any()))
+                .thenReturn(Map.of("teamId", 7));
         when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
 
         assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
@@ -282,7 +284,8 @@ class PublicSurveyCreateServiceTest {
         question.setVisible(true);
         question.setOneAnswerPerKey(oneAnswerPerKey);
 
-        when(objectMapper.readValue(eq(USER_JSON), any(TypeReference.class))).thenReturn(Map.of("teamId", 7));
+        when(objectMapper.readValue(eq(USER_JSON), ArgumentMatchers.<TypeReference<Map<String, Object>>>any()))
+                .thenReturn(Map.of("teamId", 7));
         when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
         when(teamRepository.findById(7L)).thenReturn(Optional.of(team));
     }

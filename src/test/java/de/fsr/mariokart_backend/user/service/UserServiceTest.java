@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.model.dto.UserDTO;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
@@ -29,9 +28,6 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private UserProperties userProperties;
 
     @InjectMocks
     private UserService service;

@@ -6,7 +6,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.model.dto.UserDTO;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
@@ -16,7 +15,6 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final UserProperties userProperties;
 
     public UserDTO updateUser(int userID) throws EntityNotFoundException {
         User user = getUser(userID);

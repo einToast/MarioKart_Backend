@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.registration.model.Team;
-import de.fsr.mariokart_backend.survey.model.Answer;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
 import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxAnswer;

@@ -120,7 +120,7 @@ class AdminScheduleUpdateServiceTest {
         List<Round> firstUnplayed = new ArrayList<>(List.of(round));
 
         when(roundRepository.findById(1L)).thenReturn(Optional.of(round));
-        when(roundRepository.findByPlayedFalse()).thenReturn(firstUnplayed, new ArrayList<>());
+        when(roundRepository.findByPlayedFalse()).thenReturn(firstUnplayed).thenReturn(new ArrayList<>());
         when(adminScheduleReadService.isBreakFinished()).thenReturn(true);
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(scheduleReturnDTOService.roundToRoundDTO(any(Round.class)))
@@ -167,8 +167,8 @@ class AdminScheduleUpdateServiceTest {
 
         when(roundRepository.findById(1L)).thenReturn(Optional.of(currentRound));
         when(roundRepository.findByPlayedFalse())
-                .thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)),
-                        new ArrayList<>(List.of(breakRound, afterBreakRound)));
+                .thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)))
+                .thenReturn(new ArrayList<>(List.of(breakRound, afterBreakRound)));
         when(adminScheduleReadService.isBreakFinished()).thenReturn(false);
         when(roundRepository.findAll()).thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));

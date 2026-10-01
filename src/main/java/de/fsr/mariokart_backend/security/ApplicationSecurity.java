@@ -35,7 +35,7 @@ public class ApplicationSecurity {
     private String allowedOrigin;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    SecurityFilterChain filterChain(HttpSecurity http) {
         http
                 .authorizeHttpRequests((auth) -> auth
                         // Public endpoints
@@ -81,17 +81,17 @@ public class ApplicationSecurity {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
+    UserDetailsService userDetailsService() {
         return new CustomUserDetailsService(userRepository);
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
+    AuthenticationManager authenticationManager(
             AuthenticationConfiguration authConfig) {
         return authConfig.getAuthenticationManager();
     }

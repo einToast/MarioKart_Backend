@@ -21,7 +21,7 @@ public class ScheduleRestClientConfiguration {
     private String port;
 
     @Bean
-    public RestClient scheduleRestClient() {
+    RestClient scheduleRestClient() {
         String baseUrl = "%s://%s:%s".formatted(protocol, host, port);
         log.info("baseUrl: {}", baseUrl);
         return RestClient.builder().baseUrl(baseUrl).build();
