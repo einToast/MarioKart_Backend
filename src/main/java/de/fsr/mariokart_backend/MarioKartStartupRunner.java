@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend;
 
 import java.io.IOException;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -36,7 +37,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final AdminSurveyCreateService adminSurveyCreateService;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String @NonNull... args) throws Exception {
         try {
             addCharacterService.addCharacters("media");
             adminSettingsCreateService.createSettings();
@@ -123,7 +124,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     }
 
     private void addTeams() {
-        if (teamRepository.findAll().size() > 0) {
+        if (!teamRepository.findAll().isEmpty()) {
             System.err.print("Teams already exist!");
             return;
         }
