@@ -19,7 +19,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
-import de.fsr.mariokart_backend.notification.model.PushSubscription;
+import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
 import de.fsr.mariokart_backend.notification.service.pub.PublicNotificationCreateService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 
@@ -42,7 +42,7 @@ class PublicNotificationCreateControllerWebMvcTest extends AbstractWebMvcSliceTe
 
     @Test
     void subscribeReturnsOk() throws Exception {
-        PushSubscription subscription = subscription();
+        PushSubscriptionInputDTO subscription = subscription();
 
         mockMvc.perform(post("/public/notification/subscribe")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -52,10 +52,10 @@ class PublicNotificationCreateControllerWebMvcTest extends AbstractWebMvcSliceTe
 
     @Test
     void subscribeReturnsServiceUnavailableOnFailure() throws Exception {
-        PushSubscription subscription = subscription();
+        PushSubscriptionInputDTO subscription = subscription();
         doThrow(new NotificationNotSentException("Could not send notification"))
                 .when(publicNotificationCreateService)
-                .saveSubscription(any(PushSubscription.class));
+                .saveSubscription(any(PushSubscriptionInputDTO.class));
 
         mockMvc.perform(post("/public/notification/subscribe")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -64,8 +64,8 @@ class PublicNotificationCreateControllerWebMvcTest extends AbstractWebMvcSliceTe
                 .andExpect(content().string(containsString("Could not send notification")));
     }
 
-    private static PushSubscription subscription() {
-        PushSubscription subscription = new PushSubscription();
+    private static PushSubscriptionInputDTO subscription() {
+        PushSubscriptionInputDTO subscription = new PushSubscriptionInputDTO();
         subscription.setEndpoint("https://example.test/sub");
         subscription.setP256dh("p256dh");
         subscription.setAuth("auth");

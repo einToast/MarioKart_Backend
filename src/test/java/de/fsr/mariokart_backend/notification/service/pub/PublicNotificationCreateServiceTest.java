@@ -19,8 +19,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
+import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
+import de.fsr.mariokart_backend.notification.service.dto.NotificationInputDTOService;
 import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +36,9 @@ class PublicNotificationCreateServiceTest {
     private NotificationSendService notificationSendService;
 
     @Mock
+    private NotificationInputDTOService notificationInputDTOService;
+
+    @Mock
     private ObjectMapper objectMapper;
 
     @InjectMocks
@@ -41,13 +46,15 @@ class PublicNotificationCreateServiceTest {
 
     @Test
     void saveSubscriptionPersistsAndSendsTestNotification() throws Exception {
-        PushSubscription incoming = subscription(1L, 4L);
+        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "p256dh", "auth", 4L);
+        PushSubscription incoming = subscription(null, 4L);
         PushSubscription saved = subscription(2L, 4L);
 
+        when(notificationInputDTOService.pushSubscriptionInputDTOToPushSubscription(input)).thenReturn(incoming);
         when(subscriptionRepository.save(incoming)).thenReturn(saved);
         when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
 
-        service.saveSubscription(incoming);
+        service.saveSubscription(input);
 
         verify(subscriptionRepository).save(incoming);
         verify(notificationSendService).sendNotification(saved, "payload");
@@ -62,7 +69,7 @@ class PublicNotificationCreateServiceTest {
 
         ArgumentCaptor<Map<String, String>> mapCaptor = ArgumentCaptor.forClass(Map.class);
         verify(objectMapper).writeValueAsString(mapCaptor.capture());
-        assertThat(mapCaptor.getValue().get("title")).isEqualTo("Mario Kart Turnier");
+        assertThat(mapCaptor.getValue()).containsEntry("title", "Mario Kart Turnier");
         assertThat(mapCaptor.getValue().get("body")).contains("Testbenachrichtigung");
     }
 

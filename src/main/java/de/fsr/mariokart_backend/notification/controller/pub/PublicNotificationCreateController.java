@@ -11,7 +11,7 @@ import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
-import de.fsr.mariokart_backend.notification.model.PushSubscription;
+import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
 import de.fsr.mariokart_backend.notification.service.pub.PublicNotificationCreateService;
 import lombok.AllArgsConstructor;
 
@@ -23,9 +23,9 @@ public class PublicNotificationCreateController {
     private final PublicNotificationCreateService publicNotificationCreateService;
 
     @PostMapping("/subscribe")
-    public ResponseEntity<Void> subscribe(@RequestBody PushSubscription subscription) {
+    public ResponseEntity<Void> subscribe(@RequestBody PushSubscriptionInputDTO subscriptionInput) {
         try {
-            publicNotificationCreateService.saveSubscription(subscription);
+            publicNotificationCreateService.saveSubscription(subscriptionInput);
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());

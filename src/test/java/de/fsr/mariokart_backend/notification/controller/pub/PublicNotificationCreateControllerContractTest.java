@@ -17,7 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
-import de.fsr.mariokart_backend.notification.model.PushSubscription;
+import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
 import de.fsr.mariokart_backend.notification.service.pub.PublicNotificationCreateService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 import de.fsr.mariokart_backend.testsupport.ContractSchemaSupport;
@@ -54,7 +54,7 @@ class PublicNotificationCreateControllerContractTest extends AbstractWebMvcSlice
     void subscribeServiceUnavailableMatchesContract() throws Exception {
         doThrow(new NotificationNotSentException("Could not send notification"))
                 .when(publicNotificationCreateService)
-                .saveSubscription(any(PushSubscription.class));
+                .saveSubscription(any(PushSubscriptionInputDTO.class));
 
         MvcResult result = mockMvc.perform(post("/public/notification/subscribe")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -68,8 +68,8 @@ class PublicNotificationCreateControllerContractTest extends AbstractWebMvcSlice
                 result.getResponse().getContentAsString());
     }
 
-    private static PushSubscription subscription() {
-        PushSubscription subscription = new PushSubscription();
+    private static PushSubscriptionInputDTO subscription() {
+        PushSubscriptionInputDTO subscription = new PushSubscriptionInputDTO();
         subscription.setEndpoint("https://example.test/sub");
         subscription.setP256dh("p256dh");
         subscription.setAuth("auth");
