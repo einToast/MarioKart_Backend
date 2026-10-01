@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "MarioKartBackend",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "de.fsr.mariokart_backend.MarioKartBackendApplication",
+      "projectName": "MarioKart_Backend",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
