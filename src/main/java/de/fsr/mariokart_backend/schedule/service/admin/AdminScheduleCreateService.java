@@ -183,8 +183,8 @@ public class AdminScheduleCreateService {
         validateScheduleCreation(scheduleCreation);
 
         int numTeams = teamRepository.findAll().size();
-        ScheduleDTO scheduleDTO = getGeneratedSchedule(numTeams, scheduleCreation.getNumFields(),
-                scheduleCreation.getNumRounds(), scheduleCreation.getTeamsPerGame());
+        ScheduleDTO scheduleDTO = getGeneratedSchedule(scheduleCreation.getVersion(), numTeams,
+                scheduleCreation.getNumFields(), scheduleCreation.getNumRounds(), scheduleCreation.getTeamsPerGame());
 
         validateScheduleCreation(scheduleCreation);
 
@@ -213,9 +213,12 @@ public class AdminScheduleCreateService {
                     || scheduleCreation.getTeamsPerGame() <= 0) {
                 throw new IllegalArgumentException("Invalid schedule parameters");
             }
-            if (teamRepository.findAll().size() < scheduleCreation.getTeamsPerGame()) {
+            // A team can only play on one field per round, so every field needs its own teams.
+            int teamsPerRound = scheduleCreation.getNumFields() * scheduleCreation.getTeamsPerGame();
+            if (teamRepository.findAll().size() < teamsPerRound) {
                 throw new NotEnoughTeamsException(
-                        "Not enough teams for one game");
+                        "Not enough teams: %d fields with %d teams each need at least %d teams".formatted(
+                                scheduleCreation.getNumFields(), scheduleCreation.getTeamsPerGame(), teamsPerRound));
             }
         }
     }
@@ -285,12 +288,14 @@ public class AdminScheduleCreateService {
         adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount, null));
     }
 
-    private ScheduleDTO getGeneratedSchedule(int numTeams, int numFields, int numRounds, int teamsPerGame) {
+    private ScheduleDTO getGeneratedSchedule(int version, int numTeams, int numFields, int numRounds,
+            int teamsPerGame) {
         Map<String, Integer> requestBody = new HashMap<>();
+        requestBody.put("version", version);
         requestBody.put("num_teams", numTeams);
         requestBody.put("num_fields", numFields);
         requestBody.put("num_rounds", numRounds);
-        requestBody.put("teams_per_game", teamsPerGame);
+        requestBody.put("num_teams_per_game", teamsPerGame);
         String response;
         try {
             response = scheduleRestClient.post()

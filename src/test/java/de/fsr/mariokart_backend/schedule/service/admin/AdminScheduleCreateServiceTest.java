@@ -203,6 +203,20 @@ class AdminScheduleCreateServiceTest {
     }
 
     @Test
+    void createScheduleThrowsWhenTeamsCannotFillAllFieldsOfARound() {
+        List<Team> teams = buildTeams(11);
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.findAll()).thenReturn(teams);
+
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(2, 4, 8, 4);
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput))
+                .isInstanceOf(NotEnoughTeamsException.class)
+                .hasMessageContaining("need at least 16 teams");
+        verify(roundRepository, never()).save(any(Round.class));
+    }
+
+    @Test
     void createScheduleThrowsWhenScheduleGeneratorRequestFails() {
         List<Team> teams = buildTeams(16);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
