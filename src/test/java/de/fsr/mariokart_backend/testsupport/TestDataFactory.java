@@ -53,7 +53,7 @@ public final class TestDataFactory {
 
     public static User user(String username, boolean isAdmin) {
         User user = new User(username, isAdmin);
-        user.setID(1);
+        user.setId(1);
         user.setPassword("secret");
         return user;
     }

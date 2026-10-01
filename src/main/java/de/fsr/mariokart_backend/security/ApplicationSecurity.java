@@ -21,7 +21,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class ApplicationSecurity {
     private String allowedOrigin;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain filterChain(HttpSecurity http) {
         http
                 .authorizeHttpRequests((auth) -> auth
                         // Public endpoints
@@ -68,7 +70,7 @@ public class ApplicationSecurity {
     @Bean
     UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        IO.println("Allowed Origin: " + allowedOrigin);
+        log.info("Allowed Origin: {}", allowedOrigin);
         configuration.setAllowedOrigins(Arrays.asList(allowedOrigin, "http://127.0.0.1:8100", "http://localhost:8100"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Team-ID"));
@@ -79,18 +81,18 @@ public class ApplicationSecurity {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
+    UserDetailsService userDetailsService() {
         return new CustomUserDetailsService(userRepository);
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authConfig) throws Exception {
+    AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authConfig) {
         return authConfig.getAuthenticationManager();
     }
 }

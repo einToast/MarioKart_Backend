@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -28,7 +27,6 @@ public class AdminRegistrationUpdateController {
     private final AdminRegistrationUpdateService adminRegistrationUpdateService;
 
     @PutMapping("/{id}")
-    @ResponseBody
     public ResponseEntity<TeamReturnDTO> updateTeam(@PathVariable Long id, @RequestBody TeamInputDTO teamCreation) {
         try {
             return ResponseEntity.ok(adminRegistrationUpdateService.updateTeam(id, teamCreation));

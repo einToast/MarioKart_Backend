@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.registration.service.admin;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,12 +32,11 @@ public class AdminRegistrationReadService {
 
     public List<Team> getTeamsSortedByGroupPoints() {
         int maxGames = publicSettingsReadService.getSettings().getMaxGamesCount();
-        List<Team> teams = teamRepository.findAll().stream()
+        return teamRepository.findAll().stream()
                 .sorted(Comparator.comparing(
                         team -> team.getGroupPoints(maxGames) / (double) (team.getNumberOfGamesPlayed(maxGames) == 0 ? 1 : team.getNumberOfGamesPlayed(maxGames)),
                         Comparator.reverseOrder()))
                 .toList();
-        return teams;
     }
 
     public List<TeamReturnDTO> getTeamsReturnDTOSortedByGroupPoints() {
@@ -72,7 +72,7 @@ public class AdminRegistrationReadService {
         return getTeamsSortedByGroupPoints().stream()
                 .filter(team -> team.isFinalReady())
                 .limit(4)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public List<CharacterReturnDTO> getCharacters() {

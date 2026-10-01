@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.user.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +40,9 @@ public class AuthenticationService {
 
         Authentication authentication = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
-        User user = (User) authentication.getPrincipal();
+        if (!(authentication.getPrincipal() instanceof User user)) {
+            throw new BadCredentialsException("Invalid credentials");
+        }
         String accessToken = jwtManagerService.generateJWT(user);
 
         return new AuthenticationResult(accessToken, new AuthenticationResponseDTO(user));
@@ -63,7 +66,7 @@ public class AuthenticationService {
             UUID uuid = UUID.fromString(token);
             UserToken userToken = userTokenService.getUserToken(uuid);
 
-            if (LocalDateTime.now().isAfter(userToken.getExpiresAt())) {
+            if (LocalDateTime.now(ZoneId.systemDefault()).isAfter(userToken.getExpiresAt())) {
                 throw new TokenExpiredException("The token is expired.");
             }
 

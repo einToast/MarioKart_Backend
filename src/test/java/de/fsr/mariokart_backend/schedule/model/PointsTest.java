@@ -22,6 +22,6 @@ class PointsTest {
         points.setTeam(team);
         points.setGame(game);
 
-        assertThat(points.toString()).isEqualTo("9 4");
+        assertThat(points).hasToString("9 4");
     }
 }

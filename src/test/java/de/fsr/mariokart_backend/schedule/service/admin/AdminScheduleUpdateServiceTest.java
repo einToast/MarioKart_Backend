@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -121,7 +120,7 @@ class AdminScheduleUpdateServiceTest {
         List<Round> firstUnplayed = new ArrayList<>(List.of(round));
 
         when(roundRepository.findById(1L)).thenReturn(Optional.of(round));
-        when(roundRepository.findByPlayedFalse()).thenReturn(firstUnplayed, new ArrayList<>());
+        when(roundRepository.findByPlayedFalse()).thenReturn(firstUnplayed).thenReturn(new ArrayList<>());
         when(adminScheduleReadService.isBreakFinished()).thenReturn(true);
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(scheduleReturnDTOService.roundToRoundDTO(any(Round.class)))
@@ -168,8 +167,8 @@ class AdminScheduleUpdateServiceTest {
 
         when(roundRepository.findById(1L)).thenReturn(Optional.of(currentRound));
         when(roundRepository.findByPlayedFalse())
-                .thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)),
-                        new ArrayList<>(List.of(breakRound, afterBreakRound)));
+                .thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)))
+                .thenReturn(new ArrayList<>(List.of(breakRound, afterBreakRound)));
         when(adminScheduleReadService.isBreakFinished()).thenReturn(false);
         when(roundRepository.findAll()).thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -488,8 +487,8 @@ class AdminScheduleUpdateServiceTest {
         service.sendNotificationForNextRound();
 
         verify(adminNotificationCreateService).sendNotificationToAll(
-                eq("It's pizza time! 🍕"),
-                eq("Pizzapause!"));
+                "It's pizza time! 🍕",
+                "Pizzapause!");
         verify(adminNotificationCreateService, never()).sendNotificationToTeam(any(), any(), any());
     }
 

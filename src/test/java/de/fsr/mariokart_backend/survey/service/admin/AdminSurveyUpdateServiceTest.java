@@ -21,6 +21,10 @@ import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
+import de.fsr.mariokart_backend.registration.model.Team;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamOneFreeTextQuestion;
+import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
@@ -71,7 +75,9 @@ class AdminSurveyUpdateServiceTest {
         when(questionRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(unsupported);
 
-        assertThatThrownBy(() -> service.updateQuestion(1L, new QuestionInputDTO()))
+        QuestionInputDTO input = new QuestionInputDTO();
+
+        assertThatThrownBy(() -> service.updateQuestion(1L, input))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Question type not supported");
     }
@@ -136,5 +142,135 @@ class AdminSurveyUpdateServiceTest {
 
         verify(webSocketService).sendMessage("/topic/questions", "update");
         verify(adminNotificationCreateService).sendNotificationToAll("Neue Umfrage verfügbar!", "New Poll");
+    }
+
+    @Test
+    void updateQuestionUpdatesCheckboxOptions() throws Exception {
+        CheckboxQuestion existing = new CheckboxQuestion();
+        existing.setActive(false);
+        existing.setVisible(false);
+        existing.setOptions(List.of("A", "B"));
+
+        CheckboxQuestion updated = new CheckboxQuestion();
+        updated.setActive(false);
+        updated.setVisible(false);
+        updated.setOptions(List.of("X", "Y", "Z"));
+
+        stubUpdate(existing, updated);
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getOptions()).containsExactly("X", "Y", "Z");
+        verifyNoInteractions(adminNotificationCreateService);
+    }
+
+    @Test
+    void updateQuestionKeepsCheckboxOptionsWhenNoneAreSent() throws Exception {
+        CheckboxQuestion existing = new CheckboxQuestion();
+        existing.setActive(false);
+        existing.setVisible(false);
+        existing.setOptions(List.of("A", "B"));
+
+        CheckboxQuestion updated = new CheckboxQuestion();
+        updated.setActive(false);
+        updated.setVisible(false);
+
+        stubUpdate(existing, updated);
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getOptions()).containsExactly("A", "B");
+    }
+
+    @Test
+    void updateQuestionUpdatesTeamQuestionFields() throws Exception {
+        Team oldTeam = new Team();
+        oldTeam.setId(1L);
+        Team newTeam = new Team();
+        newTeam.setId(2L);
+
+        TeamQuestion existing = new TeamQuestion();
+        existing.setActive(false);
+        existing.setVisible(false);
+        existing.setFinalTeamsOnly(false);
+        existing.setTeams(List.of(oldTeam));
+
+        TeamQuestion updated = new TeamQuestion();
+        updated.setActive(false);
+        updated.setVisible(false);
+        updated.setFinalTeamsOnly(true);
+        updated.setTeams(List.of(newTeam));
+
+        stubUpdate(existing, updated);
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getFinalTeamsOnly()).isTrue();
+        assertThat(existing.getTeams()).containsExactly(newTeam);
+    }
+
+    @Test
+    void updateQuestionOnlyUpdatesCommonFieldsOfTeamOneFreeTextQuestion() throws Exception {
+        TeamOneFreeTextQuestion existing = new TeamOneFreeTextQuestion();
+        existing.setQuestionText("Old");
+        existing.setActive(false);
+        existing.setVisible(false);
+
+        TeamOneFreeTextQuestion updated = new TeamOneFreeTextQuestion();
+        updated.setQuestionText("New");
+        updated.setActive(false);
+        updated.setVisible(true);
+
+        stubUpdate(existing, updated);
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getQuestionText()).isEqualTo("New");
+        assertThat(existing.getVisible()).isTrue();
+        verify(webSocketService).sendMessage("/topic/questions", "update");
+        verifyNoInteractions(adminNotificationCreateService);
+    }
+
+    @Test
+    void updateQuestionDoesNotNotifyWhenQuestionWasAlreadyActive() throws Exception {
+        FreeTextQuestion existing = new FreeTextQuestion();
+        existing.setActive(true);
+        existing.setVisible(false);
+
+        FreeTextQuestion updated = new FreeTextQuestion();
+        updated.setActive(true);
+        updated.setVisible(true);
+
+        stubUpdate(existing, updated);
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getVisible()).isTrue();
+        verifyNoInteractions(adminNotificationCreateService);
+    }
+
+    @Test
+    void updateQuestionKeepsFlagsAndDoesNotNotifyWhenFlagsAreMissing() throws Exception {
+        FreeTextQuestion existing = new FreeTextQuestion();
+        existing.setQuestionText("Old");
+        existing.setActive(false);
+        existing.setVisible(true);
+
+        FreeTextQuestion updated = new FreeTextQuestion();
+
+        stubUpdate(existing, updated);
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getQuestionText()).isEqualTo("Old");
+        assertThat(existing.getActive()).isFalse();
+        assertThat(existing.getVisible()).isTrue();
+        verifyNoInteractions(adminNotificationCreateService);
+    }
+
+    private void stubUpdate(Question existing, Question updated) {
+        when(questionRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
+        when(questionRepository.save(existing)).thenReturn(existing);
     }
 }

@@ -8,8 +8,10 @@ import tools.jackson.databind.ObjectMapper;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
+import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
+import de.fsr.mariokart_backend.notification.service.dto.NotificationInputDTOService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -18,11 +20,13 @@ public class PublicNotificationCreateService {
 
     private final PushSubscriptionRepository subscriptionRepository;
     private final NotificationSendService notificationSendService;
+    private final NotificationInputDTOService notificationInputDTOService;
 
     private final ObjectMapper objectMapper;
 
-    public void saveSubscription(PushSubscription subscription) throws NotificationNotSentException {
-        PushSubscription sub = subscriptionRepository.save(subscription);
+    public void saveSubscription(PushSubscriptionInputDTO subscriptionInput) throws NotificationNotSentException {
+        PushSubscription sub = subscriptionRepository.save(
+                notificationInputDTOService.pushSubscriptionInputDTOToPushSubscription(subscriptionInput));
         sendTestNotification(sub);
     }
 

@@ -33,7 +33,9 @@ public class AdminRegistrationUpdateService {
 
         if (teamUpdate.getTeamName() != null && !team.getTeamName().equals(teamUpdate.getTeamName())) {
             if (teamRepository.existsByTeamName(teamUpdate.getTeamName())
-                    && !teamRepository.findByTeamName(teamUpdate.getTeamName()).get().getId().equals(id)) {
+                    && teamRepository.findByTeamName(teamUpdate.getTeamName())
+                            .filter(existingTeam -> !existingTeam.getId().equals(id))
+                            .isPresent()) {
                 throw new IllegalArgumentException("Team name already exists");
             }
             team.setTeamName(teamUpdate.getTeamName());

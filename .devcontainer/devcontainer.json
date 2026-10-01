@@ -1,0 +1,47 @@
+{
+  "name": "MarioKart Backend Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/java:25-trixie",
+  "features": {
+    "ghcr.io/devcontainers/features/java:1.8.2": {
+      "version": "none",
+      "installMaven": true
+    }
+  },
+  "forwardPorts": [
+    8080,
+    8081
+  ],
+  "portsAttributes": {
+    "8080": {
+      "label": "Backend API"
+    },
+    "8081": {
+      "label": "Backend management"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/postCreateCommand.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vmware.vscode-boot-dev-pack",
+        "github.vscode-pull-request",
+        "yzhang.markdown-all-in-one",
+        "vscode-icons-team.vscode-icons"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic",
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "containerEnv": {
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  },
+  "remoteEnv": {
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  },
+  "remoteUser": "vscode"
+}

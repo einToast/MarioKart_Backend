@@ -18,9 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.User;
-import de.fsr.mariokart_backend.user.model.dto.UpdateUserDTO;
 import de.fsr.mariokart_backend.user.model.dto.UserDTO;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 
@@ -30,9 +28,6 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private UserProperties userProperties;
 
     @InjectMocks
     private UserService service;
@@ -49,7 +44,7 @@ class UserServiceTest {
     @Test
     void getUserByIdReturnsExistingUser() throws EntityNotFoundException {
         User user = new User("admin", true);
-        user.setID(42);
+        user.setId(42);
         when(userRepository.findById(42)).thenReturn(Optional.of(user));
 
         User result = service.getUser(42);
@@ -116,13 +111,13 @@ class UserServiceTest {
     @Test
     void updateUserReturnsMappedUserDto() throws EntityNotFoundException {
         User user = new User("admin", true);
-        user.setID(5);
+        user.setId(5);
         when(userRepository.findById(5)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
 
-        UserDTO dto = service.updateUser(5, new UpdateUserDTO());
+        UserDTO dto = service.updateUser(5);
 
-        assertThat(dto.getID()).isEqualTo(5);
+        assertThat(dto.getId()).isEqualTo(5);
         assertThat(dto.getUsername()).isEqualTo("admin");
     }
 }

@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend;
 
 import java.io.IOException;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -36,7 +37,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     private final AdminSurveyCreateService adminSurveyCreateService;
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String @NonNull... args) throws Exception {
         try {
             addCharacterService.addCharacters("media");
             adminSettingsCreateService.createSettings();
@@ -123,7 +124,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     }
 
     private void addTeams() {
-        if (teamRepository.findAll().size() > 0) {
+        if (!teamRepository.findAll().isEmpty()) {
             System.err.print("Teams already exist!");
             return;
         }
@@ -163,28 +164,28 @@ public class MarioKartStartupRunner implements CommandLineRunner {
             TeamInputDTO team11 = new TeamInputDTO("PiranhaPals", "Rosalina");
             publicRegistrationCreateService.registerTeam(team11);
 
-            TeamInputDTO team12 = new TeamInputDTO("ThwompThumpers", "Metal-Mario");
+            TeamInputDTO team12 = new TeamInputDTO("ThwompThumpers", "Metall-Mario");
             publicRegistrationCreateService.registerTeam(team12);
 
             TeamInputDTO team13 = new TeamInputDTO("ShyGuySquad", "Shy-Guy");
             publicRegistrationCreateService.registerTeam(team13);
 
-            TeamInputDTO team14 = new TeamInputDTO("DryBoneDynasty", "Dry-Bones");
+            TeamInputDTO team14 = new TeamInputDTO("DryBoneDynasty", "Knochentrocken");
             publicRegistrationCreateService.registerTeam(team14);
 
             TeamInputDTO team15 = new TeamInputDTO("LakituLegends", "Lakitu");
             publicRegistrationCreateService.registerTeam(team15);
 
-            TeamInputDTO team16 = new TeamInputDTO("BooBusters", "King-Boo");
+            TeamInputDTO team16 = new TeamInputDTO("BooBusters", "König-Buu-Huu");
             publicRegistrationCreateService.registerTeam(team16);
 
             TeamInputDTO team17 = new TeamInputDTO("KoopaTroop", "Koopa");
             publicRegistrationCreateService.registerTeam(team17);
 
-            TeamInputDTO team18 = new TeamInputDTO("InklingInvaders", "Inkling-Girl");
+            TeamInputDTO team18 = new TeamInputDTO("InklingInvaders", "Inkling-Mädchen");
             publicRegistrationCreateService.registerTeam(team18);
 
-            TeamInputDTO team19 = new TeamInputDTO("VillagerVictory", "Villager");
+            TeamInputDTO team19 = new TeamInputDTO("VillagerVictory", "Bewohner");
             publicRegistrationCreateService.registerTeam(team19);
 
             TeamInputDTO team20 = new TeamInputDTO("BabyBruisers", "Baby-Daisy");

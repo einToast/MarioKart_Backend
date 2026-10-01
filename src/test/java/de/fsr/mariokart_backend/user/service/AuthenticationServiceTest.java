@@ -58,7 +58,7 @@ class AuthenticationServiceTest {
     @Test
     void authenticateUserReturnsTokenAndResponse() {
         User user = new User("admin", true);
-        user.setID(1);
+        user.setId(1);
         AuthenticationRequestDTO request = new AuthenticationRequestDTO("admin", "secret");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
@@ -127,7 +127,7 @@ class AuthenticationServiceTest {
     @Test
     void authenticateUserByTokenReturnsResponseForKnownUser() {
         User user = new User("admin", true);
-        user.setID(1);
+        user.setId(1);
         when(jwtManagerService.validateJWT("ok")).thenReturn(true);
         when(jwtManagerService.getSubjectFromToken("ok")).thenReturn("admin");
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));

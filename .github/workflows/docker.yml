@@ -60,11 +60,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            SECRET_KEY=${{ vars.SECRET_KEY }}
-            DB_USER=${{ vars.DB_USER }}
-            DB_PASSWORD=${{ vars.DB_PASSWORD }}
-            USER_NAME=${{ vars.USER_NAME }}
-            USER_PASSWORD=${{ vars.USER_PASSWORD }}
-            VAPID_PUBLIC_KEY=${{ vars.VAPID_PUBLIC_KEY }}
-            VAPID_PRIVATE_KEY=${{ vars.VAPID_PRIVATE_KEY }}

@@ -14,12 +14,12 @@ import lombok.Setter;
 public class UserDTO {
     private String username;
     private boolean isAdmin;
-    private int ID;
+    private int id;
 
     public UserDTO(User user) {
         setUsername(user.getUsername());
         this.isAdmin = user.isAdmin();
-        setID(user.getID());
+        setId(user.getId());
     }
 
     public static List<UserDTO> fromUserList(List<User> users) {

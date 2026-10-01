@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.registration.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -93,7 +94,7 @@ public class Team {
 
     public Set<Game> getGames() {
         if (points == null)
-            return null;
+            return Collections.emptySet();
 
         return points.stream().map(Points::getGame).collect(Collectors.toSet());
     }
@@ -104,8 +105,7 @@ public class Team {
 
         int gamesPlayed = (int) getGames().stream().filter(game -> game.getRound().isPlayed()).count();
 
-
-        return gamesPlayed > maxGames ? maxGames : gamesPlayed;
+        return Math.min(gamesPlayed, maxGames);
     }
 
     public void removeCharacter() {

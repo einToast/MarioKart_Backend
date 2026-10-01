@@ -53,7 +53,7 @@ public class PublicRegistrationReadService {
     public List<TeamReturnDTO> getTeamsNotInRound(Long roundId) {
         List<Team> allTeams = teamRepository.findAll();
 
-        List<Team> teamsInRound = getTeamsInRound(roundId);
+        List<Team> teamsInRound = findTeamsInRound(roundId);
 
         List<TeamReturnDTO> teamsNotInRound = allTeams.stream()
                 .filter(team -> !teamsInRound.contains(team))
@@ -65,6 +65,10 @@ public class PublicRegistrationReadService {
 
     @Cacheable(key = "'teamsInRound_' + #roundId", sync = true)
     public List<Team> getTeamsInRound(Long roundId) {
+        return findTeamsInRound(roundId);
+    }
+
+    private List<Team> findTeamsInRound(Long roundId) {
         List<Game> gamesInRound = gameRepository.findByRoundId(roundId);
 
         return gamesInRound.stream()

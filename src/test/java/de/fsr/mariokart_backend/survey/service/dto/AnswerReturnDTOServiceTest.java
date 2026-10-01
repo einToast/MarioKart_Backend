@@ -10,6 +10,9 @@ import org.junit.jupiter.api.Test;
 
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
+import de.fsr.mariokart_backend.survey.model.Answer;
+import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextAnswer;
+import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceAnswer;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamAnswer;
@@ -91,5 +94,51 @@ class AnswerReturnDTOServiceTest {
         team.setId(id);
         team.setTeamName(name);
         return team;
+    }
+
+    @Test
+    void mapsCheckboxAnswer() {
+        FreeTextQuestion question = new FreeTextQuestion();
+        question.setId(4L);
+        CheckboxAnswer answer = new CheckboxAnswer();
+        answer.setQuestion(question);
+        answer.setSelectedOptions(List.of(0, 2));
+
+        AnswerReturnDTO dto = service.answerToAnswerReturnDTO(answer);
+
+        assertThat(dto.getQuestionId()).isEqualTo(4L);
+        assertThat(dto.getAnswerType()).isEqualTo("CHECKBOX");
+        assertThat(dto.getCheckboxSelectedOptions()).containsExactly(0, 2);
+    }
+
+    @Test
+    void mapsFreeTextAnswer() {
+        FreeTextQuestion question = new FreeTextQuestion();
+        question.setId(5L);
+        FreeTextAnswer answer = new FreeTextAnswer();
+        answer.setQuestion(question);
+        answer.setTextAnswer("great");
+
+        AnswerReturnDTO dto = service.answerToAnswerReturnDTO(answer);
+
+        assertThat(dto.getAnswerType()).isEqualTo("FREE_TEXT");
+        assertThat(dto.getFreeTextAnswer()).isEqualTo("great");
+    }
+
+    @Test
+    void throwsForUnsupportedAnswerType() {
+        FreeTextQuestion question = new FreeTextQuestion();
+        question.setId(6L);
+        Answer answer = new Answer() {
+            @Override
+            public String getAnswerDetails() {
+                return "";
+            }
+        };
+        answer.setQuestion(question);
+
+        assertThatThrownBy(() -> service.answerToAnswerReturnDTO(answer))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid answer type");
     }
 }

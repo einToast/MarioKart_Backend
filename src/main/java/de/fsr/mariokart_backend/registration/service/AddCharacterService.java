@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.core.io.Resource;
@@ -16,7 +15,9 @@ import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationCreateService;
 import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationReadService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class AddCharacterService {
@@ -40,10 +41,10 @@ public class AddCharacterService {
 
         adminRegistrationCreateService.addCharacters(characters);
 
-        IO.println(adminRegistrationReadService.getCharacters()
+        log.info("Added characters: {}", adminRegistrationReadService.getCharacters()
                 .stream()
                 .map(CharacterReturnDTO::getCharacterName)
-                .collect(Collectors.toList()));
+                .toList());
 
         return characters;
 
@@ -58,6 +59,6 @@ public class AddCharacterService {
         return Stream.of(resources)
                 .map(Resource::getFilename).filter(Objects::nonNull)
                 .map(filename -> filename.replaceFirst("\\.png$", ""))
-                .collect(Collectors.toList());
+                .toList();
     }
 }

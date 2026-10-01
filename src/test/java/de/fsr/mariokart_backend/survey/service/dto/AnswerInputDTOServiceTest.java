@@ -66,7 +66,7 @@ class AnswerInputDTOServiceTest {
         teamQuestion.setTeams(List.of(selectedTeam));
 
         AnswerInputDTO input = new AnswerInputDTO(10L, "TEAM", null, null, null, 0);
-        when(questionRepository.findById(10L)).thenReturn(Optional.of(teamQuestion), Optional.of(teamQuestion));
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(teamQuestion));
         when(teamRepository.findByTeamName("Alpha")).thenReturn(Optional.of(selectedTeam));
         when(teamRepository.findById(2L)).thenReturn(Optional.of(submitting));
 

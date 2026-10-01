@@ -46,4 +46,24 @@ class JWTManagerServiceTest {
 
         assertThat(service.validateJWT("invalid.token.value")).isFalse();
     }
+
+    @Test
+    void getSubjectReturnsNullForInvalidToken() {
+        String base64Key = Base64.getEncoder().encodeToString("12345678901234567890123456789012".getBytes());
+        when(userProperties.getSecretKey()).thenReturn(base64Key);
+
+        assertThat(service.getSubjectFromToken("invalid.token.value")).isNull();
+    }
+
+    @Test
+    void expiredTokenIsRejected() {
+        String base64Key = Base64.getEncoder().encodeToString("12345678901234567890123456789012".getBytes());
+        when(userProperties.getSecretKey()).thenReturn(base64Key);
+        when(userProperties.getExpiresAfter()).thenReturn(-1);
+
+        String token = service.generateJWT(new User("admin", true));
+
+        assertThat(service.validateJWT(token)).isFalse();
+        assertThat(service.getSubjectFromToken(token)).isNull();
+    }
 }

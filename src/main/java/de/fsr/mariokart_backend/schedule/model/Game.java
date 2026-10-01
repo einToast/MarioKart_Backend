@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.schedule.model;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,7 +48,7 @@ public class Game {
 
     public Set<Team> getTeams() {
         if (points == null)
-            return null;
+            return Collections.emptySet();
 
         return points.stream().map(Points::getTeam).collect(Collectors.toSet());
     }

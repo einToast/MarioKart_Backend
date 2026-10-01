@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.user.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public class UserTokenService {
     private final UserProperties userProperties;
 
     public UserToken buildUserToken(User user) {
-        return new UserToken(user, LocalDateTime.now().plus(Duration.ofHours(userProperties.getExpiresAfter())));
+        return new UserToken(user, LocalDateTime.now(ZoneId.systemDefault()).plus(Duration.ofHours(userProperties.getExpiresAfter())));
     }
 
     public List<UserToken> saveUserTokens(List<UserToken> userTokens) {

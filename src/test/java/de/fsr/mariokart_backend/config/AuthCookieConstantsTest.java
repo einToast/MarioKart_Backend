@@ -11,6 +11,5 @@ class AuthCookieConstantsTest {
     @Test
     void authCookieNameConstantHasExpectedValue() {
         assertThat(AuthCookieConstants.AUTH_COOKIE_NAME).isEqualTo("authToken");
-        assertThat(new AuthCookieConstants()).isNotNull();
     }
 }

@@ -67,7 +67,7 @@ class AddCharacterServiceTest {
 
         assertThat(result).extracting(Character::getCharacterName).containsExactly("Mario", "Luigi");
 
-        ArgumentCaptor<List<Character>> captor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<Character>> captor = ArgumentCaptor.captor();
         verify(adminRegistrationCreateService).addCharacters(captor.capture());
         assertThat(captor.getValue()).extracting(Character::getCharacterName).containsExactly("Mario", "Luigi");
     }

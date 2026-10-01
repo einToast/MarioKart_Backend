@@ -22,9 +22,6 @@ public class AdminSettingsUpdateService {
 
     public TournamentDTO updateSettings(TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
         Tournament tournament = tournamentRepository.findAll().getFirst();
-        if (tournament == null) {
-            throw new IllegalStateException("Settings do not exist.");
-        }
         if (tournamentDTO.getRegistrationOpen() != null && tournamentDTO.getRegistrationOpen()
                 && publicScheduleReadService.isScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Matches already exist. Can't open registration.");

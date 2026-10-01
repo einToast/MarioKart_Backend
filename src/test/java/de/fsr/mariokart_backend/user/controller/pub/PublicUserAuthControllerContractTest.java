@@ -2,7 +2,6 @@ package de.fsr.mariokart_backend.user.controller.pub;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -103,7 +102,7 @@ class PublicUserAuthControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginUnauthorizedForInvalidSessionMatchesContract() throws Exception {
-        when(authenticationService.authenticateUserByToken(eq("bad-token")))
+        when(authenticationService.authenticateUserByToken("bad-token"))
                 .thenThrow(new BadCredentialsException("invalid"));
 
         MvcResult response = mockMvc.perform(get("/public/user/login/check")
@@ -118,7 +117,7 @@ class PublicUserAuthControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginSuccessMatchesContract() throws Exception {
-        when(authenticationService.authenticateUserByToken(eq("good-token")))
+        when(authenticationService.authenticateUserByToken("good-token"))
                 .thenReturn(TestDataFactory.authResult("good-token", TestDataFactory.user("admin", true)).getResponse());
 
         MvcResult response = mockMvc.perform(get("/public/user/login/check")
