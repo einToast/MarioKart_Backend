@@ -25,8 +25,10 @@ public class AnswerInputDTOService {
     private final QuestionRepository questionRepository;
     private final TeamRepository teamRepository;
 
+    private static final String TEAM_NOT_FOUND = "There is no team with this id.";
+
     public Answer answerInputDTOToAnswer(AnswerInputDTO answerInputDTO, Long teamId) throws EntityNotFoundException {
-        Answer answer = null;
+        Answer answer;
         if (answerInputDTO.getAnswerType().equals(QuestionType.MULTIPLE_CHOICE.toString())) {
             answer = new MultipleChoiceAnswer();
             ((MultipleChoiceAnswer) answer).setSelectedOption(answerInputDTO.getMultipleChoiceSelectedOption());
@@ -44,7 +46,7 @@ public class AnswerInputDTOService {
                 Team team = teamRepository
                         .findByTeamName(teamQuestion.getTeams().get(answerInputDTO.getTeamSelectedOption())
                                 .getTeamName())
-                        .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
+                        .orElseThrow(() -> new EntityNotFoundException(TEAM_NOT_FOUND));
                 ((TeamAnswer) answer).setTeam(team);
             } else {
                 throw new IllegalArgumentException("Invalid question type.");
@@ -53,7 +55,7 @@ public class AnswerInputDTOService {
             answer = new TeamOneFreeTextAnswer();
             ((TeamOneFreeTextAnswer) answer).setTextAnswer(answerInputDTO.getFreeTextAnswer());
             Team team = teamRepository.findById(Long.valueOf(answerInputDTO.getTeamSelectedOption()))
-                    .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
+                    .orElseThrow(() -> new EntityNotFoundException(TEAM_NOT_FOUND));
             ((TeamOneFreeTextAnswer) answer).setTeam(team);
         } else {
             throw new IllegalArgumentException("Invalid answer type.");
@@ -63,7 +65,7 @@ public class AnswerInputDTOService {
                 .orElseThrow(() -> new EntityNotFoundException("There is no question with this id.")));
 
         Team submittingTeam = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
+                .orElseThrow(() -> new EntityNotFoundException(TEAM_NOT_FOUND));
         answer.setSubmittingTeam(submittingTeam);
 
         return answer;

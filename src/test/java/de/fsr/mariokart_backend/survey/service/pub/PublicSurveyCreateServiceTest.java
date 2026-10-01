@@ -229,7 +229,9 @@ class PublicSurveyCreateServiceTest {
         when(surveyKeyRepository.findByToken("known-key")).thenReturn(Optional.of(new SurveyKey(5L, "known-key")));
         when(answerRepository.existsByQuestionIdAndSurveyKeyId(1L, 5L)).thenReturn(true);
 
-        assertThatThrownBy(() -> service.submitAnswer(freeTextInput(), USER_JSON, "known-key"))
+        AnswerInputDTO input = freeTextInput();
+
+        assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, "known-key"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("survey key has already been used");
         verify(answerRepository, never()).save(any());

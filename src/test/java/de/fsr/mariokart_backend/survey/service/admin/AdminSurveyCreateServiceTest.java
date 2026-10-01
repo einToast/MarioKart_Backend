@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.survey.service.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -38,7 +39,7 @@ class AdminSurveyCreateServiceTest {
     @Test
     void createQuestionMapsSavesAndReturnsDto() {
         QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
-        Question question = org.mockito.Mockito.mock(Question.class);
+        Question question = mock(Question.class);
         QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false);
 
         when(questionInputDTOService.questionInputDTOToQuestion(input)).thenReturn(question);

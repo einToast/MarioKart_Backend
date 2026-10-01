@@ -5,6 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Configuration
 public class ScheduleRestClientConfiguration {
 
@@ -20,7 +23,7 @@ public class ScheduleRestClientConfiguration {
     @Bean
     public RestClient scheduleRestClient() {
         String baseUrl = "%s://%s:%s".formatted(protocol, host, port);
-        IO.println("baseUrl: " + baseUrl);
+        log.info("baseUrl: {}", baseUrl);
         return RestClient.builder().baseUrl(baseUrl).build();
     }
 }

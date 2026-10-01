@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.User;
-import de.fsr.mariokart_backend.user.model.dto.UpdateUserDTO;
 import de.fsr.mariokart_backend.user.model.dto.UserDTO;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -19,8 +18,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserProperties userProperties;
 
-    public UserDTO updateUser(int userID, UpdateUserDTO updateUserStepGoal)
-            throws EntityNotFoundException, IllegalArgumentException {
+    public UserDTO updateUser(int userID) throws EntityNotFoundException {
         User user = getUser(userID);
 
         return new UserDTO(userRepository.save(user));
@@ -31,8 +29,8 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException("User with this username not found."));
     }
 
-    public User getUser(int ID) throws EntityNotFoundException {
-        return userRepository.findById(ID)
+    public User getUser(int id) throws EntityNotFoundException {
+        return userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with this ID not found."));
     }
 
@@ -40,8 +38,8 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public void deleteUser(int ID) {
-        userRepository.deleteById(ID);
+    public void deleteUser(int id) {
+        userRepository.deleteById(id);
     }
 
     public boolean userExists(String username) {

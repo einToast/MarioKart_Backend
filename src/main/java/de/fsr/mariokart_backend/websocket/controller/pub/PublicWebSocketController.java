@@ -6,7 +6,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor
 @Controller
 public class PublicWebSocketController {
@@ -16,7 +18,7 @@ public class PublicWebSocketController {
     @MessageMapping("/public/sendMessages")
     @SendTo("/topic/messages")
     public String handleMessage(String message) {
-        IO.println("Received message: " + message);
+        log.info("Received message: {}", message);
         return "irgendwas";
     }
 }

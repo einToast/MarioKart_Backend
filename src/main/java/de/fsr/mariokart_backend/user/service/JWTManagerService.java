@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.user.service;
 
 import java.util.Date;
+import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
@@ -15,7 +16,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class JWTManagerService {
@@ -57,36 +60,25 @@ public class JWTManagerService {
     }
 
     public boolean validateJWT(String token) {
-        try {
-            Jwts.parser()
-                    .verifyWith(signingKey())
-                    .build()
-                    .parseSignedClaims(token);
-            return true;
-        } catch (ExpiredJwtException ex) {
-            System.err.println("JWT expired: " + ex.getMessage());
-        } catch (JwtException | IllegalArgumentException ex) {
-            System.err.println("JWT invalid: " + ex.getMessage());
-        }
-        return false;
+        return parseJWTClaims(token).isPresent();
     }
 
     public String getSubjectFromToken(String token) {
-        return parseJWTClaims(token).getSubject();
+        return parseJWTClaims(token).map(Claims::getSubject).orElse(null);
     }
 
-    private Claims parseJWTClaims(String token) {
+    private Optional<Claims> parseJWTClaims(String token) {
         try {
-            return Jwts.parser()
+            return Optional.of(Jwts.parser()
                     .verifyWith(signingKey())
                     .build()
                     .parseSignedClaims(token)
-                    .getPayload();
+                    .getPayload());
         } catch (ExpiredJwtException ex) {
-            System.err.println("JWT expired: " + ex.getMessage());
+            log.warn("JWT expired: {}", ex.getMessage());
         } catch (JwtException | IllegalArgumentException ex) {
-            System.err.println("JWT invalid: " + ex.getMessage());
+            log.warn("JWT invalid: {}", ex.getMessage());
         }
-        return null;
+        return Optional.empty();
     }
 }

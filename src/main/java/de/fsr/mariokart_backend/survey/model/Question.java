@@ -47,9 +47,6 @@ public abstract class Question {
 
         private String questionText;
 
-        // @Enumerated(EnumType.STRING)
-        // private QuestionType questionType;
-
         @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
         private Set<Answer> answers;
 

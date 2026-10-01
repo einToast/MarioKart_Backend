@@ -38,10 +38,25 @@ public class AdminSurveyUpdateService {
                 .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
         Question updatedQuestion = questionInputDTOService.questionInputDTOToQuestion(question);
 
-        boolean questionCanBeAnswered = updatedQuestion.getActive() == true
-                && updatedQuestion.getActive() != questionToUpdate.getActive() && updatedQuestion.getVisible() == true
-                && updatedQuestion.getVisible() != questionToUpdate.getVisible();
+        boolean questionCanBeAnswered = Boolean.TRUE.equals(updatedQuestion.getActive())
+                && !Boolean.TRUE.equals(questionToUpdate.getActive())
+                && Boolean.TRUE.equals(updatedQuestion.getVisible())
+                && !Boolean.TRUE.equals(questionToUpdate.getVisible());
 
+        updateCommonFields(questionToUpdate, updatedQuestion);
+        updateTypeSpecificFields(questionToUpdate, updatedQuestion);
+
+        Question savedQuestion = questionRepository.save(questionToUpdate);
+
+        webSocketService.sendMessage("/topic/questions", "update");
+        if (questionCanBeAnswered) {
+            adminNotificationCreateService.sendNotificationToAll("Neue Umfrage verfügbar!",
+                    questionToUpdate.getQuestionText());
+        }
+        return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);
+    }
+
+    private void updateCommonFields(Question questionToUpdate, Question updatedQuestion) {
         if (updatedQuestion.getQuestionText() != null) {
             questionToUpdate.setQuestionText(updatedQuestion.getQuestionText());
         }
@@ -55,39 +70,34 @@ public class AdminSurveyUpdateService {
             questionToUpdate.setLive(updatedQuestion.getLive());
         }
         questionToUpdate.setOneAnswerPerKey(updatedQuestion.isOneAnswerPerKey());
-        if (updatedQuestion instanceof MultipleChoiceQuestion choiceQuestion) {
-            if (choiceQuestion.getOptions() != null) {
-                ((MultipleChoiceQuestion) questionToUpdate)
-                        .setOptions(choiceQuestion.getOptions());
-            }
-        } else if (updatedQuestion instanceof CheckboxQuestion checkboxQuestion) {
-            if (checkboxQuestion.getOptions() != null) {
-                ((CheckboxQuestion) questionToUpdate).setOptions(checkboxQuestion.getOptions());
-            }
-        } else if (updatedQuestion instanceof FreeTextQuestion) {
-            // nothing to update
-        } else if (updatedQuestion instanceof TeamQuestion teamQuestion) {
-            if (teamQuestion.getFinalTeamsOnly() != null) {
-                ((TeamQuestion) questionToUpdate)
-                        .setFinalTeamsOnly(teamQuestion.getFinalTeamsOnly());
-            }
-            if (teamQuestion.getTeams() != null) {
-                ((TeamQuestion) questionToUpdate).setTeams(teamQuestion.getTeams());
-            }
+    }
 
-        } else if (updatedQuestion instanceof TeamOneFreeTextQuestion) {
-            // nothing to update
-        } else {
-            throw new IllegalArgumentException("Question type not supported.");
+    private void updateTypeSpecificFields(Question questionToUpdate, Question updatedQuestion) {
+        switch (updatedQuestion) {
+            case MultipleChoiceQuestion choiceQuestion -> {
+                if (choiceQuestion.getOptions() != null) {
+                    ((MultipleChoiceQuestion) questionToUpdate)
+                            .setOptions(choiceQuestion.getOptions());
+                }
+            }
+            case CheckboxQuestion checkboxQuestion -> {
+                if (checkboxQuestion.getOptions() != null) {
+                    ((CheckboxQuestion) questionToUpdate).setOptions(checkboxQuestion.getOptions());
+                }
+            }
+            case TeamQuestion teamQuestion -> {
+                if (teamQuestion.getFinalTeamsOnly() != null) {
+                    ((TeamQuestion) questionToUpdate)
+                            .setFinalTeamsOnly(teamQuestion.getFinalTeamsOnly());
+                }
+                if (teamQuestion.getTeams() != null) {
+                    ((TeamQuestion) questionToUpdate).setTeams(teamQuestion.getTeams());
+                }
+            }
+            case FreeTextQuestion _, TeamOneFreeTextQuestion _ -> {
+                // nothing to update
+            }
+            default -> throw new IllegalArgumentException("Question type not supported.");
         }
-
-        Question savedQuestion = questionRepository.save(questionToUpdate);
-
-        webSocketService.sendMessage("/topic/questions", "update");
-        if (questionCanBeAnswered) {
-            adminNotificationCreateService.sendNotificationToAll("Neue Umfrage verfügbar!",
-                    questionToUpdate.getQuestionText());
-        }
-        return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);
     }
 }

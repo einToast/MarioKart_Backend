@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.user.model;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,15 +28,14 @@ import lombok.Setter;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer ID;
+    private Integer id;
 
     @Column(nullable = false, unique = true)
     private String username;
 
-    @Column(nullable = true, length = 64)
+    @Column(length = 64)
     private String password;
 
-    @Column(nullable = true)
     private boolean isAdmin;
 
     public User(String username, boolean isAdmin) {
@@ -49,7 +49,7 @@ public class User implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public @NonNull Collection<? extends GrantedAuthority> getAuthorities() {
         String roleName = "USER";
         if (isAdmin) {
             roleName = "ADMIN";

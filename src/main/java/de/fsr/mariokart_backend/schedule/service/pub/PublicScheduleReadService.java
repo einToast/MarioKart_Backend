@@ -58,11 +58,15 @@ public class PublicScheduleReadService {
 
     @Cacheable(key = "'isFinalScheduleCreated'", sync = true)
     public boolean isFinalScheduleCreated() {
+        return finalScheduleExists();
+    }
+
+    private boolean finalScheduleExists() {
         return !roundRepository.findByFinalGameTrue().isEmpty();
     }
 
     public Set<TeamReturnDTO> deleteUnnecessaryInformationFromTeams(Set<TeamReturnDTO> teams) {
-        if (!isFinalScheduleCreated()) {
+        if (!finalScheduleExists()) {
             teams.forEach(team -> team.setGroupPoints(0));
         }
         teams.forEach(team -> team.setFinalPoints(0));

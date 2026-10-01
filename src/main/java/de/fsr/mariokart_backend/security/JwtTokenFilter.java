@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.security;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,7 +14,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import de.fsr.mariokart_backend.config.AuthCookieConstants;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.repository.UserRepository;
 import de.fsr.mariokart_backend.user.service.JWTManagerService;
 import jakarta.servlet.FilterChain;
@@ -30,8 +30,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         String token = resolveToken(request);
@@ -87,8 +87,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private UserDetails getUserDetails(String token) throws EntityNotFoundException {
 
         String jwtSubject = jwtManagerService.getSubjectFromToken(token);
-        User userDetails = userRepository.findByUsername(jwtSubject).orElseThrow(() -> new EntityNotFoundException());
-
-        return userDetails;
+        return userRepository.findByUsername(jwtSubject).orElseThrow(() -> new EntityNotFoundException());
     }
 }

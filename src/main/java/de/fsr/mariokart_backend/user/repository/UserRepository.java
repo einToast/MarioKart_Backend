@@ -12,7 +12,7 @@ import de.fsr.mariokart_backend.user.model.User;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByUsername(String username);
 
-    void deleteById(@NonNull Integer ID);
+    void deleteById(@NonNull Integer id);
 
     boolean existsByUsername(String username);
 

@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.survey.service.admin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -56,51 +57,27 @@ public class AdminSurveyReadService {
                 .orElseThrow(() -> new EntityNotFoundException("Question not found"));
 
         List<Answer> answers = answerRepository.findAllByQuestionId(id);
-        final List<Integer> statistics;
 
-        if (question instanceof MultipleChoiceQuestion mcQuestion) {
-            int optionCount = mcQuestion.getOptions().size();
-            statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
+        return switch (question) {
+            case MultipleChoiceQuestion mcQuestion -> countSelections(mcQuestion.getOptions().size(),
+                    answers.stream()
+                            .map(answer -> ((MultipleChoiceAnswer) answer).getSelectedOption()));
+            case CheckboxQuestion cbQuestion -> countSelections(cbQuestion.getOptions().size(),
+                    answers.stream()
+                            .flatMap(answer -> ((CheckboxAnswer) answer).getSelectedOptions().stream()));
+            case TeamQuestion teamQuestion -> countSelections(teamQuestion.getTeams().size(),
+                    answers.stream()
+                            .map(answer -> teamQuestion.getTeams().indexOf(((TeamAnswer) answer).getTeam())));
+            default -> throw new IllegalArgumentException("QuestionType not supported");
+        };
+    }
 
-            answers.stream()
-                    .map(answer -> (MultipleChoiceAnswer) answer)
-                    .forEach(answer -> {
-                        int selectedOption = answer.getSelectedOption();
-                        if (selectedOption >= 0 && selectedOption < optionCount) {
-                            statistics.set(selectedOption, statistics.get(selectedOption) + 1);
-                        }
-                    });
+    private List<Integer> countSelections(int optionCount, Stream<Integer> selectedIndices) {
+        List<Integer> statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
 
-        } else if (question instanceof CheckboxQuestion cbQuestion) {
-            int optionCount = cbQuestion.getOptions().size();
-            statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
-
-            answers.stream()
-                    .map(answer -> (CheckboxAnswer) answer)
-                    .forEach(answer -> {
-                        answer.getSelectedOptions().forEach(option -> {
-                            if (option >= 0 && option < optionCount) {
-                                statistics.set(option, statistics.get(option) + 1);
-                            }
-                        });
-                    });
-
-        } else if (question instanceof TeamQuestion teamQuestion) {
-            int teamCount = teamQuestion.getTeams().size();
-            statistics = new ArrayList<>(Collections.nCopies(teamCount, 0));
-
-            answers.stream()
-                    .map(answer -> (TeamAnswer) answer)
-                    .forEach(answer -> {
-                        int teamIndex = teamQuestion.getTeams().indexOf(answer.getTeam());
-                        if (teamIndex >= 0) {
-                            statistics.set(teamIndex, statistics.get(teamIndex) + 1);
-                        }
-                    });
-
-        } else {
-            throw new IllegalArgumentException("QuestionType not supported");
-        }
+        selectedIndices
+                .filter(index -> index >= 0 && index < optionCount)
+                .forEach(index -> statistics.set(index, statistics.get(index) + 1));
 
         return statistics;
     }

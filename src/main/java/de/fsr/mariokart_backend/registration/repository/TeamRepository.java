@@ -13,7 +13,6 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
 
     boolean existsByTeamName(String teamName);
 
-    // boolean existsByCharacterName(String characterName);
     List<Team> findByFinalReadyTrue();
 
     Optional<Team> findByTeamName(String teamName);

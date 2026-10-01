@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -156,7 +155,9 @@ class AdminScheduleCreateServiceTest {
         when(breakRepository.save(aBreak)).thenReturn(aBreak);
         when(roundRepository.findById(9L)).thenReturn(Optional.of(finalRound));
 
-        assertThatThrownBy(() -> service.addBreak(new BreakInputDTO(9L, 30, false)))
+        BreakInputDTO breakInput = new BreakInputDTO(9L, 30, false);
+
+        assertThatThrownBy(() -> service.addBreak(breakInput))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Final game has no breaks");
     }
@@ -208,7 +209,9 @@ class AdminScheduleCreateServiceTest {
         when(teamRepository.findAll()).thenReturn(teams);
         when(scheduleRestClient.post()).thenThrow(new RuntimeException("generator down"));
 
-        assertThatThrownBy(() -> service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4)))
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(1, 4, 6, 4);
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to send request");
     }
@@ -222,7 +225,9 @@ class AdminScheduleCreateServiceTest {
                 .thenReturn("invalid-json");
         when(objectMapper.readValue("invalid-json", ScheduleDTO.class)).thenThrow(new RuntimeException("bad json"));
 
-        assertThatThrownBy(() -> service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4)))
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(1, 4, 6, 4);
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Failed to parse JSON response");
     }

@@ -18,7 +18,7 @@ class UserTokenDTOTest {
     @Test
     void constructorMapsTokenExpiryAndUser() {
         User user = new User("admin", true);
-        user.setID(5);
+        user.setId(5);
 
         UserToken token = new UserToken();
         token.setToken(UUID.randomUUID());
@@ -35,7 +35,7 @@ class UserTokenDTOTest {
     @Test
     void fromUserTokenListMapsEachEntry() {
         User user = new User("player", false);
-        user.setID(7);
+        user.setId(7);
         UserToken token1 = new UserToken();
         token1.setToken(UUID.randomUUID());
         token1.setExpiresAt(LocalDateTime.now().plusMinutes(10));

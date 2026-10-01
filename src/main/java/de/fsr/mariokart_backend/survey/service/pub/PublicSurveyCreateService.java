@@ -46,14 +46,12 @@ public class PublicSurveyCreateService {
     public AnswerSubmissionResult submitAnswer(AnswerInputDTO answer, String userJson, String surveyKeyToken)
             throws EntityNotFoundException, JacksonException, SurveyKeyRequiredException {
 
-        Map<String, Object> userMap = null;
-
-        if (userJson != null && !userJson.isEmpty()) {
-            userMap = objectMapper.readValue(userJson, new TypeReference<Map<String, Object>>() {
-            });
-        } else {
+        if (userJson == null || userJson.isEmpty()) {
             throw new IllegalArgumentException("User JSON is null or empty.");
         }
+
+        Map<String, Object> userMap = objectMapper.readValue(userJson, new TypeReference<Map<String, Object>>() {
+        });
 
         Question question = questionRepository.findById(answer.getQuestionId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no question with this id."));
@@ -75,10 +73,9 @@ public class PublicSurveyCreateService {
             }
         }
 
-        if ("TEAM_ONE_FREE_TEXT".equals(answer.getAnswerType())) {
-            if (answerRepository.existsByQuestionIdAndSubmittingTeamId(answer.getQuestionId(), submittingTeam.getId())) {
-                throw new IllegalArgumentException("This team has already submitted an answer for this question.");
-            }
+        if ("TEAM_ONE_FREE_TEXT".equals(answer.getAnswerType())
+                && answerRepository.existsByQuestionIdAndSubmittingTeamId(answer.getQuestionId(), submittingTeam.getId())) {
+            throw new IllegalArgumentException("This team has already submitted an answer for this question.");
         }
 
         Tournament settings = tournamentRepository.findAll().stream().findFirst().orElseGet(Tournament::new);

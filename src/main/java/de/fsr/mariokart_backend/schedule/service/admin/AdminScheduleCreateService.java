@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.schedule.service.admin;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,10 +115,10 @@ public class AdminScheduleCreateService {
             teams = teams.subList(0, 4);
         }
 
-        createFinalBonusRound(teams, LocalDateTime.now());
+        createFinalBonusRound(teams, LocalDateTime.now(ZoneId.systemDefault()));
 
         for (int i = 0; i < 2; i++) {
-            createFinalRounds(teams, LocalDateTime.now().plusMinutes(20L * i));
+            createFinalRounds(teams, LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(20L * i));
         }
 
         webSocketService.sendMessage("/topic/rounds", "create");
@@ -182,15 +183,14 @@ public class AdminScheduleCreateService {
         validateScheduleCreation(scheduleCreation);
 
         int numTeams = teamRepository.findAll().size();
-        ScheduleDTO scheduleDTO = getGeneratedSchedule(scheduleCreation.getVersion(), numTeams,
-                scheduleCreation.getNumFields(),
+        ScheduleDTO scheduleDTO = getGeneratedSchedule(numTeams, scheduleCreation.getNumFields(),
                 scheduleCreation.getNumRounds(), scheduleCreation.getTeamsPerGame());
 
         validateScheduleCreation(scheduleCreation);
 
         createRoundsAndGames(scheduleDTO);
         addBreakAndUpdateTimes();
-        updateTournamentSettings(scheduleDTO.getMax_games_count());
+        updateTournamentSettings(scheduleDTO.getMaxGamesCount());
 
         webSocketService.sendMessage("/topic/rounds", "create");
         adminScheduleUpdateService.sendNotificationForNextRound();
@@ -239,8 +239,8 @@ public class AdminScheduleCreateService {
         Round round = new Round();
         round.setRoundNumber(roundIndex + 1);
         round.setPlayed(false);
-        round.setStartTime(LocalDateTime.now().plusMinutes(20L * roundIndex));
-        round.setEndTime(LocalDateTime.now().plusMinutes(20L * roundIndex).plusMinutes(20L));
+        round.setStartTime(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(20L * roundIndex));
+        round.setEndTime(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(20L * roundIndex).plusMinutes(20L));
         return addRound(round);
     }
 
@@ -285,8 +285,7 @@ public class AdminScheduleCreateService {
         adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount, null));
     }
 
-    private ScheduleDTO getGeneratedSchedule(int version, int numTeams, int numFields, int numRounds,
-            int teamsPerGame) {
+    private ScheduleDTO getGeneratedSchedule(int numTeams, int numFields, int numRounds, int teamsPerGame) {
         Map<String, Integer> requestBody = new HashMap<>();
         requestBody.put("num_teams", numTeams);
         requestBody.put("num_fields", numFields);

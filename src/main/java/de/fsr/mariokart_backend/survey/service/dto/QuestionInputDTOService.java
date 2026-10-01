@@ -22,7 +22,7 @@ public class QuestionInputDTOService {
     private final AdminRegistrationReadService adminRegistrationReadService;
 
     public Question questionInputDTOToQuestion(QuestionInputDTO questionInputDTO) {
-        Question question = null;
+        Question question;
         if (questionInputDTO.getQuestionType().equals(QuestionType.MULTIPLE_CHOICE.toString())) {
             question = new MultipleChoiceQuestion();
             ((MultipleChoiceQuestion) question).setOptions(questionInputDTO.getOptions());
