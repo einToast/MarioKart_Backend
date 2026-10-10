@@ -48,6 +48,9 @@ import lombok.AllArgsConstructor;
 @CacheEvict(allEntries = true)
 public class AdminScheduleCreateService {
 
+    // The final is played on the first switch
+    private static final int MAIN_SWITCH_INDEX = 0;
+
     private final RoundRepository roundRepository;
     private final GameRepository gameRepository;
     private final PointsRepository pointsRepository;
@@ -139,7 +142,7 @@ public class AdminScheduleCreateService {
         addRound(round);
         for (int i = 0; i < 1; i++) {
             Game game = new Game();
-            game.setSwitchGame("Blau");
+            game.setSwitchIndex(MAIN_SWITCH_INDEX);
             game.setRound(round);
             addGame(game);
             for (int j = 0; j < teams.size(); j++) {
@@ -163,7 +166,7 @@ public class AdminScheduleCreateService {
         addRound(round);
         for (int i = 0; i < 3; i++) {
             Game game = new Game();
-            game.setSwitchGame("Blau");
+            game.setSwitchIndex(MAIN_SWITCH_INDEX);
             game.setRound(round);
             addGame(game);
             for (Team team : teams) {
@@ -225,14 +228,13 @@ public class AdminScheduleCreateService {
 
     private void createRoundsAndGames(ScheduleDTO scheduleDTO) throws EntityNotFoundException {
         List<List<List<Integer>>> plan = scheduleDTO.getPlan();
-        List<String> switchColors = List.of("Blau", "Rot", "Grün", "Weiß");
         List<Team> teams = teamRepository.findAll();
 
         for (int roundIndex = 0; roundIndex < plan.size(); roundIndex++) {
             Round round = createRound(roundIndex);
 
             for (int gameIndex = 0; gameIndex < plan.get(roundIndex).size(); gameIndex++) {
-                Game game = createGame(round, switchColors.get(gameIndex));
+                Game game = createGame(round, gameIndex);
                 createPointsForGame(plan.get(roundIndex).get(gameIndex), game, teams);
             }
         }
@@ -247,9 +249,9 @@ public class AdminScheduleCreateService {
         return addRound(round);
     }
 
-    private Game createGame(Round round, String switchColor) {
+    private Game createGame(Round round, int switchIndex) {
         Game game = new Game();
-        game.setSwitchGame(switchColor);
+        game.setSwitchIndex(switchIndex);
         game.setRound(round);
         return addGame(game);
     }

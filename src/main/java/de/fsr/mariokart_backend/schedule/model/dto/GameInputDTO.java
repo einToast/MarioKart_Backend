@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class GameInputDTO {
     private Long roundId;
-    private String switchGame;
+    private int switchIndex;
 
 }

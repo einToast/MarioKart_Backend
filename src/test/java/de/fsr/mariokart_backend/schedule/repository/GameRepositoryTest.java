@@ -41,15 +41,15 @@ class GameRepositoryTest extends PostgresTestBase {
         roundRepository.save(roundTwo);
 
         Game first = new Game();
-        first.setSwitchGame("Blue");
+        first.setSwitchIndex(0);
         first.setRound(roundOne);
 
         Game second = new Game();
-        second.setSwitchGame("Red");
+        second.setSwitchIndex(1);
         second.setRound(roundOne);
 
         Game other = new Game();
-        other.setSwitchGame("Green");
+        other.setSwitchIndex(2);
         other.setRound(roundTwo);
 
         gameRepository.save(first);

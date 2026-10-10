@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class GameReturnDTO {
     private Long id;
-    private String switchGame;
+    private int switchIndex;
     private Set<TeamReturnDTO> teams;
     private Set<PointsReturnDTO> points;
 }

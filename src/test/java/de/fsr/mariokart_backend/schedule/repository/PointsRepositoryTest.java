@@ -64,7 +64,7 @@ class PointsRepositoryTest extends PostgresTestBase {
 
         Game game = new Game();
         game.setRound(round);
-        game.setSwitchGame("Blue");
+        game.setSwitchIndex(0);
         gameRepository.save(game);
 
         Points first = new Points();
