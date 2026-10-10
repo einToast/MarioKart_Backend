@@ -2,6 +2,8 @@ package de.fsr.mariokart_backend.schedule.service.admin;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,7 @@ public class AdminScheduleCreateService {
     // The final is played on the first switch
     private static final int MAIN_SWITCH_INDEX = 0;
     private static final int LEGACY_SCHEDULER_VERSION = 1;
+    private static final int BREAK_ROUND_INDEX = 5;
 
     private final RoundRepository roundRepository;
     private final GameRepository gameRepository;
@@ -282,12 +285,15 @@ public class AdminScheduleCreateService {
     }
 
     private void addBreakAndUpdateTimes() throws EntityNotFoundException {
-        List<Round> rounds = roundRepository.findAll();
-        addBreak(new BreakInputDTO(rounds.get(5).getId(), 30, false));
+        List<Round> rounds = new ArrayList<>(roundRepository.findAll());
+        rounds.sort(Comparator.comparing(Round::getRoundNumber));
+        // Short schedules have their break before the last round.
+        Round breakRound = rounds.get(Math.min(BREAK_ROUND_INDEX, rounds.size() - 1));
+        addBreak(new BreakInputDTO(breakRound.getId(), 30, false));
 
         List<Round> roundsAfterBreak = roundRepository
-                .findByStartTimeAfter(rounds.get(5).getStartTime().minusMinutes(1));
-        updateRoundTimesAfterBreak(rounds.get(5), roundsAfterBreak);
+                .findByStartTimeAfter(breakRound.getStartTime().minusMinutes(1));
+        updateRoundTimesAfterBreak(breakRound, roundsAfterBreak);
     }
 
     private void updateRoundTimesAfterBreak(Round breakRound, List<Round> roundsAfterBreak) {

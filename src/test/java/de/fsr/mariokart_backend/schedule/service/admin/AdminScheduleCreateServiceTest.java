@@ -241,6 +241,96 @@ class AdminScheduleCreateServiceTest {
     }
 
     @Test
+    void createScheduleSupportsOneSwitchWithEightTeamsAndFewRounds() throws Exception {
+        List<Team> teams = buildTeams(8);
+        List<Round> savedRounds = new ArrayList<>();
+        List<Game> savedGames = new ArrayList<>();
+        AtomicLong roundIds = new AtomicLong(1L);
+
+        ScheduleDTO scheduleDTO = new ScheduleDTO(3, List.of(
+                List.of(List.of(0, 1, 2, 3, 4, 5, 6, 7)),
+                List.of(List.of(7, 6, 5, 4, 3, 2, 1, 0)),
+                List.of(List.of(0, 2, 4, 6, 1, 3, 5, 7))));
+
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.findAll()).thenReturn(teams);
+        when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
+                .thenReturn("payload");
+        when(objectMapper.readValue("payload", ScheduleDTO.class)).thenReturn(scheduleDTO);
+        when(scheduleInputDTOService.breakInputDTOToBreak(any(BreakInputDTO.class))).thenReturn(new Break());
+        when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
+            Round round = invocation.getArgument(0);
+            if (round.getId() == null) {
+                round.setId(roundIds.getAndIncrement());
+            }
+            savedRounds.removeIf(existing -> existing.getId().equals(round.getId()));
+            savedRounds.add(round);
+            return round;
+        });
+        when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
+        when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
+                .filter(round -> round.getId().equals(invocation.getArgument(0)))
+                .findFirst());
+        when(roundRepository.findByStartTimeAfter(any(LocalDateTime.class))).thenReturn(List.of());
+        when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> {
+            savedGames.add(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+        when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.createSchedule(new ScheduleInputDTO(3, 1, 3, 8));
+
+        assertThat(savedRounds).hasSize(3);
+        assertThat(savedGames).hasSize(3).allMatch(game -> game.getSwitchIndex() == 0);
+        verify(pointsRepository, times(24)).save(any(Points.class));
+        Round lastRound = savedRounds.stream().filter(round -> round.getRoundNumber() == 3).findFirst().orElseThrow();
+        assertThat(lastRound.getBreakTime()).isNotNull();
+    }
+
+    @Test
+    void createScheduleNumbersTheSwitchesOfARound() throws Exception {
+        List<Team> teams = buildTeams(16);
+        List<Round> savedRounds = new ArrayList<>();
+        List<Game> savedGames = new ArrayList<>();
+        AtomicLong roundIds = new AtomicLong(1L);
+
+        ScheduleDTO scheduleDTO = new ScheduleDTO(1, List.of(List.of(
+                List.of(0, 1, 2, 3), List.of(4, 5, 6, 7), List.of(8, 9, 10, 11), List.of(12, 13, 14, 15))));
+
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.findAll()).thenReturn(teams);
+        when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
+                .thenReturn("payload");
+        when(objectMapper.readValue("payload", ScheduleDTO.class)).thenReturn(scheduleDTO);
+        when(scheduleInputDTOService.breakInputDTOToBreak(any(BreakInputDTO.class))).thenReturn(new Break());
+        when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
+            Round round = invocation.getArgument(0);
+            if (round.getId() == null) {
+                round.setId(roundIds.getAndIncrement());
+            }
+            savedRounds.removeIf(existing -> existing.getId().equals(round.getId()));
+            savedRounds.add(round);
+            return round;
+        });
+        when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
+        when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
+                .filter(round -> round.getId().equals(invocation.getArgument(0)))
+                .findFirst());
+        when(roundRepository.findByStartTimeAfter(any(LocalDateTime.class))).thenReturn(List.of());
+        when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> {
+            savedGames.add(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+        when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.createSchedule(new ScheduleInputDTO(2, 4, 1, 4));
+
+        assertThat(savedGames).extracting(Game::getSwitchIndex).containsExactly(0, 1, 2, 3);
+    }
+
+    @Test
     void createScheduleThrowsWhenScheduleGeneratorRequestFails() {
         List<Team> teams = buildTeams(16);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
