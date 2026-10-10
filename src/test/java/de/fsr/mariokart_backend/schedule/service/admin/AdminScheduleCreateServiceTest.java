@@ -58,6 +58,7 @@ import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateService;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 
 @ExtendWith(MockitoExtension.class)
@@ -90,6 +91,9 @@ class AdminScheduleCreateServiceTest {
 
     @Mock
     private PublicScheduleReadService publicScheduleReadService;
+
+    @Mock
+    private PublicSettingsReadService publicSettingsReadService;
 
     @Mock
     private ScheduleInputDTOService scheduleInputDTOService;
@@ -369,6 +373,7 @@ class AdminScheduleCreateServiceTest {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
         when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
         when(publicScheduleReadService.getNumberOfRoundsUnplayed()).thenReturn(0);
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4, null));
         when(teamRepository.findByFinalReadyTrue()).thenReturn(List.of(new Team(), new Team(), new Team()));
 
         assertThatThrownBy(() -> service.createFinalSchedule())
@@ -397,6 +402,7 @@ class AdminScheduleCreateServiceTest {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
         when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
         when(publicScheduleReadService.getNumberOfRoundsUnplayed()).thenReturn(0);
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4, null));
         when(teamRepository.findByFinalReadyTrue()).thenReturn(finalTeams);
         when(adminRegistrationReadService.getFinalTeams()).thenReturn(finalTeams);
         when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
@@ -426,6 +432,59 @@ class AdminScheduleCreateServiceTest {
                 .allMatch(points -> points.getTeam() != null && points.getTeam().getId() <= 4L);
         verify(webSocketService).sendMessage("/topic/rounds", "create");
         verify(adminScheduleUpdateService).sendNotificationForNextRound();
+    }
+
+    @Test
+    void createFinalScheduleUsesTheConfiguredNumberOfFinalTeams() throws Exception {
+        List<Team> finalTeams = buildTeams(8);
+        List<Round> savedRounds = new ArrayList<>();
+        AtomicLong roundIds = new AtomicLong(1L);
+        TournamentDTO settings = new TournamentDTO(true, false, 4, null);
+        settings.setFinalTeamsCount(8);
+
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
+        when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
+        when(publicScheduleReadService.getNumberOfRoundsUnplayed()).thenReturn(0);
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
+        when(teamRepository.findByFinalReadyTrue()).thenReturn(finalTeams);
+        when(adminRegistrationReadService.getFinalTeams()).thenReturn(finalTeams);
+        when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
+        when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
+            Round round = invocation.getArgument(0);
+            if (round.getId() == null) {
+                round.setId(roundIds.getAndIncrement());
+            }
+            savedRounds.removeIf(existing -> existing.getId().equals(round.getId()));
+            savedRounds.add(round);
+            return round;
+        });
+        when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.createFinalSchedule();
+
+        ArgumentCaptor<Points> pointsCaptor = ArgumentCaptor.forClass(Points.class);
+        verify(pointsRepository, times(56)).save(pointsCaptor.capture());
+        // The bonus round rewards the group phase ranking, from eight points down to one
+        assertThat(pointsCaptor.getAllValues().subList(0, 8))
+                .extracting(Points::getFinalPoints)
+                .containsExactly(8, 7, 6, 5, 4, 3, 2, 1);
+    }
+
+    @Test
+    void createFinalScheduleThrowsWhenFewerTeamsAreReadyThanConfigured() {
+        TournamentDTO settings = new TournamentDTO(true, false, 4, null);
+        settings.setFinalTeamsCount(6);
+
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
+        when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
+        when(publicScheduleReadService.getNumberOfRoundsUnplayed()).thenReturn(0);
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
+        when(teamRepository.findByFinalReadyTrue()).thenReturn(buildTeams(5));
+
+        assertThatThrownBy(() -> service.createFinalSchedule())
+                .isInstanceOf(NotEnoughTeamsException.class)
+                .hasMessageContaining("Not enough teams ready for final");
     }
 
     private Round buildRound(Long id, int roundNumber, boolean finalGame, boolean played) {

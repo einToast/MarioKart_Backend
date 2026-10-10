@@ -71,7 +71,7 @@ public class AdminRegistrationReadService {
     public List<Team> getFinalTeams() {
         return getTeamsSortedByGroupPoints().stream()
                 .filter(team -> team.isFinalReady())
-                .limit(4)
+                .limit(publicSettingsReadService.getSettings().finalTeamsCountOrDefault())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

@@ -39,6 +39,7 @@ import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateService;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 
@@ -66,6 +67,7 @@ public class AdminScheduleCreateService {
     private final AdminSettingsUpdateService adminSettingsUpdateService;
     private final AdminRegistrationReadService adminRegistrationReadService;
     private final PublicScheduleReadService publicScheduleReadService;
+    private final PublicSettingsReadService publicSettingsReadService;
     private final ScheduleInputDTOService scheduleInputDTOService;
     private final ScheduleReturnDTOService scheduleReturnDTOService;
     private final WebSocketService webSocketService;
@@ -113,14 +115,17 @@ public class AdminScheduleCreateService {
             throw new RoundsAlreadyExistsException("Final schedule already created");
         } else if (publicScheduleReadService.getNumberOfRoundsUnplayed() > 0) {
             throw new IllegalArgumentException("Not all rounds played");
-        } else if (teamRepository.findByFinalReadyTrue().size() < 4) {
+        }
+
+        int finalTeamsCount = publicSettingsReadService.getSettings().finalTeamsCountOrDefault();
+        if (teamRepository.findByFinalReadyTrue().size() < finalTeamsCount) {
             throw new NotEnoughTeamsException("Not enough teams ready for final");
         }
 
         List<Team> teams = adminRegistrationReadService.getFinalTeams();
 
-        if (teams.size() > 4) {
-            teams = teams.subList(0, 4);
+        if (teams.size() > finalTeamsCount) {
+            teams = teams.subList(0, finalTeamsCount);
         }
 
         createFinalBonusRound(teams, LocalDateTime.now(ZoneId.systemDefault()));
@@ -153,7 +158,7 @@ public class AdminScheduleCreateService {
             for (int j = 0; j < teams.size(); j++) {
                 Points point = new Points();
                 point.setGroupPoints(0);
-                point.setFinalPoints(4 - j);
+                point.setFinalPoints(teams.size() - j);
                 point.setTeam(teams.get(j));
                 point.setGame(game);
                 addPoints(point);
