@@ -53,7 +53,8 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
-                                {"switches":[{"name":"Blau","color":"#9DAEDA"},{"name":"Rot","color":"#DA9DC9"}],
+                                {"finalTeamsCount":8,
+                                 "switches":[{"name":"Blau","color":"#9DAEDA"},{"name":"Rot","color":"#DA9DC9"}],
                                  "floorPlan":"{\\"elements\\":[]}"}
                                 """))
                 .andExpect(status().isOk())
@@ -61,6 +62,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         mockMvc.perform(get("/public/settings"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.finalTeamsCount").value(8))
                 .andExpect(jsonPath("$.switches[0].name").value("Blau"))
                 .andExpect(jsonPath("$.switches[1].color").value("#DA9DC9"))
                 .andExpect(jsonPath("$.floorPlan").value("{\"elements\":[]}"));
@@ -89,6 +91,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         mockMvc.perform(get("/public/settings"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.finalTeamsCount").value(4))
                 .andExpect(jsonPath("$.switches").isEmpty())
                 .andExpect(jsonPath("$.floorPlan").isEmpty());
     }

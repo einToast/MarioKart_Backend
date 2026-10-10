@@ -98,25 +98,29 @@ class AdminSettingsUpdateServiceTest {
     }
 
     @Test
-    void newTournamentDefaultsToNoLayout() {
+    void newTournamentDefaultsToFourFinalTeamsAndNoLayout() {
         TournamentDTO dto = new TournamentDTO(new Tournament());
 
+        assertThat(dto.getFinalTeamsCount()).isEqualTo(4);
         assertThat(dto.getSwitches()).isEmpty();
         assertThat(dto.getFloorPlan()).isNull();
     }
 
     @Test
-    void updateSettingsStoresSwitchesAndFloorPlan() throws RoundsAlreadyExistsException {
+    void updateSettingsStoresSwitchesFloorPlanAndFinalTeams() throws RoundsAlreadyExistsException {
         Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
         TournamentDTO update = new TournamentDTO();
+        update.setFinalTeamsCount(8);
         update.setSwitches(List.of(new SwitchDTO(" Blau ", "#9DAEDA"), new SwitchDTO("Rot", "#da9dc9")));
         update.setFloorPlan("{\"elements\":[]}");
 
         when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         TournamentDTO result = service.updateSettings(update);
 
+        assertThat(result.getFinalTeamsCount()).isEqualTo(8);
         assertThat(result.getSwitches())
                 .containsExactly(new SwitchDTO("Blau", "#9DAEDA"), new SwitchDTO("Rot", "#da9dc9"));
         assertThat(result.getFloorPlan()).isEqualTo("{\"elements\":[]}");
@@ -166,6 +170,34 @@ class AdminSettingsUpdateServiceTest {
         assertThatThrownBy(() -> service.updateSettings(blankName)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> service.updateSettings(invalidColor)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> service.updateSettings(tooMany)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void updateSettingsRejectsFinalTeamsOutOfRange() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+
+        TournamentDTO tooFew = new TournamentDTO();
+        tooFew.setFinalTeamsCount(1);
+        TournamentDTO tooMany = new TournamentDTO();
+        tooMany.setFinalTeamsCount(9);
+
+        assertThatThrownBy(() -> service.updateSettings(tooFew)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.updateSettings(tooMany)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void updateSettingsThrowsConflictWhenChangingFinalTeamsAfterFinalCreation() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setFinalTeamsCount(6);
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateSettings(update))
+                .isInstanceOf(RoundsAlreadyExistsException.class)
+                .hasMessageContaining("Final schedule already created");
     }
 
     @Test

@@ -10,6 +10,7 @@
         "registrationOpen": { "type": "boolean" },
         "maxGamesCount": { "type": "integer" },
         "surveyKeyMode": { "type": "string", "enum": ["DISABLED", "DISTRIBUTING", "REQUIRED"] },
+        "finalTeamsCount": { "type": ["integer", "null"], "minimum": 2, "maximum": 8 },
         "switches": {
           "type": ["array", "null"],
           "items": {

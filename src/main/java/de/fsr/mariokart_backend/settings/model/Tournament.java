@@ -3,6 +3,8 @@ package de.fsr.mariokart_backend.settings.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -29,6 +31,8 @@ import lombok.Setter;
 @Table(name = "tournament")
 public class Tournament {
 
+    public static final int DEFAULT_FINAL_TEAMS_COUNT = 4;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,6 +46,10 @@ public class Tournament {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SurveyKeyMode surveyKeyMode = SurveyKeyMode.DISABLED;
+
+    @ColumnDefault("4")
+    @Column(nullable = false)
+    private int finalTeamsCount = DEFAULT_FINAL_TEAMS_COUNT;
 
     // Names and colors of the switches, addressed by the switch index of a game
     @ElementCollection(fetch = FetchType.EAGER)

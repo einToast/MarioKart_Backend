@@ -58,7 +58,7 @@ class AdminSettingsUpdateControllerContractTest extends AbstractWebMvcSliceTest 
 
     @Test
     void updateSettingsLayoutMatchesContract() throws Exception {
-        TournamentDTO input = new TournamentDTO(true, false, 8, SurveyKeyMode.DISABLED,
+        TournamentDTO input = new TournamentDTO(true, false, 8, SurveyKeyMode.DISABLED, 8,
                 List.of(new SwitchDTO("Blau", "#9DAEDA")), "{\"elements\":[]}");
         when(adminSettingsUpdateService.updateSettings(input)).thenReturn(input);
 

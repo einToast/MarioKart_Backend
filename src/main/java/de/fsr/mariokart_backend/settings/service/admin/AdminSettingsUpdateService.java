@@ -23,6 +23,8 @@ import lombok.AllArgsConstructor;
 @CacheEvict(allEntries = true)
 public class AdminSettingsUpdateService {
 
+    public static final int MIN_FINAL_TEAMS = 2;
+    public static final int MAX_FINAL_TEAMS = 8;
     public static final int MAX_SWITCHES = 16;
     public static final int MAX_SWITCH_NAME_LENGTH = 30;
     public static final int MAX_FLOOR_PLAN_LENGTH = 50_000;
@@ -51,6 +53,10 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getSurveyKeyMode() != null) {
             tournament.setSurveyKeyMode(tournamentDTO.getSurveyKeyMode());
         }
+        if (tournamentDTO.getFinalTeamsCount() != null
+                && tournamentDTO.getFinalTeamsCount() != tournament.getFinalTeamsCount()) {
+            updateFinalTeamsCount(tournament, tournamentDTO.getFinalTeamsCount());
+        }
         if (tournamentDTO.getSwitches() != null) {
             tournament.setSwitches(toSwitchConfigs(tournamentDTO.getSwitches()));
         }
@@ -59,6 +65,18 @@ public class AdminSettingsUpdateService {
         }
 
         return new TournamentDTO(tournamentRepository.save(tournament));
+    }
+
+    private void updateFinalTeamsCount(Tournament tournament, int finalTeamsCount)
+            throws RoundsAlreadyExistsException {
+        if (finalTeamsCount < MIN_FINAL_TEAMS || finalTeamsCount > MAX_FINAL_TEAMS) {
+            throw new IllegalArgumentException(
+                    "The final needs between %d and %d teams.".formatted(MIN_FINAL_TEAMS, MAX_FINAL_TEAMS));
+        }
+        if (publicScheduleReadService.isFinalScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Final schedule already created. Can't change the final teams.");
+        }
+        tournament.setFinalTeamsCount(finalTeamsCount);
     }
 
     private List<SwitchConfig> toSwitchConfigs(List<SwitchDTO> switches) {

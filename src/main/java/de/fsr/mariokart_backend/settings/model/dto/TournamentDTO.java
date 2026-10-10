@@ -16,6 +16,7 @@ public class TournamentDTO {
     private Boolean registrationOpen;
     private Integer maxGamesCount;
     private SurveyKeyMode surveyKeyMode;
+    private Integer finalTeamsCount;
     private List<SwitchDTO> switches;
     private String floorPlan;
 
@@ -32,11 +33,16 @@ public class TournamentDTO {
         this.registrationOpen = tournament.isRegistrationOpen();
         this.maxGamesCount = tournament.getMaxGamesCount();
         this.surveyKeyMode = tournament.getSurveyKeyMode();
+        this.finalTeamsCount = tournament.getFinalTeamsCount();
         this.switches = tournament.getSwitches() == null ? List.of()
                 : tournament.getSwitches().stream()
                         .map(switchConfig -> new SwitchDTO(switchConfig.getName(), switchConfig.getColor()))
                         .toList();
         this.floorPlan = tournament.getFloorPlan();
+    }
+
+    public int finalTeamsCountOrDefault() {
+        return finalTeamsCount != null ? finalTeamsCount : Tournament.DEFAULT_FINAL_TEAMS_COUNT;
     }
 
     // Falls back to the one-based switch number while the switch has no name
