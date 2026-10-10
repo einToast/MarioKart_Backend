@@ -18,6 +18,7 @@ import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.Tournament;
+import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
 
@@ -94,6 +95,77 @@ class AdminSettingsUpdateServiceTest {
         assertThatThrownBy(() -> service.updateSettings(new TournamentDTO(null, true, null, null)))
                 .isInstanceOf(RoundsAlreadyExistsException.class)
                 .hasMessageContaining("Matches already exist");
+    }
+
+    @Test
+    void newTournamentDefaultsToNoLayout() {
+        TournamentDTO dto = new TournamentDTO(new Tournament());
+
+        assertThat(dto.getSwitches()).isEmpty();
+        assertThat(dto.getFloorPlan()).isNull();
+    }
+
+    @Test
+    void updateSettingsStoresSwitchesAndFloorPlan() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setSwitches(List.of(new SwitchDTO(" Blau ", "#9DAEDA"), new SwitchDTO("Rot", "#da9dc9")));
+        update.setFloorPlan("{\"elements\":[]}");
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        TournamentDTO result = service.updateSettings(update);
+
+        assertThat(result.getSwitches())
+                .containsExactly(new SwitchDTO("Blau", "#9DAEDA"), new SwitchDTO("Rot", "#da9dc9"));
+        assertThat(result.getFloorPlan()).isEqualTo("{\"elements\":[]}");
+        assertThat(result.getTournamentOpen()).isTrue();
+    }
+
+    @Test
+    void updateSettingsKeepsLayoutWhenNotProvided() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        existing.setFloorPlan("{}");
+        existing.getSwitches().add(new de.fsr.mariokart_backend.settings.model.SwitchConfig("Blau", "#9DAEDA"));
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        TournamentDTO result = service.updateSettings(new TournamentDTO(false, null, null, null));
+
+        assertThat(result.getSwitches()).containsExactly(new SwitchDTO("Blau", "#9DAEDA"));
+        assertThat(result.getFloorPlan()).isEqualTo("{}");
+    }
+
+    @Test
+    void updateSettingsRemovesTheFloorPlanWhenBlank() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        existing.setFloorPlan("{}");
+        TournamentDTO update = new TournamentDTO();
+        update.setFloorPlan("");
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        assertThat(service.updateSettings(update).getFloorPlan()).isNull();
+    }
+
+    @Test
+    void updateSettingsRejectsInvalidSwitches() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+
+        TournamentDTO blankName = new TournamentDTO();
+        blankName.setSwitches(List.of(new SwitchDTO("  ", "#9DAEDA")));
+        TournamentDTO invalidColor = new TournamentDTO();
+        invalidColor.setSwitches(List.of(new SwitchDTO("Blau", "blue")));
+        TournamentDTO tooMany = new TournamentDTO();
+        tooMany.setSwitches(java.util.Collections.nCopies(17, new SwitchDTO("Blau", "#9DAEDA")));
+
+        assertThatThrownBy(() -> service.updateSettings(blankName)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.updateSettings(invalidColor)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.updateSettings(tooMany)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

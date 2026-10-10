@@ -49,6 +49,30 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.maxGamesCount").value(8));
 
+        mockMvc.perform(put("/admin/settings")
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"switches":[{"name":"Blau","color":"#9DAEDA"},{"name":"Rot","color":"#DA9DC9"}],
+                                 "floorPlan":"{\\"elements\\":[]}"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.maxGamesCount").value(8));
+
+        mockMvc.perform(get("/public/settings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.switches[0].name").value("Blau"))
+                .andExpect(jsonPath("$.switches[1].color").value("#DA9DC9"))
+                .andExpect(jsonPath("$.floorPlan").value("{\"elements\":[]}"));
+
+        mockMvc.perform(put("/admin/settings")
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"switches":[{"name":"Blau","color":"blue"}]}
+                                """))
+                .andExpect(status().isBadRequest());
+
         createTeamDirect("Reset Team", "Mario");
         createRoundDirect(1, false, false);
         MultipleChoiceQuestion question = new MultipleChoiceQuestion();
@@ -62,5 +86,10 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         assertThat(roundRepository.count()).isZero();
         assertThat(questionRepository.count()).isZero();
         assertThat(tournamentRepository.count()).isEqualTo(1);
+
+        mockMvc.perform(get("/public/settings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.switches").isEmpty())
+                .andExpect(jsonPath("$.floorPlan").isEmpty());
     }
 }
