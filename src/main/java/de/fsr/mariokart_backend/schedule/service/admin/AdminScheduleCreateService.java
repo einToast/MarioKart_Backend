@@ -222,7 +222,7 @@ public class AdminScheduleCreateService {
             throw new RoundsAlreadyExistsException("Schedule already created");
         }
         if (scheduleCreation.getVersion() == LEGACY_SCHEDULER_VERSION) {
-            // The first scheduler only knows four fields with four teams each.
+            // The first scheduler only knows four fields with four teams each
             if (teamRepository.findAll().size() < 16) {
                 throw new NotEnoughTeamsException("Not enough teams");
             }
@@ -233,7 +233,8 @@ public class AdminScheduleCreateService {
                     || scheduleCreation.getTeamsPerGame() > MAX_TEAMS_PER_GAME) {
                 throw new IllegalArgumentException("Invalid schedule parameters");
             }
-            // A team can only play on one field per round, so every field needs its own teams.
+            // A team can only play on one field per round, so every field needs its own
+            // teams
             int teamsPerRound = scheduleCreation.getNumFields() * scheduleCreation.getTeamsPerGame();
             if (teamRepository.findAll().size() < teamsPerRound) {
                 throw new NotEnoughTeamsException(
@@ -287,7 +288,7 @@ public class AdminScheduleCreateService {
     private void addBreakAndUpdateTimes() throws EntityNotFoundException {
         List<Round> rounds = new ArrayList<>(roundRepository.findAll());
         rounds.sort(Comparator.comparing(Round::getRoundNumber));
-        // Short schedules have their break before the last round.
+        // Short schedules have their break before the last round
         Round breakRound = rounds.get(Math.min(BREAK_ROUND_INDEX, rounds.size() - 1));
         addBreak(new BreakInputDTO(breakRound.getId(), 30, false));
 

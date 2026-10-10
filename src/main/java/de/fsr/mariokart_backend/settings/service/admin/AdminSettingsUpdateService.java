@@ -28,6 +28,7 @@ public class AdminSettingsUpdateService {
     public static final int MAX_SWITCHES = 16;
     public static final int MAX_SWITCH_NAME_LENGTH = 30;
     public static final int MAX_FLOOR_PLAN_LENGTH = 50_000;
+    public static final int MAX_PROGRAM_LENGTH = 10_000;
 
     private static final Pattern HEX_COLOR = Pattern.compile("#[0-9a-fA-F]{6}");
 
@@ -62,6 +63,9 @@ public class AdminSettingsUpdateService {
         }
         if (tournamentDTO.getFloorPlan() != null) {
             updateFloorPlan(tournament, tournamentDTO.getFloorPlan());
+        }
+        if (tournamentDTO.getProgram() != null) {
+            updateProgram(tournament, tournamentDTO.getProgram());
         }
 
         return new TournamentDTO(tournamentRepository.save(tournament));
@@ -105,5 +109,13 @@ public class AdminSettingsUpdateService {
             throw new IllegalArgumentException("The floor plan is too large.");
         }
         tournament.setFloorPlan(floorPlan.isBlank() ? null : floorPlan);
+    }
+
+    // A blank programme removes the stored one
+    private void updateProgram(Tournament tournament, String program) {
+        if (program.length() > MAX_PROGRAM_LENGTH) {
+            throw new IllegalArgumentException("The programme is too large.");
+        }
+        tournament.setProgram(program.isBlank() ? null : program);
     }
 }

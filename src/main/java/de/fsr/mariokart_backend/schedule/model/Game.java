@@ -39,7 +39,6 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Zero-based index of the switch the game is played on, names live in the tournament settings
     @ColumnDefault("0")
     @Column(nullable = false)
     private int switchIndex;

@@ -22,7 +22,8 @@
             }
           }
         },
-        "floorPlan": { "type": ["string", "null"] }
+        "floorPlan": { "type": ["string", "null"] },
+        "program": { "type": ["string", "null"] }
       },
       "additionalProperties": true
     },

@@ -19,6 +19,7 @@ public class TournamentDTO {
     private Integer finalTeamsCount;
     private List<SwitchDTO> switches;
     private String floorPlan;
+    private String program;
 
     public TournamentDTO(Boolean tournamentOpen, Boolean registrationOpen, Integer maxGamesCount,
             SurveyKeyMode surveyKeyMode) {
@@ -39,6 +40,7 @@ public class TournamentDTO {
                         .map(switchConfig -> new SwitchDTO(switchConfig.getName(), switchConfig.getColor()))
                         .toList();
         this.floorPlan = tournament.getFloorPlan();
+        this.program = tournament.getProgram();
     }
 
     public int finalTeamsCountOrDefault() {

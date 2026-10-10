@@ -51,15 +51,18 @@ public class Tournament {
     @Column(nullable = false)
     private int finalTeamsCount = DEFAULT_FINAL_TEAMS_COUNT;
 
-    // Names and colors of the switches, addressed by the switch index of a game
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "tournament_switch", joinColumns = @JoinColumn(name = "tournament_ID"))
     @OrderColumn(name = "switch_index")
     private List<SwitchConfig> switches = new ArrayList<>();
 
-    // Floor plan as JSON, only the frontend knows its structure
+    // Floor plan as JSON
     @Column(columnDefinition = "TEXT")
     private String floorPlan;
+
+    // Programme of the event as JSON
+    @Column(columnDefinition = "TEXT")
+    private String program;
 
     public Tournament(Long id, boolean tournamentOpen, boolean registrationOpen, int maxGamesCount,
             SurveyKeyMode surveyKeyMode) {

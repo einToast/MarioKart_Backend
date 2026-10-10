@@ -104,6 +104,7 @@ class AdminSettingsUpdateServiceTest {
         assertThat(dto.getFinalTeamsCount()).isEqualTo(4);
         assertThat(dto.getSwitches()).isEmpty();
         assertThat(dto.getFloorPlan()).isNull();
+        assertThat(dto.getProgram()).isNull();
     }
 
     @Test
@@ -153,6 +154,34 @@ class AdminSettingsUpdateServiceTest {
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         assertThat(service.updateSettings(update).getFloorPlan()).isNull();
+    }
+
+    @Test
+    void updateSettingsStoresAndRemovesTheProgram() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setProgram("{\"entries\":[]}");
+        TournamentDTO removal = new TournamentDTO();
+        removal.setProgram(" ");
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        assertThat(service.updateSettings(update).getProgram()).isEqualTo("{\"entries\":[]}");
+        assertThat(service.updateSettings(new TournamentDTO(true, null, null, null)).getProgram())
+                .isEqualTo("{\"entries\":[]}");
+        assertThat(service.updateSettings(removal).getProgram()).isNull();
+    }
+
+    @Test
+    void updateSettingsRejectsAnOversizedProgram() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setProgram("x".repeat(AdminSettingsUpdateService.MAX_PROGRAM_LENGTH + 1));
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+
+        assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
