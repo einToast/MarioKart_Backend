@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -214,6 +216,24 @@ class AdminScheduleCreateServiceTest {
                 .isInstanceOf(NotEnoughTeamsException.class)
                 .hasMessageContaining("need at least 16 teams");
         verify(roundRepository, never()).save(any(Round.class));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "0, 8, 4",
+            "17, 8, 4",
+            "4, 0, 4",
+            "4, 8, 1",
+            "4, 8, 9"
+    })
+    void createScheduleThrowsWhenParametersAreOutOfRange(int numFields, int numRounds, int teamsPerGame) {
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(3, numFields, numRounds, teamsPerGame);
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid schedule parameters");
     }
 
     @Test

@@ -48,8 +48,13 @@ import lombok.AllArgsConstructor;
 @CacheEvict(allEntries = true)
 public class AdminScheduleCreateService {
 
+    public static final int MAX_FIELDS = 16;
+    public static final int MIN_TEAMS_PER_GAME = 2;
+    public static final int MAX_TEAMS_PER_GAME = 8;
+
     // The final is played on the first switch
     private static final int MAIN_SWITCH_INDEX = 0;
+    private static final int LEGACY_SCHEDULER_VERSION = 1;
 
     private final RoundRepository roundRepository;
     private final GameRepository gameRepository;
@@ -208,12 +213,16 @@ public class AdminScheduleCreateService {
         if (publicScheduleReadService.isScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Schedule already created");
         }
-        if (scheduleCreation.getVersion() == 1 && teamRepository.findAll().size() < 16) {
-            throw new NotEnoughTeamsException("Not enough teams");
-        }
-        if (scheduleCreation.getVersion() == 2) {
-            if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumRounds() <= 0
-                    || scheduleCreation.getTeamsPerGame() <= 0) {
+        if (scheduleCreation.getVersion() == LEGACY_SCHEDULER_VERSION) {
+            // The first scheduler only knows four fields with four teams each.
+            if (teamRepository.findAll().size() < 16) {
+                throw new NotEnoughTeamsException("Not enough teams");
+            }
+        } else {
+            if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumFields() > MAX_FIELDS
+                    || scheduleCreation.getNumRounds() <= 0
+                    || scheduleCreation.getTeamsPerGame() < MIN_TEAMS_PER_GAME
+                    || scheduleCreation.getTeamsPerGame() > MAX_TEAMS_PER_GAME) {
                 throw new IllegalArgumentException("Invalid schedule parameters");
             }
             // A team can only play on one field per round, so every field needs its own teams.
