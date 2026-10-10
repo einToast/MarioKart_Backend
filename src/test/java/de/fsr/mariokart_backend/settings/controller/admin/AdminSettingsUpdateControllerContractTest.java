@@ -4,6 +4,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
+import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
@@ -50,6 +53,42 @@ class AdminSettingsUpdateControllerContractTest extends AbstractWebMvcSliceTest 
         ContractSchemaSupport.assertJsonMatchesDefinition(
                 SCHEMA,
                 "put_root_success",
+                result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void updateSettingsLayoutMatchesContract() throws Exception {
+        TournamentDTO input = new TournamentDTO(true, false, 8, SurveyKeyMode.DISABLED, 8,
+                List.of(new SwitchDTO("Blau", "#9DAEDA")), "{\"elements\":[]}", "{\"entries\":[]}");
+        when(adminSettingsUpdateService.updateSettings(input)).thenReturn(input);
+
+        MvcResult result = mockMvc.perform(put("/admin/settings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ContractSchemaSupport.assertJsonMatchesDefinition(
+                SCHEMA,
+                "put_root_success",
+                result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void updateSettingsBadRequestMatchesContract() throws Exception {
+        TournamentDTO input = new TournamentDTO(true, true, 4, null);
+        when(adminSettingsUpdateService.updateSettings(input))
+                .thenThrow(new IllegalArgumentException("Switch colors have to be hex colors like #9DAEDA."));
+
+        MvcResult result = mockMvc.perform(put("/admin/settings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        ContractSchemaSupport.assertStringMatchesDefinition(
+                SCHEMA,
+                "put_root_error_400",
                 result.getResponse().getContentAsString());
     }
 

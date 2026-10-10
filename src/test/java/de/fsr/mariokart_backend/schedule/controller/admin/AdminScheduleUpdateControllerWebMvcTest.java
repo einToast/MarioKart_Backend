@@ -187,7 +187,7 @@ class AdminScheduleUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void updateGameReturnsGame() throws Exception {
         when(adminScheduleUpdateService.updateGame(anyLong(), any(GameInputFullDTO.class)))
-                .thenReturn(new GameReturnDTO(2L, "Blue", Set.of(), Set.of()));
+                .thenReturn(new GameReturnDTO(2L, 0, Set.of(), Set.of()));
 
         mockMvc.perform(put("/admin/schedule/games/2")
                         .contentType(MediaType.APPLICATION_JSON)

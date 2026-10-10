@@ -28,10 +28,10 @@
     },
     "game_return": {
       "type": "object",
-      "required": ["id", "switchGame", "teams", "points"],
+      "required": ["id", "switchIndex", "teams", "points"],
       "properties": {
         "id": { "type": "integer" },
-        "switchGame": { "type": "string" },
+        "switchIndex": { "type": "integer", "minimum": 0 },
         "teams": { "type": "array" },
         "points": { "type": "array", "items": { "$ref": "#/$defs/points_return" } }
       },

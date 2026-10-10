@@ -77,7 +77,7 @@ class ScheduleReturnDTOServiceTest {
 
         Game game = new Game();
         game.setId(9L);
-        game.setSwitchGame("Blue");
+        game.setSwitchIndex(3);
         game.setPoints(Set.of(points));
         points.setGame(game);
 
@@ -98,6 +98,7 @@ class ScheduleReturnDTOServiceTest {
         assertThat(result.getGames()).hasSize(1);
         GameReturnDTO gameDto = result.getGames().iterator().next();
         assertThat(gameDto.getId()).isEqualTo(9L);
+        assertThat(gameDto.getSwitchIndex()).isEqualTo(3);
         assertThat(result.getBreakTime()).isEqualTo(aBreak);
     }
 

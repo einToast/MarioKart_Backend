@@ -26,7 +26,7 @@ public class ScheduleInputDTOService {
 
     public Game gameInputDTOToGame(GameInputDTO gameInputDTO) throws EntityNotFoundException {
         Game game = new Game();
-        game.setSwitchGame(gameInputDTO.getSwitchGame());
+        game.setSwitchIndex(gameInputDTO.getSwitchIndex());
         game.setRound(roundRepository.findById(gameInputDTO.getRoundId())
                 .orElseThrow(() -> new EntityNotFoundException("There is no round with this ID.")));
         return game;

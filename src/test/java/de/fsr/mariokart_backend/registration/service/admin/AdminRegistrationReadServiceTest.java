@@ -140,12 +140,31 @@ class AdminRegistrationReadServiceTest {
         when(t4.isFinalReady()).thenReturn(true);
         when(t5.isFinalReady()).thenReturn(true);
 
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 4, null));
         AdminRegistrationReadService spyService = spy(service);
         doReturn(List.of(t1, t2, t3, t4, t5)).when(spyService).getTeamsSortedByGroupPoints();
 
         List<Team> result = spyService.getFinalTeams();
 
         assertThat(result).containsExactly(t1, t3, t4, t5);
+    }
+
+    @Test
+    void getFinalTeamsUsesTheConfiguredNumberOfFinalTeams() {
+        Team t1 = mock(Team.class);
+        Team t2 = mock(Team.class);
+        Team t3 = mock(Team.class);
+
+        when(t1.isFinalReady()).thenReturn(true);
+        when(t2.isFinalReady()).thenReturn(true);
+
+        TournamentDTO settings = new TournamentDTO(true, true, 4, null);
+        settings.setFinalTeamsCount(2);
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
+        AdminRegistrationReadService spyService = spy(service);
+        doReturn(List.of(t1, t2, t3)).when(spyService).getTeamsSortedByGroupPoints();
+
+        assertThat(spyService.getFinalTeams()).containsExactly(t1, t2);
     }
 
     @Test

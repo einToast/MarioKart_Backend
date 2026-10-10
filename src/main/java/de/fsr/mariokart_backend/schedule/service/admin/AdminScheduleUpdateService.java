@@ -39,6 +39,8 @@ import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
+import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 
@@ -55,6 +57,7 @@ public class AdminScheduleUpdateService {
     private final TeamRepository teamRepository;
     private final AdminScheduleReadService adminScheduleReadService;
     private final PublicScheduleReadService publicScheduleReadService;
+    private final PublicSettingsReadService publicSettingsReadService;
     private final ScheduleReturnDTOService scheduleReturnDTOService;
     private final WebSocketService webSocketService;
     private final AdminNotificationCreateService adminNotificationCreateService;
@@ -378,12 +381,14 @@ public class AdminScheduleUpdateService {
             return;
         }
 
+        TournamentDTO settings = publicSettingsReadService.getSettings();
+
         for (Game game : games) {
             List<Points> points = pointsRepository.findByGameId(game.getId());
+            String title = "Du spielst jetzt an Switch " + settings.switchName(game.getSwitchIndex()) + "!";
+            String message = title + " Streng dich an!";
             for (Points point : points) {
                 Team team = point.getTeam();
-                String title = "Du spielst jetzt an Switch " + game.getSwitchGame() + "!";
-                String message = title + " Streng dich an!";
 
                 adminNotificationCreateService.sendNotificationToTeam(
                         team.getId(),

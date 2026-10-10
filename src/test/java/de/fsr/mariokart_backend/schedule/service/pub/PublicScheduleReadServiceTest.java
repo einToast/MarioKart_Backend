@@ -48,7 +48,7 @@ class PublicScheduleReadServiceTest {
         when(scheduleReturnDTOService.roundToRoundDTO(any(Round.class))).thenAnswer(invocation -> {
             Round round = invocation.getArgument(0);
             TeamReturnDTO team = new TeamReturnDTO(1L, "Alpha", null, true, true, 12, 8, 2);
-            GameReturnDTO game = new GameReturnDTO(100L + round.getId(), "Blue", new HashSet<>(Set.of(team)),
+            GameReturnDTO game = new GameReturnDTO(100L + round.getId(), 0, new HashSet<>(Set.of(team)),
                     new HashSet<>());
             return new RoundReturnDTO(round.getId(), round.getRoundNumber(), round.getStartTime(), round.getEndTime(),
                     false, false, new HashSet<>(Set.of(game)), null);

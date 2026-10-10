@@ -51,6 +51,9 @@ import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
+import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
+import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,6 +80,9 @@ class AdminScheduleUpdateServiceTest {
 
     @Mock
     private PublicScheduleReadService publicScheduleReadService;
+
+    @Mock
+    private PublicSettingsReadService publicSettingsReadService;
 
     @Mock
     private ScheduleReturnDTOService scheduleReturnDTOService;
@@ -286,9 +292,10 @@ class AdminScheduleUpdateServiceTest {
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
         Game game = new Game();
         game.setId(70L);
-        game.setSwitchGame("Blau");
+        game.setSwitchIndex(0);
         Team team = buildTeam(9L, "Team Nine", "Yoshi");
         Points points = buildPoints(team, game, 0, 0);
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4, null));
         when(gameRepository.findByRoundId(2L)).thenReturn(List.of(game));
         when(pointsRepository.findByGameId(70L)).thenReturn(List.of(points));
         when(teamRepository.findAll()).thenReturn(List.of(team));
@@ -430,7 +437,7 @@ class AdminScheduleUpdateServiceTest {
         when(gameRepository.findById(40L)).thenReturn(Optional.of(game));
         when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(gameRepository.save(game)).thenReturn(game);
-        when(scheduleReturnDTOService.gameToGameDTO(game)).thenReturn(new GameReturnDTO(40L, "Blau", null, null));
+        when(scheduleReturnDTOService.gameToGameDTO(game)).thenReturn(new GameReturnDTO(40L, 0, null, null));
 
         GameReturnDTO dto = service.updateGame(40L, input);
 
@@ -456,7 +463,7 @@ class AdminScheduleUpdateServiceTest {
         when(gameRepository.findById(41L)).thenReturn(Optional.of(game));
         when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(gameRepository.save(game)).thenReturn(game);
-        when(scheduleReturnDTOService.gameToGameDTO(game)).thenReturn(new GameReturnDTO(41L, "Rot", null, null));
+        when(scheduleReturnDTOService.gameToGameDTO(game)).thenReturn(new GameReturnDTO(41L, 1, null, null));
 
         service.updateGame(41L, input);
 
@@ -493,7 +500,7 @@ class AdminScheduleUpdateServiceTest {
     }
 
     @Test
-    void sendNotificationForNextRoundSendsPlayingAndIdleTeamNotifications() throws NotificationNotSentException {
+    void sendNotificationForNextRoundNamesTheSwitchAndFallsBackToItsNumber() throws NotificationNotSentException {
         Round round = buildRound(7L, 1, false, false);
 
         Team team1 = buildTeam(1L, "Team One", "Mario");
@@ -503,12 +510,15 @@ class AdminScheduleUpdateServiceTest {
 
         Game game1 = new Game();
         game1.setId(100L);
-        game1.setSwitchGame("Blau");
+        game1.setSwitchIndex(0);
 
         Game game2 = new Game();
         game2.setId(101L);
-        game2.setSwitchGame("Rot");
+        game2.setSwitchIndex(1);
 
+        TournamentDTO settings = new TournamentDTO(true, false, 4, null);
+        settings.setSwitches(List.of(new SwitchDTO("Blau", "#9DAEDA")));
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
         when(gameRepository.findByRoundId(7L)).thenReturn(List.of(game1, game2));
         when(pointsRepository.findByGameId(100L))
                 .thenReturn(List.of(buildPoints(team1, game1, 0, 0), buildPoints(team2, game1, 0, 0)));
@@ -528,8 +538,8 @@ class AdminScheduleUpdateServiceTest {
                 "Du spielst jetzt an Switch Blau! Streng dich an!");
         verify(adminNotificationCreateService).sendNotificationToTeam(
                 team3.getId(),
-                "Du spielst jetzt an Switch Rot!",
-                "Du spielst jetzt an Switch Rot! Streng dich an!");
+                "Du spielst jetzt an Switch 2!",
+                "Du spielst jetzt an Switch 2! Streng dich an!");
         verify(adminNotificationCreateService).sendNotificationToTeam(
                 team4.getId(),
                 "Du spielst jetzt nicht!",

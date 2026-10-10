@@ -25,7 +25,7 @@ public class ScheduleReturnDTOService {
     public GameReturnDTO gameToGameDTO(Game game) {
         if (game == null)
             return null;
-        return new GameReturnDTO(game.getId(), game.getSwitchGame(),
+        return new GameReturnDTO(game.getId(), game.getSwitchIndex(),
                 game.getPoints() != null ? game.getTeams().stream()
                         .map(registrationReturnDTOService::teamToTeamReturnDTO)
                         .collect(Collectors.toSet())

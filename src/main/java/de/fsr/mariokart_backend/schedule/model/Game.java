@@ -8,7 +8,10 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import org.hibernate.annotations.ColumnDefault;
+
 import de.fsr.mariokart_backend.registration.model.Team;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,7 +39,9 @@ public class Game {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String switchGame;
+    @ColumnDefault("0")
+    @Column(nullable = false)
+    private int switchIndex;
 
     @ManyToOne
     @JoinColumn(name = "round_ID")

@@ -28,6 +28,8 @@ public class AdminSettingsUpdateController {
             return ResponseEntity.ok(adminSettingsUpdateService.updateSettings(tournamentDTO));
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (RoundsAlreadyExistsException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
         }

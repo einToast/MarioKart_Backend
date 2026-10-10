@@ -47,9 +47,9 @@ class ScheduleInputDTOServiceTest {
 
         when(roundRepository.findById(5L)).thenReturn(Optional.of(round));
 
-        Game result = service.gameInputDTOToGame(new GameInputDTO(5L, "Blau"));
+        Game result = service.gameInputDTOToGame(new GameInputDTO(5L, 2));
 
-        assertThat(result.getSwitchGame()).isEqualTo("Blau");
+        assertThat(result.getSwitchIndex()).isEqualTo(2);
         assertThat(result.getRound()).isEqualTo(round);
     }
 
@@ -57,7 +57,7 @@ class ScheduleInputDTOServiceTest {
     void gameInputDTOToGameThrowsWhenRoundMissing() {
         when(roundRepository.findById(5L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.gameInputDTOToGame(new GameInputDTO(5L, "Blau")))
+        assertThatThrownBy(() -> service.gameInputDTOToGame(new GameInputDTO(5L, 2)))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("round with this ID");
     }
