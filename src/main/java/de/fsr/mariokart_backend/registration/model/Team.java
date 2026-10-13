@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
+import de.fsr.mariokart_backend.schedule.model.FieldPointsMultiplier;
 import de.fsr.mariokart_backend.schedule.model.Game;
 import de.fsr.mariokart_backend.schedule.model.Points;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
@@ -83,6 +84,23 @@ public class Team {
                 .limit(maxGames)
                 .mapToInt(Points::getGroupPoints)
                 .sum();
+    }
+
+    // Group points in which games on fields with more teams count more
+    public double getWeightedGroupPoints(int maxGames, int baseTeamCount) {
+        if (points == null)
+            return 0;
+
+        return points.stream()
+                .sorted(Comparator.comparingLong(Points::getId))
+                .limit(maxGames)
+                .mapToDouble(point -> point.getGroupPoints()
+                        * FieldPointsMultiplier.of(getTeamCount(point.getGame()), baseTeamCount))
+                .sum();
+    }
+
+    private static int getTeamCount(Game game) {
+        return game == null || game.getPoints() == null ? 0 : game.getPoints().size();
     }
 
     public int getFinalPoints() {

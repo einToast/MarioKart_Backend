@@ -13,6 +13,7 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
+import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import lombok.AllArgsConstructor;
 
@@ -23,6 +24,7 @@ public class AdminRegistrationReadService {
     private final CharacterRepository characterRepository;
     private final RegistrationReturnDTOService registrationReturnDTOService;
     private final PublicSettingsReadService publicSettingsReadService;
+    private final PointsRepository pointsRepository;
 
     public List<TeamReturnDTO> getTeams() {
         return teamRepository.findAll().stream()
@@ -32,9 +34,10 @@ public class AdminRegistrationReadService {
 
     public List<Team> getTeamsSortedByGroupPoints() {
         int maxGames = publicSettingsReadService.getSettings().getMaxGamesCount();
+        int baseTeamCount = pointsRepository.getSmallestGroupGameTeamCount();
         return teamRepository.findAll().stream()
                 .sorted(Comparator.comparing(
-                        team -> team.getGroupPoints(maxGames) / (double) (team.getNumberOfGamesPlayed(maxGames) == 0 ? 1 : team.getNumberOfGamesPlayed(maxGames)),
+                        team -> team.getWeightedGroupPoints(maxGames, baseTeamCount) / (team.getNumberOfGamesPlayed(maxGames) == 0 ? 1 : team.getNumberOfGamesPlayed(maxGames)),
                         Comparator.reverseOrder()))
                 .toList();
     }

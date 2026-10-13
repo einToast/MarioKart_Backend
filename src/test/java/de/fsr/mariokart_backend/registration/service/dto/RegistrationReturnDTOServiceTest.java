@@ -15,6 +15,7 @@ import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
+import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 
@@ -24,6 +25,9 @@ class RegistrationReturnDTOServiceTest {
 
     @Mock
     private PublicSettingsReadService publicSettingsReadService;
+
+    @Mock
+    private PointsRepository pointsRepository;
 
     @InjectMocks
     private RegistrationReturnDTOService service;
@@ -59,7 +63,8 @@ class RegistrationReturnDTOServiceTest {
         when(team.getCharacter()).thenReturn(peach);
         when(team.isFinalReady()).thenReturn(false);
         when(team.isActive()).thenReturn(true);
-        when(team.getGroupPoints(6)).thenReturn(14);
+        when(pointsRepository.getSmallestGroupGameTeamCount()).thenReturn(4);
+        when(team.getWeightedGroupPoints(6, 4)).thenReturn(13.5);
         when(team.getFinalPoints()).thenReturn(9);
         when(team.getNumberOfGamesPlayed(6)).thenReturn(4);
 

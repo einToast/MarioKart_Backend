@@ -23,6 +23,7 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.dto.RegistrationReturnDTOService;
+import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 
@@ -41,6 +42,9 @@ class AdminRegistrationReadServiceTest {
 
     @Mock
     private PublicSettingsReadService publicSettingsReadService;
+
+    @Mock
+    private PointsRepository pointsRepository;
 
     @InjectMocks
     private AdminRegistrationReadService service;
@@ -69,10 +73,12 @@ class AdminRegistrationReadServiceTest {
         when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 4, null));
         when(teamRepository.findAll()).thenReturn(List.of(lowAverage, highAverage));
 
-        when(lowAverage.getGroupPoints(4)).thenReturn(8);
+        when(pointsRepository.getSmallestGroupGameTeamCount()).thenReturn(2);
+
+        when(lowAverage.getWeightedGroupPoints(4, 2)).thenReturn(8.0);
         when(lowAverage.getNumberOfGamesPlayed(4)).thenReturn(2);
 
-        when(highAverage.getGroupPoints(4)).thenReturn(15);
+        when(highAverage.getWeightedGroupPoints(4, 2)).thenReturn(12.3);
         when(highAverage.getNumberOfGamesPlayed(4)).thenReturn(3);
 
         List<Team> result = service.getTeamsSortedByGroupPoints();

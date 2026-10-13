@@ -6,6 +6,7 @@ import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
+import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import lombok.AllArgsConstructor;
 
@@ -14,6 +15,7 @@ import lombok.AllArgsConstructor;
 public class RegistrationReturnDTOService {
 
     private final PublicSettingsReadService publicSettingsReadService;
+    private final PointsRepository pointsRepository;
 
     public CharacterReturnDTO characterToCharacterReturnDTO(Character character) {
         if (character == null)
@@ -24,10 +26,12 @@ public class RegistrationReturnDTOService {
     public TeamReturnDTO teamToTeamReturnDTO(Team team) {
         if (team == null)
             return null;
+        int maxGames = publicSettingsReadService.getSettings().getMaxGamesCount();
+        double groupPoints = team.getWeightedGroupPoints(maxGames, pointsRepository.getSmallestGroupGameTeamCount());
         return new TeamReturnDTO(team.getId(), team.getTeamName(),
                 characterToCharacterReturnDTO(team.getCharacter()), team.isFinalReady(), team.isActive(),
-                team.getGroupPoints(publicSettingsReadService.getSettings().getMaxGamesCount()), team.getFinalPoints(),
-                team.getNumberOfGamesPlayed((publicSettingsReadService.getSettings().getMaxGamesCount())));
+                (int) Math.round(groupPoints), team.getFinalPoints(),
+                team.getNumberOfGamesPlayed(maxGames));
     }
 
 }

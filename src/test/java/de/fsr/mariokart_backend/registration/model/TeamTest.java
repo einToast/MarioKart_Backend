@@ -40,6 +40,44 @@ class TeamTest {
     }
 
     @Test
+    void getWeightedGroupPointsCountsGamesOnLargerFieldsMore() {
+        Team team = new Team();
+        Points onSmallField = points(1L, team, 10, 0, playedRound(true));
+        onSmallField.setGame(gameWithTeams(4));
+        Points onLargeField = points(2L, team, 9, 0, playedRound(true));
+        onLargeField.setGame(gameWithTeams(8));
+        team.setPoints(new HashSet<>(Set.of(onSmallField, onLargeField)));
+
+        // The best four places give 11.5 points on average, the best eight give 9
+        assertThat(team.getWeightedGroupPoints(10, 4)).isEqualTo(10 + 9 * 11.5 / 9);
+        assertThat(team.getWeightedGroupPoints(1, 4)).isEqualTo(10.0);
+    }
+
+    @Test
+    void getWeightedGroupPointsEqualGroupPointsWhenAllFieldsHaveTheSameSize() {
+        Team team = new Team();
+        Points first = points(1L, team, 10, 0, playedRound(true));
+        first.setGame(gameWithTeams(4));
+        Points second = points(2L, team, 7, 0, playedRound(true));
+        second.setGame(gameWithTeams(4));
+        team.setPoints(new HashSet<>(Set.of(first, second)));
+
+        assertThat(team.getWeightedGroupPoints(10, 4)).isEqualTo(17.0);
+        assertThat(team.getWeightedGroupPoints(10, 0)).isEqualTo(17.0);
+        assertThat(new Team().getWeightedGroupPoints(10, 4)).isZero();
+    }
+
+    private Game gameWithTeams(int teamCount) {
+        Game game = new Game();
+        Set<Points> gamePoints = new HashSet<>();
+        for (int i = 0; i < teamCount; i++) {
+            gamePoints.add(new Points());
+        }
+        game.setPoints(gamePoints);
+        return game;
+    }
+
+    @Test
     void getFinalPointsSumsAllFinalPoints() {
         Team team = new Team();
         team.setPoints(new HashSet<>(Set.of(
