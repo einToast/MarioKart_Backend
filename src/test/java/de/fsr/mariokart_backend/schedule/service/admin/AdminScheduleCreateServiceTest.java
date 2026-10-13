@@ -13,7 +13,9 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -234,6 +236,117 @@ class AdminScheduleCreateServiceTest {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
 
         ScheduleInputDTO scheduleInput = new ScheduleInputDTO(3, numFields, numRounds, teamsPerGame);
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid schedule parameters");
+    }
+
+    @Test
+    void createScheduleSendsTheTeamsOfEveryFieldToSchedulerVersionFour() throws Exception {
+        List<Team> teams = buildTeams(16);
+        List<Round> savedRounds = new ArrayList<>();
+        AtomicLong roundIds = new AtomicLong(1L);
+
+        ScheduleDTO scheduleDTO = new ScheduleDTO(1, List.of(List.of(
+                List.of(0, 1, 2, 3, 4, 5, 6, 7), List.of(8, 9, 10, 11), List.of(12, 13, 14, 15))));
+
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.findAll()).thenReturn(teams);
+        when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
+                .thenReturn("payload");
+        when(objectMapper.readValue("payload", ScheduleDTO.class)).thenReturn(scheduleDTO);
+        when(scheduleInputDTOService.breakInputDTOToBreak(any(BreakInputDTO.class))).thenReturn(new Break());
+        when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
+            Round round = invocation.getArgument(0);
+            if (round.getId() == null) {
+                round.setId(roundIds.getAndIncrement());
+            }
+            savedRounds.removeIf(existing -> existing.getId().equals(round.getId()));
+            savedRounds.add(round);
+            return round;
+        });
+        when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
+        when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
+                .filter(round -> round.getId().equals(invocation.getArgument(0)))
+                .findFirst());
+        when(roundRepository.findByStartTimeAfter(any(LocalDateTime.class))).thenReturn(List.of());
+        when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.createSchedule(new ScheduleInputDTO(4, 3, 1, 8, List.of(8, 4, 4)));
+
+        ArgumentCaptor<Map<String, Object>> body = ArgumentCaptor.captor();
+        verify(scheduleRestClient.post().uri("/schedule"), atLeastOnce()).body(body.capture());
+        assertThat(body.getValue())
+                .containsEntry("version", 4)
+                .containsEntry("num_teams", 16)
+                .containsEntry("num_fields", 3)
+                .containsEntry("num_teams_per_game", List.of(8, 4, 4));
+        verify(gameRepository, times(3)).save(any(Game.class));
+        verify(pointsRepository, times(16)).save(any(Points.class));
+    }
+
+    @Test
+    void createScheduleSendsOneTeamCountToSchedulerVersionFourWithoutTeamsPerField() {
+        List<Team> teams = buildTeams(16);
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.findAll()).thenReturn(teams);
+        when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
+                .thenReturn("payload");
+        when(objectMapper.readValue("payload", ScheduleDTO.class)).thenThrow(new RuntimeException("stop"));
+
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 4, 8, 4, List.of());
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput)).isInstanceOf(RuntimeException.class);
+
+        ArgumentCaptor<Map<String, Object>> body = ArgumentCaptor.captor();
+        verify(scheduleRestClient.post().uri("/schedule"), atLeastOnce()).body(body.capture());
+        assertThat(body.getValue()).containsEntry("num_teams_per_game", 4);
+    }
+
+    @Test
+    void createScheduleThrowsWhenTeamsCannotFillFieldsOfDifferentSizes() {
+        List<Team> teams = buildTeams(15);
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.findAll()).thenReturn(teams);
+
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 3, 8, 4, List.of(8, 4, 4));
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput))
+                .isInstanceOf(NotEnoughTeamsException.class)
+                .hasMessageContaining("fields with [8, 4, 4] teams need at least 16 teams");
+        verify(roundRepository, never()).save(any(Round.class));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "4, 3, '8,4'",
+            "4, 3, '8,4,4,4'",
+            "4, 3, '8,4,1'",
+            "4, 3, '9,4,4'",
+            "3, 3, '4,4,4'",
+            "2, 3, '4,4,4'"
+    })
+    void createScheduleThrowsWhenTeamsPerFieldAreInvalid(int version, int numFields, String teamsPerField) {
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+
+        List<Integer> teamCounts = Arrays.stream(teamsPerField.split(",")).map(Integer::valueOf).toList();
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(version, numFields, 8, 4, teamCounts);
+
+        assertThatThrownBy(() -> service.createSchedule(scheduleInput))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid schedule parameters");
+    }
+
+    @Test
+    void createScheduleThrowsWhenAFieldHasNoTeamCount() {
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+
+        List<Integer> teamCounts = new ArrayList<>(List.of(4, 4));
+        teamCounts.add(null);
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 3, 8, 4, teamCounts);
 
         assertThatThrownBy(() -> service.createSchedule(scheduleInput))
                 .isInstanceOf(IllegalArgumentException.class)

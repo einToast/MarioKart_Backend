@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.schedule.service.admin;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +59,8 @@ public class AdminScheduleCreateService {
     // The final is played on the first switch
     private static final int MAIN_SWITCH_INDEX = 0;
     private static final int LEGACY_SCHEDULER_VERSION = 1;
+    // First scheduler that takes a number of teams for every field
+    private static final int PER_FIELD_SCHEDULER_VERSION = 4;
     private static final int BREAK_ROUND_INDEX = 5;
 
     private final RoundRepository roundRepository;
@@ -199,8 +202,7 @@ public class AdminScheduleCreateService {
         validateScheduleCreation(scheduleCreation);
 
         int numTeams = teamRepository.findAll().size();
-        ScheduleDTO scheduleDTO = getGeneratedSchedule(scheduleCreation.getVersion(), numTeams,
-                scheduleCreation.getNumFields(), scheduleCreation.getNumRounds(), scheduleCreation.getTeamsPerGame());
+        ScheduleDTO scheduleDTO = getGeneratedSchedule(scheduleCreation, numTeams);
 
         validateScheduleCreation(scheduleCreation);
 
@@ -228,20 +230,39 @@ public class AdminScheduleCreateService {
             }
         } else {
             if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumFields() > MAX_FIELDS
-                    || scheduleCreation.getNumRounds() <= 0
-                    || scheduleCreation.getTeamsPerGame() < MIN_TEAMS_PER_GAME
-                    || scheduleCreation.getTeamsPerGame() > MAX_TEAMS_PER_GAME) {
+                    || scheduleCreation.getNumRounds() <= 0) {
+                throw new IllegalArgumentException("Invalid schedule parameters");
+            }
+            List<Integer> teamsPerField = resolveTeamsPerField(scheduleCreation);
+            if (teamsPerField.size() != scheduleCreation.getNumFields()
+                    || teamsPerField.stream().anyMatch(teamCount -> teamCount == null
+                            || teamCount < MIN_TEAMS_PER_GAME || teamCount > MAX_TEAMS_PER_GAME)) {
                 throw new IllegalArgumentException("Invalid schedule parameters");
             }
             // A team can only play on one field per round, so every field needs its own
             // teams
-            int teamsPerRound = scheduleCreation.getNumFields() * scheduleCreation.getTeamsPerGame();
+            int teamsPerRound = teamsPerField.stream().mapToInt(Integer::intValue).sum();
             if (teamRepository.findAll().size() < teamsPerRound) {
                 throw new NotEnoughTeamsException(
-                        "Not enough teams: %d fields with %d teams each need at least %d teams".formatted(
-                                scheduleCreation.getNumFields(), scheduleCreation.getTeamsPerGame(), teamsPerRound));
+                        "Not enough teams: fields with %s teams need at least %d teams".formatted(
+                                teamsPerField, teamsPerRound));
             }
         }
+    }
+
+    private boolean hasTeamsPerField(ScheduleInputDTO scheduleCreation) {
+        return scheduleCreation.getTeamsPerField() != null && !scheduleCreation.getTeamsPerField().isEmpty();
+    }
+
+    // One entry per field. Without a list every field gets the same number of teams
+    private List<Integer> resolveTeamsPerField(ScheduleInputDTO scheduleCreation) {
+        if (!hasTeamsPerField(scheduleCreation)) {
+            return Collections.nCopies(scheduleCreation.getNumFields(), scheduleCreation.getTeamsPerGame());
+        }
+        if (scheduleCreation.getVersion() < PER_FIELD_SCHEDULER_VERSION) {
+            throw new IllegalArgumentException("Invalid schedule parameters");
+        }
+        return scheduleCreation.getTeamsPerField();
     }
 
     private void createRoundsAndGames(ScheduleDTO scheduleDTO) throws EntityNotFoundException {
@@ -311,14 +332,16 @@ public class AdminScheduleCreateService {
         adminSettingsUpdateService.updateSettings(new TournamentDTO(null, false, maxGamesCount, null));
     }
 
-    private ScheduleDTO getGeneratedSchedule(int version, int numTeams, int numFields, int numRounds,
-            int teamsPerGame) {
-        Map<String, Integer> requestBody = new HashMap<>();
-        requestBody.put("version", version);
+    private ScheduleDTO getGeneratedSchedule(ScheduleInputDTO scheduleCreation, int numTeams) {
+        boolean perField = scheduleCreation.getVersion() >= PER_FIELD_SCHEDULER_VERSION
+                && hasTeamsPerField(scheduleCreation);
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("version", scheduleCreation.getVersion());
         requestBody.put("num_teams", numTeams);
-        requestBody.put("num_fields", numFields);
-        requestBody.put("num_rounds", numRounds);
-        requestBody.put("num_teams_per_game", teamsPerGame);
+        requestBody.put("num_fields", scheduleCreation.getNumFields());
+        requestBody.put("num_rounds", scheduleCreation.getNumRounds());
+        requestBody.put("num_teams_per_game",
+                perField ? scheduleCreation.getTeamsPerField() : scheduleCreation.getTeamsPerGame());
         String response;
         try {
             response = scheduleRestClient.post()
