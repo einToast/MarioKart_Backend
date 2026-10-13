@@ -41,6 +41,7 @@ public class ApplicationSecurity {
                         // Public endpoints
                         .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/error").permitAll()
 
                         // Admin endpoints require authentication
                         .requestMatchers("/admin/**").authenticated()

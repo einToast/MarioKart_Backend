@@ -9,6 +9,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
+import de.fsr.mariokart_backend.ocr.service.admin.AdminOcrReadService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.SwitchConfig;
 import de.fsr.mariokart_backend.settings.model.Tournament;
@@ -34,6 +35,7 @@ public class AdminSettingsUpdateService {
 
     private final TournamentRepository tournamentRepository;
     private final PublicScheduleReadService publicScheduleReadService;
+    private final AdminOcrReadService adminOcrReadService;
 
     public TournamentDTO updateSettings(TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
         Tournament tournament = tournamentRepository.findAll().getFirst();
@@ -66,6 +68,9 @@ public class AdminSettingsUpdateService {
         }
         if (tournamentDTO.getProgram() != null) {
             updateProgram(tournament, tournamentDTO.getProgram());
+        }
+        if (tournamentDTO.getOcrProvider() != null) {
+            updateOcrProvider(tournament, tournamentDTO.getOcrProvider());
         }
 
         return new TournamentDTO(tournamentRepository.save(tournament));
@@ -103,7 +108,6 @@ public class AdminSettingsUpdateService {
         return switchConfigs;
     }
 
-    // A blank floor plan removes the stored one
     private void updateFloorPlan(Tournament tournament, String floorPlan) {
         if (floorPlan.length() > MAX_FLOOR_PLAN_LENGTH) {
             throw new IllegalArgumentException("The floor plan is too large.");
@@ -111,11 +115,22 @@ public class AdminSettingsUpdateService {
         tournament.setFloorPlan(floorPlan.isBlank() ? null : floorPlan);
     }
 
-    // A blank programme removes the stored one
     private void updateProgram(Tournament tournament, String program) {
         if (program.length() > MAX_PROGRAM_LENGTH) {
             throw new IllegalArgumentException("The programme is too large.");
         }
         tournament.setProgram(program.isBlank() ? null : program);
+    }
+
+    private void updateOcrProvider(Tournament tournament, String ocrProvider) {
+        if (ocrProvider.isBlank()) {
+            tournament.setOcrProvider(null);
+            return;
+        }
+        String provider = ocrProvider.strip();
+        if (!adminOcrReadService.getProviders().contains(provider)) {
+            throw new IllegalArgumentException("There is no OCR provider with this name.");
+        }
+        tournament.setOcrProvider(provider);
     }
 }

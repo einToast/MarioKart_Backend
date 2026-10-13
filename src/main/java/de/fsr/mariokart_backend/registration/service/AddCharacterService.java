@@ -3,7 +3,9 @@ package de.fsr.mariokart_backend.registration.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.core.io.Resource;
@@ -21,6 +23,22 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @AllArgsConstructor
 public class AddCharacterService {
+
+    // Image names that the game itself writes with a hyphen.
+    private static final Set<String> HYPHENATED_INGAME_NAMES = Set.of(
+            "Inkling-Junge", "Inkling-Mädchen", "Katzen-Peach", "Knochen-Bowser", "Metall-Mario", "Rosagold-Peach",
+            "Tanuki-Mario");
+
+    // Image names that differ from the in-game name by more than the hyphen.
+    private static final Map<String, String> DIFFERENT_INGAME_NAMES = Map.of(
+            "Bowser-Jr", "Bowser Jr.",
+            "Iggy-Koopa", "Iggy",
+            "Larry-Koopa", "Larry",
+            "Lemmy-Koopa", "Lemmy",
+            "Ludwig-von-Koopa", "Ludwig",
+            "Morton-Koopa-Jr", "Morton",
+            "Roy-Koopa", "Roy",
+            "Wendy-O.-Koopa", "Wendy");
 
     private final AdminRegistrationReadService adminRegistrationReadService;
     private final AdminRegistrationCreateService adminRegistrationCreateService;
@@ -60,5 +78,15 @@ public class AddCharacterService {
                 .map(Resource::getFilename).filter(Objects::nonNull)
                 .map(filename -> filename.replaceFirst("\\.png$", ""))
                 .toList();
+    }
+
+    public String getCorrectedName(String name) {
+        if (DIFFERENT_INGAME_NAMES.containsKey(name)) {
+            return DIFFERENT_INGAME_NAMES.get(name);
+        }
+        if (HYPHENATED_INGAME_NAMES.contains(name)) {
+            return name;
+        }
+        return name.replace("-", " ");
     }
 }
