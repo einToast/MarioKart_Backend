@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @AllArgsConstructor
-@ApiController(apiType = ApiType.PUBLIC, controllerType = ControllerType.OCR)
+@ApiController(apiType = ApiType.ADMIN, controllerType = ControllerType.OCR)
 public class AdminOcrCreateController {
 
     private final AdminOcrCreateService adminOcrCreateService;

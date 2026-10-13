@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 @RestController
 @AllArgsConstructor
-@ApiController(apiType = ApiType.PUBLIC, controllerType = ControllerType.OCR)
+@ApiController(apiType = ApiType.ADMIN, controllerType = ControllerType.OCR)
 public class AdminOcrReadController {
 
     private final AdminOcrReadService adminOcrReadService;

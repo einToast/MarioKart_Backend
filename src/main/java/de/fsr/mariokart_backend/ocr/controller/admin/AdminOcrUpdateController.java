@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 
 @RestController
 @AllArgsConstructor
-@ApiController(apiType = ApiType.PUBLIC, controllerType = ControllerType.OCR)
+@ApiController(apiType = ApiType.ADMIN, controllerType = ControllerType.OCR)
 public class AdminOcrUpdateController {
 
     private final AdminOcrUpdateService adminOcrUpdateService;
