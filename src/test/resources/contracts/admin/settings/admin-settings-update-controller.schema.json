@@ -23,7 +23,8 @@
           }
         },
         "floorPlan": { "type": ["string", "null"] },
-        "program": { "type": ["string", "null"] }
+        "program": { "type": ["string", "null"] },
+        "ocrProvider": { "type": ["string", "null"] }
       },
       "additionalProperties": true
     },

@@ -20,6 +20,7 @@ public class TournamentDTO {
     private List<SwitchDTO> switches;
     private String floorPlan;
     private String program;
+    private String ocrProvider;
 
     public TournamentDTO(Boolean tournamentOpen, Boolean registrationOpen, Integer maxGamesCount,
             SurveyKeyMode surveyKeyMode) {
@@ -41,6 +42,7 @@ public class TournamentDTO {
                         .toList();
         this.floorPlan = tournament.getFloorPlan();
         this.program = tournament.getProgram();
+        this.ocrProvider = tournament.getOcrProvider();
     }
 
     public int finalTeamsCountOrDefault() {

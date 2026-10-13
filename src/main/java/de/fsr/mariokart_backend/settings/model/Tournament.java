@@ -64,6 +64,8 @@ public class Tournament {
     @Column(columnDefinition = "TEXT")
     private String program;
 
+    private String ocrProvider;
+
     public Tournament(Long id, boolean tournamentOpen, boolean registrationOpen, int maxGamesCount,
             SurveyKeyMode surveyKeyMode) {
         this.id = id;

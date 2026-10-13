@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
+import de.fsr.mariokart_backend.ocr.service.admin.AdminOcrReadService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.Tournament;
@@ -31,6 +32,9 @@ class AdminSettingsUpdateServiceTest {
 
     @Mock
     private PublicScheduleReadService publicScheduleReadService;
+
+    @Mock
+    private AdminOcrReadService adminOcrReadService;
 
     @InjectMocks
     private AdminSettingsUpdateService service;
@@ -105,6 +109,7 @@ class AdminSettingsUpdateServiceTest {
         assertThat(dto.getSwitches()).isEmpty();
         assertThat(dto.getFloorPlan()).isNull();
         assertThat(dto.getProgram()).isNull();
+        assertThat(dto.getOcrProvider()).isNull();
     }
 
     @Test
@@ -180,6 +185,36 @@ class AdminSettingsUpdateServiceTest {
         update.setProgram("x".repeat(AdminSettingsUpdateService.MAX_PROGRAM_LENGTH + 1));
 
         when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+
+        assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void updateSettingsStoresAndRemovesTheOcrProvider() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setOcrProvider(" openai ");
+        TournamentDTO removal = new TournamentDTO();
+        removal.setOcrProvider(" ");
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(adminOcrReadService.getProviders()).thenReturn(List.of("gemini", "openai"));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        assertThat(service.updateSettings(update).getOcrProvider()).isEqualTo("openai");
+        assertThat(service.updateSettings(new TournamentDTO(true, null, null, null)).getOcrProvider())
+                .isEqualTo("openai");
+        assertThat(service.updateSettings(removal).getOcrProvider()).isNull();
+    }
+
+    @Test
+    void updateSettingsRejectsAnUnknownOcrProvider() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setOcrProvider("unknown");
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(adminOcrReadService.getProviders()).thenReturn(List.of("gemini", "openai"));
 
         assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
     }
