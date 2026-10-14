@@ -36,8 +36,6 @@ public class AdminOcrCreateService {
     public OcrReturnDTO detectCharactersByRoundAndGame(OcrInputDTO ocrInputDTO, Long roundId, Long gameId)
             throws EntityNotFoundException {
 
-        List<RoundReturnDTO> rounds = adminScheduleReadService.getRounds();
-        System.out.println("Rounds: " + rounds);
         RoundReturnDTO round = adminScheduleReadService.getRoundById(roundId);
 
         GameReturnDTO game = round.getGames().stream()
