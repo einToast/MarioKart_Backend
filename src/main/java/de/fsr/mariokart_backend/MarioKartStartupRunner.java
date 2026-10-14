@@ -46,57 +46,9 @@ public class MarioKartStartupRunner implements CommandLineRunner {
         }
 
         addUser();
-        addTeams();
-        // addSurvey();
-        // addRounds();
-        // addGames();
+        // addTeams();
 
     }
-
-    // private void addSurvey() {
-    // try {
-    // adminSurveyCreateService.createQuestion(new QuestionInputDTO("How satisfied
-    // are you with the tournament?",
-    // QuestionType.MULTIPLE_CHOICE.toString(),
-    // List.of("Very satisfied", "Satisfied", "Neutral", "Dissatisfied", "Very
-    // dissatisfied"),
-    // true,
-    // true, false, false, false));
-    // adminSurveyCreateService.createQuestion(new QuestionInputDTO(("What would you
-    // improve?"),
-    // QuestionType.FREE_TEXT.toString(),
-    // null,
-    // true,
-    // true, false, false, false));
-
-    // adminSurveyCreateService.createQuestion(new QuestionInputDTO("What are your
-    // favorite characters?",
-    // QuestionType.CHECKBOX.toString(),
-    // List.of("Mario", "Luigi", "Peach", "Bowser", "Toad", "Yoshi", "Donkey-Kong",
-    // "Wario", "Waluigi",
-    // "Daisy", "Rosalina", "Metal-Mario", "Shy-Guy", "Dry-Bones", "Lakitu",
-    // "King-Boo",
-    // "Koopa", "Inkling-Girl", "Villager", "Baby-Daisy", "Isabelle"),
-    // true,
-    // true, false, false, false));
-    // adminSurveyCreateService.createQuestion(new QuestionInputDTO("Choose your
-    // favorite team",
-    // QuestionType.TEAM.toString(),
-    // null,
-    // false,
-    // false, false, false, false));
-    // adminSurveyCreateService.createQuestion(new QuestionInputDTO("Which team will
-    // win the finals?",
-    // QuestionType.TEAM.toString(),
-    // null,
-    // false,
-    // false, false, true, false));
-
-    // } catch (IllegalArgumentException e) {
-    // System.err.print(e.getMessage());
-    // }
-
-    // }
 
     private void addUser() {
         String username = System.getenv("USER_NAME");
@@ -198,58 +150,4 @@ public class MarioKartStartupRunner implements CommandLineRunner {
         }
 
     }
-
-    // private void addRounds() {
-    // RoundInputDTO round1 = new RoundInputDTO(false);
-    // adminScheduleCreateService.addRound(round1);
-
-    // RoundInputDTO round2 = new RoundInputDTO(false);
-    // adminScheduleCreateService.addRound(round2);
-
-    // RoundInputDTO round3 = new RoundInputDTO(false);
-    // adminScheduleCreateService.addRound(round3);
-
-    // List<Round> rounds = roundRepository.findAll();
-    // for (int i = 0; i < rounds.size(); i++) {
-    // rounds.get(i).setStartTime(LocalDateTime.now().plusMinutes(20L * i));
-    // rounds.get(i).setEndTime(LocalDateTime.now().plusMinutes(20L *
-    // i).plusMinutes(20L));
-    // roundRepository.save(rounds.get(i));
-    // }
-    // }
-
-    // private void addGames() throws EntityNotFoundException {
-    // List<Round> rounds = roundRepository.findAll();
-    // List<Team> teams = teamRepository.findAll();
-    // for (Round round : rounds) {
-    // for (int i = 0; i < 4; i++) {
-    // Game game = new Game();
-    // if (i == 0) {
-    // game.setSwitchGame("Blue");
-    // } else if (i == 1) {
-    // game.setSwitchGame("Red");
-    // } else if (i == 2) {
-    // game.setSwitchGame("Green");
-    // } else {
-    // game.setSwitchGame("White");
-    // }
-    // game.setRound(round);
-    // adminScheduleCreateService.addGame(game);
-
-    // Collections.shuffle(teams);
-
-    // List<Team> selectedTeams = teams.subList(0, 4);
-
-    // for (Team team : selectedTeams) {
-    // Points point = new Points();
-    // point.setGroupPoints(0);
-    // point.setFinalPoints(0);
-    // point.setTeam(team);
-    // point.setGame(game);
-    // adminScheduleCreateService.addPoints(point);
-    // }
-
-    // }
-    // }
-    // }
 }
