@@ -9,6 +9,7 @@ import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -20,10 +21,13 @@ public class AdminSurveyCreateService {
     private final QuestionRepository questionRepository;
     private final QuestionInputDTOService questionInputDTOService;
     private final QuestionReturnDTOService questionReturnDTOService;
+    private final WebSocketService webSocketService;
 
     public QuestionReturnDTO createQuestion(QuestionInputDTO survey) {
-        return questionReturnDTOService.questionToQuestionReturnDTO(
+        QuestionReturnDTO question = questionReturnDTOService.questionToQuestionReturnDTO(
                 questionRepository.save(questionInputDTOService.questionInputDTOToQuestion(survey)));
+        webSocketService.sendMessage("/topic/questions", "create");
+        return question;
     }
 
 }

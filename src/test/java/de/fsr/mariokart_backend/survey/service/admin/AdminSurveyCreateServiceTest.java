@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.survey.service.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
 
@@ -32,6 +34,9 @@ class AdminSurveyCreateServiceTest {
 
     @Mock
     private QuestionReturnDTOService questionReturnDTOService;
+
+    @Mock
+    private WebSocketService webSocketService;
 
     @InjectMocks
     private AdminSurveyCreateService service;
@@ -49,5 +54,6 @@ class AdminSurveyCreateServiceTest {
         QuestionReturnDTO result = service.createQuestion(input);
 
         assertThat(result).isEqualTo(dto);
+        verify(webSocketService).sendMessage("/topic/questions", "create");
     }
 }
