@@ -39,6 +39,10 @@ public class AdminRegistrationDeleteService {
             throw new RoundsAlreadyExistsException("Schedule already exists");
         }
 
+        removeAllTeams();
+    }
+
+    public void removeAllTeams() {
         List<Team> teams = teamRepository.findAll();
         for (Team team : teams) {
             if (team.getPoints() != null) {
