@@ -39,14 +39,18 @@ public class NotificationSendService {
         this.pushService = new PushService(publicKey, privateKey, contactEmail);
     }
 
-    public void sendNotification(PushSubscription subscription, String payload) throws Exception {
+    public int sendNotification(PushSubscription subscription, String payload) throws Exception {
         Notification notification = new Notification(
                 subscription.getEndpoint(),
                 subscription.getP256dh(),
                 subscription.getAuth(),
                 payload);
 
-        pushService.send(notification);
+        return pushService.send(notification).getStatusLine().getStatusCode();
+    }
+
+    public static boolean isSubscriptionGone(int statusCode) {
+        return statusCode == 404 || statusCode == 410;
     }
 
 }

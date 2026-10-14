@@ -2,11 +2,14 @@ package de.fsr.mariokart_backend.notification.service.pub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Tag;
@@ -48,16 +51,53 @@ class PublicNotificationCreateServiceTest {
     void saveSubscriptionPersistsAndSendsTestNotification() throws Exception {
         PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "p256dh", "auth", 4L);
         PushSubscription incoming = subscription(null, 4L);
-        PushSubscription saved = subscription(2L, 4L);
 
         when(notificationInputDTOService.pushSubscriptionInputDTOToPushSubscription(input)).thenReturn(incoming);
-        when(subscriptionRepository.save(incoming)).thenReturn(saved);
         when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
 
         service.saveSubscription(input);
 
+        verify(notificationSendService).sendNotification(incoming, "payload");
         verify(subscriptionRepository).save(incoming);
-        verify(notificationSendService).sendNotification(saved, "payload");
+    }
+
+    @Test
+    void saveSubscriptionDoesNotStoreUnreachableSubscriptions() throws Exception {
+        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "AQAB", "AQAB", 4L);
+        PushSubscription incoming = subscription(null, 4L);
+
+        when(notificationInputDTOService.pushSubscriptionInputDTOToPushSubscription(input)).thenReturn(incoming);
+        when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
+        doThrow(new IllegalArgumentException("Invalid point encoding"))
+                .when(notificationSendService)
+                .sendNotification(incoming, "payload");
+
+        assertThatThrownBy(() -> service.saveSubscription(input))
+                .isInstanceOf(NotificationNotSentException.class);
+        verify(subscriptionRepository, never()).save(any());
+    }
+
+    @Test
+    void saveSubscriptionUpdatesTheSubscriptionOfAKnownEndpoint() throws Exception {
+        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "new", "new", 9L);
+        PushSubscription incoming = subscription(null, 9L);
+        incoming.setEndpoint("https://example.test/1");
+        incoming.setP256dh("new");
+        PushSubscription stored = subscription(1L, 4L);
+        stored.setEndpoint("https://example.test/1");
+        PushSubscription duplicate = subscription(2L, 4L);
+        duplicate.setEndpoint("https://example.test/1");
+
+        when(notificationInputDTOService.pushSubscriptionInputDTOToPushSubscription(input)).thenReturn(incoming);
+        when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
+        when(subscriptionRepository.findByEndpoint("https://example.test/1")).thenReturn(List.of(stored, duplicate));
+
+        service.saveSubscription(input);
+
+        verify(subscriptionRepository).deleteAll(List.of(duplicate));
+        verify(subscriptionRepository).save(stored);
+        assertThat(stored.getTeamId()).isEqualTo(9L);
+        assertThat(stored.getP256dh()).isEqualTo("new");
     }
 
     @Test
