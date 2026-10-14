@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -22,6 +23,9 @@ class AdminSurveyDeleteServiceTest {
     @Mock
     private AnswerRepository answerRepository;
 
+    @Mock
+    private WebSocketService webSocketService;
+
     @InjectMocks
     private AdminSurveyDeleteService service;
 
@@ -31,6 +35,7 @@ class AdminSurveyDeleteServiceTest {
 
         verify(questionRepository).deleteById(5L);
         verify(answerRepository).deleteAllByQuestionId(5L);
+        verify(webSocketService).sendMessage("/topic/questions", "delete");
     }
 
     @Test
@@ -39,5 +44,6 @@ class AdminSurveyDeleteServiceTest {
 
         verify(questionRepository).deleteAll();
         verify(answerRepository).deleteAll();
+        verify(webSocketService).sendMessage("/topic/questions", "delete");
     }
 }

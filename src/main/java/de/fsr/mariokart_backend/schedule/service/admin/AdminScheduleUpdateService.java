@@ -43,7 +43,9 @@ import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = {"schedule", "registration"})
@@ -375,9 +377,7 @@ public class AdminScheduleUpdateService {
         List<Team> teamsPlaying = new ArrayList<>();
 
         if (round.getBreakTime() != null && !round.getBreakTime().isBreakEnded()) {
-            adminNotificationCreateService.sendNotificationToAll(
-                    "It's pizza time! 🍕",
-                    "Pizzapause!");
+            notifyAll("It's pizza time! 🍕", "Pizzapause!");
             return;
         }
 
@@ -390,10 +390,7 @@ public class AdminScheduleUpdateService {
             for (Points point : points) {
                 Team team = point.getTeam();
 
-                adminNotificationCreateService.sendNotificationToTeam(
-                        team.getId(),
-                        title,
-                        message);
+                notifyTeam(team.getId(), title, message);
                 teamsPlaying.add(team);
             }
         }
@@ -403,10 +400,23 @@ public class AdminScheduleUpdateService {
                 .toList();
 
         for (Team team : teamsNotPlaying) {
-            adminNotificationCreateService.sendNotificationToTeam(
-                    team.getId(),
-                    "Du spielst jetzt nicht!",
-                    "Gönn dir eine Pause!");
+            notifyTeam(team.getId(), "Du spielst jetzt nicht!", "Gönn dir eine Pause!");
+        }
+    }
+
+    private void notifyAll(String title, String message) {
+        try {
+            adminNotificationCreateService.sendNotificationToAll(title, message);
+        } catch (NotificationNotSentException e) {
+            log.warn("Could not notify all teams: {}", e.getMessage());
+        }
+    }
+
+    private void notifyTeam(Long teamId, String title, String message) {
+        try {
+            adminNotificationCreateService.sendNotificationToTeam(teamId, title, message);
+        } catch (NotificationNotSentException e) {
+            log.warn("Could not notify team {}: {}", teamId, e.getMessage());
         }
     }
 }

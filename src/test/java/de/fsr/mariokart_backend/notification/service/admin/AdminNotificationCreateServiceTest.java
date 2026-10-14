@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -66,6 +67,38 @@ class AdminNotificationCreateServiceTest {
         assertThatThrownBy(() -> service.sendNotificationToAll("Title", "Body"))
                 .isInstanceOf(NotificationNotSentException.class)
                 .hasMessageContaining("Could not send notification");
+    }
+
+    @Test
+    void sendNotificationToAllKeepsSendingWhenOneSubscriptionFails() throws Exception {
+        PushSubscription broken = subscription(1L, 1L);
+        PushSubscription working = subscription(2L, 2L);
+
+        when(subscriptionRepository.findAll()).thenReturn(List.of(broken, working));
+        when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
+        doThrow(new IllegalArgumentException("Invalid point encoding"))
+                .when(notificationSendService)
+                .sendNotification(eq(broken), anyString());
+
+        service.sendNotificationToAll("Title", "Body");
+
+        verify(notificationSendService).sendNotification(working, "payload");
+    }
+
+    @Test
+    void sendNotificationToAllRemovesSubscriptionsThePushServiceDropped() throws Exception {
+        PushSubscription gone = subscription(1L, 1L);
+        PushSubscription working = subscription(2L, 2L);
+
+        when(subscriptionRepository.findAll()).thenReturn(List.of(gone, working));
+        when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
+        when(notificationSendService.sendNotification(gone, "payload")).thenReturn(410);
+        when(notificationSendService.sendNotification(working, "payload")).thenReturn(201);
+
+        service.sendNotificationToAll("Title", "Body");
+
+        verify(subscriptionRepository).delete(gone);
+        verify(subscriptionRepository, never()).delete(working);
     }
 
     @Test

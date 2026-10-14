@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.settings.service.admin;
 
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.Tag;
@@ -59,23 +60,25 @@ class AdminSettingsDeleteServiceTest {
         order.verify(answerRepository).deleteAll();
         order.verify(surveyKeyRepository).deleteAll();
         order.verify(breakRepository).deleteAll();
-        order.verify(tournamentRepository).deleteAll();
 
         order.verify(roundRepository).flush();
         order.verify(questionRepository).flush();
         order.verify(answerRepository).flush();
         order.verify(surveyKeyRepository).flush();
         order.verify(breakRepository).flush();
-        order.verify(tournamentRepository).flush();
 
-        order.verify(adminRegistrationDeleteService).deleteAllTeams();
+        order.verify(adminRegistrationDeleteService).removeAllTeams();
+
+        order.verify(tournamentRepository).deleteAll();
+        order.verify(tournamentRepository).flush();
         order.verify(tournamentRepository).save(org.mockito.ArgumentMatchers.any());
     }
 
     @Test
-    void resetInvokesRegistrationCleanup() throws Exception {
+    void resetRemovesTeamsWithoutAskingTheCachedScheduleState() throws Exception {
         service.reset();
 
-        verify(adminRegistrationDeleteService).deleteAllTeams();
+        verify(adminRegistrationDeleteService).removeAllTeams();
+        verify(adminRegistrationDeleteService, never()).deleteAllTeams();
     }
 }

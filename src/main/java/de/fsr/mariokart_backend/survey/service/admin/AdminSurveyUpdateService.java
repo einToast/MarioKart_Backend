@@ -20,7 +20,9 @@ import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = "survey")
@@ -50,8 +52,12 @@ public class AdminSurveyUpdateService {
 
         webSocketService.sendMessage("/topic/questions", "update");
         if (questionCanBeAnswered) {
-            adminNotificationCreateService.sendNotificationToAll("Neue Umfrage verfügbar!",
-                    questionToUpdate.getQuestionText());
+            try {
+                adminNotificationCreateService.sendNotificationToAll("Neue Umfrage verfügbar!",
+                        questionToUpdate.getQuestionText());
+            } catch (NotificationNotSentException e) {
+                log.warn("Could not announce question {}: {}", id, e.getMessage());
+            }
         }
         return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);
     }

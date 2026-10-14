@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-@CacheConfig(cacheNames = "settings")
+@CacheConfig(cacheNames = {"registration", "schedule", "settings", "survey"})
 @CacheEvict(allEntries = true)
 public class AdminSettingsDeleteService {
 
@@ -35,16 +35,16 @@ public class AdminSettingsDeleteService {
         answerRepository.deleteAll();
         surveyKeyRepository.deleteAll();
         breakRepository.deleteAll();
-        tournamentRepository.deleteAll();
         roundRepository.flush();
         questionRepository.flush();
         answerRepository.flush();
         surveyKeyRepository.flush();
         breakRepository.flush();
+
+        adminRegistrationDeleteService.removeAllTeams();
+
+        tournamentRepository.deleteAll();
         tournamentRepository.flush();
-
-        adminRegistrationDeleteService.deleteAllTeams();
-
         tournamentRepository.save(new Tournament());
     }
 }

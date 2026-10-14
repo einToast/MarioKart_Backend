@@ -28,6 +28,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import de.fsr.mariokart_backend.config.CookieProperties;
+import de.fsr.mariokart_backend.exception.AnswerLimitReachedException;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.SurveyKeyRequiredException;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
@@ -86,10 +87,24 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
     }
 
     @Test
+    void submitAnswerMapsBadRequestForInvalidAnswer() throws Exception {
+        AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
+        when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
+                .thenThrow(new IllegalArgumentException("Invalid answer: the answer type does not match the question."));
+
+        mockMvc.perform(post("/public/survey/answer")
+                        .cookie(new MockCookie("user", "{\"teamId\":1}"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(input)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(containsString("Invalid answer")));
+    }
+
+    @Test
     void submitAnswerMapsTooManyRequests() throws Exception {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
-                .thenThrow(new IllegalArgumentException("Maximum number of answers per team reached."));
+                .thenThrow(new AnswerLimitReachedException("Maximum number of answers per team reached."));
 
         mockMvc.perform(post("/public/survey/answer")
                         .cookie(new MockCookie("user", "{\"teamId\":1}"))

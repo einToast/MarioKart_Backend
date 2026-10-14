@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface PushSubscriptionRepository extends JpaRepository<PushSubscription, Long> {
     List<PushSubscription> findByTeamId(Long teamId);
+
+    List<PushSubscription> findByEndpoint(String endpoint);
 }

@@ -17,6 +17,7 @@ import de.fsr.mariokart_backend.config.CookieProperties;
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
+import de.fsr.mariokart_backend.exception.AnswerLimitReachedException;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.SurveyKeyRequiredException;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
@@ -50,8 +51,10 @@ public class PublicSurveyCreateController {
             return response.body(result.answer());
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
-        } catch (IllegalArgumentException e) {
+        } catch (AnswerLimitReachedException e) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (EntityNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (SurveyKeyRequiredException e) {

@@ -3,7 +3,7 @@ package de.fsr.mariokart_backend.e2e.testsupport;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -121,7 +121,7 @@ public abstract class AbstractEndToEndApiSmokeTest extends PostgresTestBase {
 
     @BeforeEach
     void setUpEndToEndApiSmokeTest() throws Exception {
-        doNothing().when(notificationSendService).sendNotification(any(PushSubscription.class), anyString());
+        doReturn(201).when(notificationSendService).sendNotification(any(PushSubscription.class), anyString());
         clearCaches();
         resetDatabase();
         seedTournamentSettings();
