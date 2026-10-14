@@ -23,5 +23,8 @@ class ExceptionConstructorsTest {
 
         assertThat(new RoundsAlreadyExistsException("exists")).hasMessage("exists");
         assertThat(new RoundsAlreadyExistsException(cause)).hasCause(cause);
+
+        assertThat(new AnswerLimitReachedException("limit")).hasMessage("limit");
+        assertThat(new AnswerLimitReachedException(cause)).hasCause(cause);
     }
 }

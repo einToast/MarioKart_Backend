@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import de.fsr.mariokart_backend.config.CookieProperties;
+import de.fsr.mariokart_backend.exception.AnswerLimitReachedException;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.SurveyKeyRequiredException;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
@@ -84,7 +85,7 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
     @Test
     void submitAnswerTooManyRequestsMatchesContract() throws Exception {
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
-                .thenThrow(new IllegalArgumentException("Maximum number of answers reached."));
+                .thenThrow(new AnswerLimitReachedException("Maximum number of answers reached."));
 
         MvcResult result = mockMvc.perform(post("/public/survey/answer")
                         .cookie(new MockCookie("user", "{\"teamId\":1}"))

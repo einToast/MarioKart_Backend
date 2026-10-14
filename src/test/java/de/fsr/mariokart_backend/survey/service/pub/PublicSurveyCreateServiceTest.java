@@ -20,6 +20,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import de.fsr.mariokart_backend.exception.AnswerLimitReachedException;
 import de.fsr.mariokart_backend.exception.SurveyKeyRequiredException;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
@@ -31,8 +32,11 @@ import de.fsr.mariokart_backend.survey.model.SurveyKey;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerReturnDTO;
 import de.fsr.mariokart_backend.survey.model.dto.AnswerSubmissionResult;
+import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextAnswer;
+import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
+import de.fsr.mariokart_backend.survey.model.subclasses.TeamOneFreeTextQuestion;
 import de.fsr.mariokart_backend.survey.repository.AnswerRepository;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.repository.SurveyKeyRepository;
@@ -102,26 +106,74 @@ class PublicSurveyCreateServiceTest {
 
     @Test
     void submitAnswerThrowsWhenTeamReachedMaxAnswers() throws Exception {
-        stubTeamAndQuestion();
+        CheckboxQuestion question = new CheckboxQuestion();
+        question.setOptions(List.of("A", "B"));
+        stubTeamAndQuestion(question, false);
         AnswerInputDTO input = new AnswerInputDTO(1L, "CHECKBOX", null, null, List.of(1), null);
 
         when(answerRepository.countByQuestionIdAndSubmittingTeamId(1L, 7L)).thenReturn(4L);
 
         assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(AnswerLimitReachedException.class)
                 .hasMessageContaining("Maximum number of answers per team reached");
     }
 
     @Test
     void submitAnswerThrowsForDuplicateTeamOneFreeTextAnswer() throws Exception {
-        stubTeamAndQuestion();
+        stubTeamAndQuestion(new TeamOneFreeTextQuestion(), false);
         AnswerInputDTO input = new AnswerInputDTO(1L, "TEAM_ONE_FREE_TEXT", "abc", null, null, 0);
 
         when(answerRepository.existsByQuestionIdAndSubmittingTeamId(1L, 7L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(AnswerLimitReachedException.class)
                 .hasMessageContaining("already submitted an answer");
+    }
+
+    @Test
+    void submitAnswerRejectsAnswerTypeThatDoesNotMatchTheQuestion() throws Exception {
+        MultipleChoiceQuestion question = new MultipleChoiceQuestion();
+        question.setOptions(List.of("A", "B"));
+        stubQuestion(question);
+
+        assertThatThrownBy(() -> service.submitAnswer(freeTextInput(), USER_JSON, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("does not match the question");
+        verify(answerRepository, never()).save(any());
+    }
+
+    @Test
+    void submitAnswerRejectsMultipleChoiceOptionOutOfRange() throws Exception {
+        MultipleChoiceQuestion question = new MultipleChoiceQuestion();
+        question.setOptions(List.of("A", "B"));
+        stubQuestion(question);
+        AnswerInputDTO input = new AnswerInputDTO(1L, "MULTIPLE_CHOICE", null, 2, null, null);
+
+        assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no valid option");
+    }
+
+    @Test
+    void submitAnswerRejectsCheckboxOptionSelectedTwice() throws Exception {
+        CheckboxQuestion question = new CheckboxQuestion();
+        question.setOptions(List.of("A", "B"));
+        stubQuestion(question);
+        AnswerInputDTO input = new AnswerInputDTO(1L, "CHECKBOX", null, null, List.of(0, 0), null);
+
+        assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no valid option");
+    }
+
+    @Test
+    void submitAnswerRejectsUserJsonWithoutTeam() throws Exception {
+        when(objectMapper.readValue(eq("{}"), ArgumentMatchers.<TypeReference<Map<String, Object>>>any()))
+                .thenReturn(Map.of());
+
+        assertThatThrownBy(() -> service.submitAnswer(freeTextInput(), "{}", null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("has no team");
     }
 
     @Test
@@ -234,7 +286,7 @@ class PublicSurveyCreateServiceTest {
         AnswerInputDTO input = freeTextInput();
 
         assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, "known-key"))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(AnswerLimitReachedException.class)
                 .hasMessageContaining("survey key has already been used");
         verify(answerRepository, never()).save(any());
     }
@@ -276,18 +328,26 @@ class PublicSurveyCreateServiceTest {
     }
 
     private void stubTeamAndQuestion(boolean oneAnswerPerKey) throws Exception {
+        stubTeamAndQuestion(new FreeTextQuestion(), oneAnswerPerKey);
+    }
+
+    private void stubTeamAndQuestion(Question question, boolean oneAnswerPerKey) throws Exception {
         Team team = new Team();
         team.setId(7L);
-        Question question = new MultipleChoiceQuestion();
+        question.setOneAnswerPerKey(oneAnswerPerKey);
+
+        stubQuestion(question);
+        when(teamRepository.findById(7L)).thenReturn(Optional.of(team));
+    }
+
+    private void stubQuestion(Question question) throws Exception {
         question.setId(1L);
         question.setActive(true);
         question.setVisible(true);
-        question.setOneAnswerPerKey(oneAnswerPerKey);
 
         when(objectMapper.readValue(eq(USER_JSON), ArgumentMatchers.<TypeReference<Map<String, Object>>>any()))
                 .thenReturn(Map.of("teamId", 7));
         when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
-        when(teamRepository.findById(7L)).thenReturn(Optional.of(team));
     }
 
     private FreeTextAnswer stubValidFreeTextSubmission(SurveyKeyMode mode, boolean oneAnswerPerKey)

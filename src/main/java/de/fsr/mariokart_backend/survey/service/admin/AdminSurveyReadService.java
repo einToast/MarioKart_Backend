@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.survey.service.admin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
@@ -61,12 +62,17 @@ public class AdminSurveyReadService {
         return switch (question) {
             case MultipleChoiceQuestion mcQuestion -> countSelections(mcQuestion.getOptions().size(),
                     answers.stream()
+                            .filter(MultipleChoiceAnswer.class::isInstance)
                             .map(answer -> ((MultipleChoiceAnswer) answer).getSelectedOption()));
             case CheckboxQuestion cbQuestion -> countSelections(cbQuestion.getOptions().size(),
                     answers.stream()
-                            .flatMap(answer -> ((CheckboxAnswer) answer).getSelectedOptions().stream()));
+                            .filter(CheckboxAnswer.class::isInstance)
+                            .map(answer -> ((CheckboxAnswer) answer).getSelectedOptions())
+                            .filter(Objects::nonNull)
+                            .flatMap(selectedOptions -> selectedOptions.stream().distinct()));
             case TeamQuestion teamQuestion -> countSelections(teamQuestion.getTeams().size(),
                     answers.stream()
+                            .filter(TeamAnswer.class::isInstance)
                             .map(answer -> teamQuestion.getTeams().indexOf(((TeamAnswer) answer).getTeam())));
             default -> throw new IllegalArgumentException("QuestionType not supported");
         };
@@ -76,7 +82,7 @@ public class AdminSurveyReadService {
         List<Integer> statistics = new ArrayList<>(Collections.nCopies(optionCount, 0));
 
         selectedIndices
-                .filter(index -> index >= 0 && index < optionCount)
+                .filter(index -> index != null && index >= 0 && index < optionCount)
                 .forEach(index -> statistics.set(index, statistics.get(index) + 1));
 
         return statistics;
