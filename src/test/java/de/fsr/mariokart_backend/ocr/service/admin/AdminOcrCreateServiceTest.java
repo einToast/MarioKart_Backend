@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.ocr.service.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +32,8 @@ import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import de.fsr.mariokart_backend.schedule.model.dto.GameReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.service.admin.AdminScheduleReadService;
+import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +47,9 @@ class AdminOcrCreateServiceTest {
     @Mock
     private AdminScheduleReadService adminScheduleReadService;
 
+    @Mock
+    private PublicSettingsReadService publicSettingsReadService;
+
     @Mock(answer = Answers.RETURNS_DEEP_STUBS)
     private RestClient ocrRestClient;
 
@@ -56,14 +62,28 @@ class AdminOcrCreateServiceTest {
     void setUp() {
         // The names are converted by the real service, it needs its dependencies only to add characters
         service = new AdminOcrCreateService(adminScheduleReadService, new AddCharacterService(null, null),
-                ocrRestClient, JsonMapper.builder().build());
+                publicSettingsReadService, ocrRestClient, JsonMapper.builder().build());
+    }
+
+    private void stubRelativePoints(boolean relativePoints) {
+        TournamentDTO settings = new TournamentDTO();
+        settings.setRelativePoints(relativePoints);
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
     }
 
     private void stubGame(String... characterNames) throws EntityNotFoundException {
+        stubGameWithInactiveTeams(0, characterNames);
+    }
+
+    // The inactive teams follow the active ones
+    private void stubGameWithInactiveTeams(int inactiveTeams, String... characterNames)
+            throws EntityNotFoundException {
         Set<TeamReturnDTO> teams = new LinkedHashSet<>();
-        for (int i = 0; i < characterNames.length; i++) {
+        for (int i = 0; i < characterNames.length + inactiveTeams; i++) {
             long id = i + 1L;
-            teams.add(new TeamReturnDTO(id, "Team " + id, new CharacterReturnDTO(id, characterNames[i]), true, true,
+            boolean active = i < characterNames.length;
+            String characterName = active ? characterNames[i] : "Inactive " + id;
+            teams.add(new TeamReturnDTO(id, "Team " + id, new CharacterReturnDTO(id, characterName), true, active,
                     0, 0, 0));
         }
 
@@ -85,6 +105,7 @@ class AdminOcrCreateServiceTest {
 
     @Test
     void sendsTheCharactersOfTheGameWithTheirIngameNames() throws Exception {
+        stubRelativePoints(false);
         stubGame("Donkey-Kong", "Katzen-Peach", "Wendy-O.-Koopa", "Bowser");
         stubOcrResponse("{\"result\":{\"characters\":[]}}");
 
@@ -98,6 +119,7 @@ class AdminOcrCreateServiceTest {
 
     @Test
     void asksForExactlyAsManyCharactersAsTheGameHasTeams() throws Exception {
+        stubRelativePoints(false);
         stubGame("Mario", "Luigi", "Peach");
         stubOcrResponse("{\"result\":{\"characters\":[]}}");
 
@@ -110,6 +132,7 @@ class AdminOcrCreateServiceTest {
 
     @Test
     void returnsTheDetectedCharactersWithTheNamesOfTheTeams() throws Exception {
+        stubRelativePoints(false);
         stubGame("Donkey-Kong", "Katzen-Peach", "Wendy-O.-Koopa", "Bowser");
         stubOcrResponse("""
                 {
@@ -138,12 +161,101 @@ class AdminOcrCreateServiceTest {
 
     @Test
     void keepsTheNameOfADetectedCharacterThatIsNotInTheGame() throws Exception {
+        stubRelativePoints(false);
         stubGame("Mario", "Luigi");
         stubOcrResponse("{\"result\":{\"characters\":[{\"name\":\"Baby Daisy\",\"points\":30}]}}");
 
         OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
 
         assertThat(result.characters()).containsExactly(new OcrCharacterDTO("Baby Daisy", 30, null));
+    }
+
+    @Test
+    void givesEightPlayersRelativePointsFromEightToOne() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Daisy", "Yoshi", "Toad", "Wario", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 40}, {"name": "Luigi", "points": 12},
+                  {"name": "Peach", "points": 33}, {"name": "Daisy", "points": 5},
+                  {"name": "Yoshi", "points": 27}, {"name": "Toad", "points": 20},
+                  {"name": "Wario", "points": 9}, {"name": "Bowser", "points": 15}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::name, OcrCharacterDTO::points).containsExactly(
+                tuple("Mario", 8), tuple("Luigi", 3), tuple("Peach", 7), tuple("Daisy", 1),
+                tuple("Yoshi", 6), tuple("Toad", 5), tuple("Wario", 2), tuple("Bowser", 4));
+    }
+
+    @Test
+    void givesFourPlayersRelativePointsInStepsOfTwo() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 13, "place": 7}, {"name": "Luigi", "points": 31},
+                  {"name": "Peach", "points": 7}, {"name": "Bowser", "points": 22}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).containsExactly(
+                new OcrCharacterDTO("Mario", 4, 7),
+                new OcrCharacterDTO("Luigi", 8, null),
+                new OcrCharacterDTO("Peach", 2, null),
+                new OcrCharacterDTO("Bowser", 6, null));
+    }
+
+    @Test
+    void givesPlayersWithEqualPointsTheBetterRelativePoints() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 20}, {"name": "Luigi", "points": 31},
+                  {"name": "Peach", "points": 20}, {"name": "Bowser", "points": 4}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(6, 8, 6, 2);
+    }
+
+    @Test
+    void roundsRelativePointsWhenTheyAreNotWholeNumbers() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 30}, {"name": "Luigi", "points": 20}, {"name": "Peach", "points": 10}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(8, 5, 3);
+    }
+
+    @Test
+    void countsInactiveTeamsForTheRelativePoints() throws Exception {
+        stubRelativePoints(true);
+        stubGameWithInactiveTeams(4, "Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 13}, {"name": "Luigi", "points": 31},
+                  {"name": "Peach", "points": 7}, {"name": "Bowser", "points": 22}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(sentBody.getValue()).containsEntry("max_characters", 4);
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(6, 8, 5, 7);
     }
 
     @Test

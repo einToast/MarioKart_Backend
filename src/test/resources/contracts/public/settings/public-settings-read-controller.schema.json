@@ -24,7 +24,8 @@
         },
         "floorPlan": { "type": ["string", "null"] },
         "program": { "type": ["string", "null"] },
-        "ocrProvider": { "type": ["string", "null"] }
+        "ocrProvider": { "type": ["string", "null"] },
+        "relativePoints": { "type": ["boolean", "null"] }
       },
       "additionalProperties": true
     },

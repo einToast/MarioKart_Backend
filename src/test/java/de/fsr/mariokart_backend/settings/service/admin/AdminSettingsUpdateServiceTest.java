@@ -110,6 +110,7 @@ class AdminSettingsUpdateServiceTest {
         assertThat(dto.getFloorPlan()).isNull();
         assertThat(dto.getProgram()).isNull();
         assertThat(dto.getOcrProvider()).isNull();
+        assertThat(dto.getRelativePoints()).isFalse();
     }
 
     @Test
@@ -205,6 +206,22 @@ class AdminSettingsUpdateServiceTest {
         assertThat(service.updateSettings(new TournamentDTO(true, null, null, null)).getOcrProvider())
                 .isEqualTo("openai");
         assertThat(service.updateSettings(removal).getOcrProvider()).isNull();
+    }
+
+    @Test
+    void updateSettingsStoresRelativePoints() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO enable = new TournamentDTO();
+        enable.setRelativePoints(true);
+        TournamentDTO disable = new TournamentDTO();
+        disable.setRelativePoints(false);
+
+        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        assertThat(service.updateSettings(enable).getRelativePoints()).isTrue();
+        assertThat(service.updateSettings(new TournamentDTO(true, null, null, null)).getRelativePoints()).isTrue();
+        assertThat(service.updateSettings(disable).getRelativePoints()).isFalse();
     }
 
     @Test
