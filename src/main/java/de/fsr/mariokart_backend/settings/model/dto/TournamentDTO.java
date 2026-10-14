@@ -21,6 +21,7 @@ public class TournamentDTO {
     private String floorPlan;
     private String program;
     private String ocrProvider;
+    private Boolean relativePoints;
 
     public TournamentDTO(Boolean tournamentOpen, Boolean registrationOpen, Integer maxGamesCount,
             SurveyKeyMode surveyKeyMode) {
@@ -43,6 +44,7 @@ public class TournamentDTO {
         this.floorPlan = tournament.getFloorPlan();
         this.program = tournament.getProgram();
         this.ocrProvider = tournament.getOcrProvider();
+        this.relativePoints = tournament.isRelativePoints();
     }
 
     public int finalTeamsCountOrDefault() {

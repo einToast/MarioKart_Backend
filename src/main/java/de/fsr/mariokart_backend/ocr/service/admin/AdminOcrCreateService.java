@@ -16,6 +16,7 @@ import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import de.fsr.mariokart_backend.schedule.model.dto.GameReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.service.admin.AdminScheduleReadService;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import lombok.AllArgsConstructor;
 import tools.jackson.databind.ObjectMapper;
 
@@ -23,8 +24,11 @@ import tools.jackson.databind.ObjectMapper;
 @AllArgsConstructor
 public class AdminOcrCreateService {
 
+    public static final int MAX_RELATIVE_POINTS = 8;
+
     private final AdminScheduleReadService adminScheduleReadService;
     private final AddCharacterService addCharacterService;
+    private final PublicSettingsReadService publicSettingsReadService;
 
     private final RestClient ocrRestClient;
     private final ObjectMapper objectMapper;
@@ -77,15 +81,32 @@ public class AdminOcrCreateService {
         try {
             OcrReturnDTO result = objectMapper.treeToValue(objectMapper.readTree(response).path("result"),
                     OcrReturnDTO.class);
-            return new OcrReturnDTO(result.characters().stream()
+            List<OcrCharacterDTO> characters = result.characters().stream()
                     .map(character -> new OcrCharacterDTO(
                             characterNamesByIngameName.getOrDefault(character.name(), character.name()),
                             character.points(), character.place()))
-                    .toList());
+                    .toList();
+            if (Boolean.TRUE.equals(publicSettingsReadService.getSettings().getRelativePoints())) {
+                characters = toRelativePoints(characters, game.getTeams().size());
+            }
+            return new OcrReturnDTO(characters);
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse JSON response", e);
         }
 
+    }
+
+    private List<OcrCharacterDTO> toRelativePoints(List<OcrCharacterDTO> characters, int numPlayers) {
+        return characters.stream()
+                .map(character -> {
+                    long playersAhead = characters.stream()
+                            .filter(other -> other.points() > character.points())
+                            .count();
+                    int points = (int) Math.round(
+                            (double) (numPlayers - playersAhead) * MAX_RELATIVE_POINTS / numPlayers);
+                    return new OcrCharacterDTO(character.name(), points, character.place());
+                })
+                .toList();
     }
 
 }

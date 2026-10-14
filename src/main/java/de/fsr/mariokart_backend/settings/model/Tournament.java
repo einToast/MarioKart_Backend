@@ -66,6 +66,8 @@ public class Tournament {
 
     private String ocrProvider;
 
+    private boolean relativePoints;
+
     public Tournament(Long id, boolean tournamentOpen, boolean registrationOpen, int maxGamesCount,
             SurveyKeyMode surveyKeyMode) {
         this.id = id;

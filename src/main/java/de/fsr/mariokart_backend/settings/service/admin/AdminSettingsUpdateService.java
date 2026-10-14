@@ -72,6 +72,9 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getOcrProvider() != null) {
             updateOcrProvider(tournament, tournamentDTO.getOcrProvider());
         }
+        if (tournamentDTO.getRelativePoints() != null) {
+            tournament.setRelativePoints(tournamentDTO.getRelativePoints());
+        }
 
         return new TournamentDTO(tournamentRepository.save(tournament));
     }
