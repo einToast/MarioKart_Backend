@@ -43,10 +43,12 @@ public class AdminOcrCreateService {
                         () -> new EntityNotFoundException("There is no game with this ID in the specified round."));
 
         List<String> characterNames = game.getTeams().stream()
+                .filter(team -> team.isActive())
                 .map(team -> team.getCharacter().getCharacterName())
                 .toList();
 
-        // The OCR service matches against the names shown in the game, so send those and map them back afterwards.
+        // The OCR service matches against the names shown in the game, so send those
+        // and map them back afterwards.
         Map<String, String> characterNamesByIngameName = new LinkedHashMap<>();
         for (String characterName : characterNames) {
             characterNamesByIngameName.put(addCharacterService.getCorrectedName(characterName), characterName);
