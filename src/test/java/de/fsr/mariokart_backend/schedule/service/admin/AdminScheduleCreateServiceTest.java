@@ -11,9 +11,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -270,7 +273,6 @@ class AdminScheduleCreateServiceTest {
         when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
                 .filter(round -> round.getId().equals(invocation.getArgument(0)))
                 .findFirst());
-        when(roundRepository.findByStartTimeAfter(any(LocalDateTime.class))).thenReturn(List.of());
         when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -384,7 +386,6 @@ class AdminScheduleCreateServiceTest {
         when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
                 .filter(round -> round.getId().equals(invocation.getArgument(0)))
                 .findFirst());
-        when(roundRepository.findByStartTimeAfter(any(LocalDateTime.class))).thenReturn(List.of());
         when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> {
             savedGames.add(invocation.getArgument(0));
             return invocation.getArgument(0);
@@ -430,7 +431,6 @@ class AdminScheduleCreateServiceTest {
         when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
                 .filter(round -> round.getId().equals(invocation.getArgument(0)))
                 .findFirst());
-        when(roundRepository.findByStartTimeAfter(any(LocalDateTime.class))).thenReturn(List.of());
         when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> {
             savedGames.add(invocation.getArgument(0));
             return invocation.getArgument(0);
@@ -508,12 +508,6 @@ class AdminScheduleCreateServiceTest {
         when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
                 .filter(round -> round.getId().equals(invocation.getArgument(0)))
                 .findFirst());
-        when(roundRepository.findByStartTimeAfter(any(LocalDateTime.class))).thenAnswer(invocation -> {
-            LocalDateTime startTime = invocation.getArgument(0);
-            return savedRounds.stream()
-                    .filter(round -> round.getStartTime().isAfter(startTime))
-                    .toList();
-        });
 
         when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> {
             Game game = invocation.getArgument(0);
@@ -539,6 +533,55 @@ class AdminScheduleCreateServiceTest {
         verify(pointsRepository, atLeastOnce()).save(any(Points.class));
         verify(webSocketService).sendMessage("/topic/rounds", "create");
         verify(adminScheduleUpdateService).sendNotificationForNextRound();
+    }
+
+    @Test
+    void createScheduleShiftsTheRoundsAfterTheBreakInRoundOrder() throws Exception {
+        List<Team> teams = buildTeams(16);
+        List<Round> savedRounds = new ArrayList<>();
+        AtomicLong roundIds = new AtomicLong(1L);
+
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.findAll()).thenReturn(teams);
+        when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
+                .thenReturn("payload");
+        when(objectMapper.readValue("payload", ScheduleDTO.class))
+                .thenReturn(new ScheduleDTO(8, buildSchedulePlan(8, 1)));
+        when(scheduleInputDTOService.breakInputDTOToBreak(any(BreakInputDTO.class))).thenReturn(new Break());
+        when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
+            Round round = invocation.getArgument(0);
+            if (round.getId() == null) {
+                round.setId(roundIds.getAndIncrement());
+            }
+            savedRounds.removeIf(existing -> existing.getId().equals(round.getId()));
+            savedRounds.add(round);
+            return round;
+        });
+        when(roundRepository.findAll()).thenAnswer(invocation -> {
+            List<Round> rounds = new ArrayList<>(savedRounds);
+            Collections.reverse(rounds);
+            return rounds;
+        });
+        when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
+                .filter(round -> round.getId().equals(invocation.getArgument(0)))
+                .findFirst());
+        when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.createSchedule(new ScheduleInputDTO(1, 4, 8, 4));
+
+        List<Round> rounds = savedRounds.stream()
+                .sorted(Comparator.comparing(Round::getRoundNumber))
+                .toList();
+        Round beforeBreak = rounds.get(4);
+        Round breakRound = rounds.get(5);
+        assertThat(breakRound.getBreakTime()).isNotNull();
+        assertThat(Duration.between(beforeBreak.getStartTime(), breakRound.getStartTime()))
+                .isBetween(Duration.ofMinutes(50), Duration.ofMinutes(51));
+        for (int index = 5; index < rounds.size() - 1; index++) {
+            assertThat(rounds.get(index + 1).getStartTime()).isEqualTo(rounds.get(index).getEndTime());
+        }
     }
 
     @Test

@@ -48,7 +48,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-@CacheConfig(cacheNames = "schedule")
+@CacheConfig(cacheNames = {"schedule", "registration"})
 @CacheEvict(allEntries = true)
 public class AdminScheduleCreateService {
 
@@ -62,6 +62,7 @@ public class AdminScheduleCreateService {
     // First scheduler that takes a number of teams for every field
     private static final int PER_FIELD_SCHEDULER_VERSION = 4;
     private static final int BREAK_ROUND_INDEX = 5;
+    private static final int BREAK_MINUTES = 30;
 
     private final RoundRepository roundRepository;
     private final GameRepository gameRepository;
@@ -311,20 +312,19 @@ public class AdminScheduleCreateService {
         rounds.sort(Comparator.comparing(Round::getRoundNumber));
         // Short schedules have their break before the last round
         Round breakRound = rounds.get(Math.min(BREAK_ROUND_INDEX, rounds.size() - 1));
-        addBreak(new BreakInputDTO(breakRound.getId(), 30, false));
+        LocalDateTime breakEndTime = breakRound.getStartTime().plusMinutes(BREAK_MINUTES);
+        addBreak(new BreakInputDTO(breakRound.getId(), BREAK_MINUTES, false));
 
-        List<Round> roundsAfterBreak = roundRepository
-                .findByStartTimeAfter(breakRound.getStartTime().minusMinutes(1));
-        updateRoundTimesAfterBreak(breakRound, roundsAfterBreak);
+        updateRoundTimesAfterBreak(rounds.subList(rounds.indexOf(breakRound), rounds.size()), breakEndTime);
     }
 
-    private void updateRoundTimesAfterBreak(Round breakRound, List<Round> roundsAfterBreak) {
-        for (int i = 0; i < roundsAfterBreak.size(); i++) {
-            Round round = roundsAfterBreak.get(i);
-            LocalDateTime startTime = breakRound.getStartTime().plusMinutes(20L * i).plusMinutes(i == 0 ? 30 : 0);
+    private void updateRoundTimesAfterBreak(List<Round> roundsFromBreak, LocalDateTime breakEndTime) {
+        LocalDateTime startTime = breakEndTime;
+        for (Round round : roundsFromBreak) {
             round.setStartTime(startTime);
             round.setEndTime(startTime.plusMinutes(20L));
             addRound(round);
+            startTime = round.getEndTime();
         }
     }
 
