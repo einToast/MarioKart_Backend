@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.survey.model.subclasses;
 
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.survey.model.Answer;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -18,6 +19,7 @@ import lombok.Setter;
 @Setter
 @DiscriminatorValue("TEAM_ONE_FREE_TEXT")
 public class TeamOneFreeTextAnswer extends Answer {
+    @Column(columnDefinition = "TEXT")
     private String textAnswer;
 
     @OneToOne

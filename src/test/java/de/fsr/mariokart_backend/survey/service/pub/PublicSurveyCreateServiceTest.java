@@ -167,6 +167,18 @@ class PublicSurveyCreateServiceTest {
     }
 
     @Test
+    void submitAnswerRejectsFreeTextLongerThanTheLimit() throws Exception {
+        stubQuestion(new FreeTextQuestion());
+        String tooLong = "a".repeat(PublicSurveyCreateService.MAX_FREE_TEXT_ANSWER_LENGTH + 1);
+        AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", tooLong, null, null, null);
+
+        assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no valid option");
+        verify(answerRepository, never()).save(any());
+    }
+
+    @Test
     void submitAnswerRejectsUserJsonWithoutTeam() throws Exception {
         when(objectMapper.readValue(eq("{}"), ArgumentMatchers.<TypeReference<Map<String, Object>>>any()))
                 .thenReturn(Map.of());
