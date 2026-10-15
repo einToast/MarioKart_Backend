@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.survey.model.subclasses;
 
 import de.fsr.mariokart_backend.survey.model.Answer;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import lombok.Setter;
 @Setter
 @DiscriminatorValue("FREE_TEXT")
 public class FreeTextAnswer extends Answer {
+    @Column(columnDefinition = "TEXT")
     private String textAnswer;
 
     @Override

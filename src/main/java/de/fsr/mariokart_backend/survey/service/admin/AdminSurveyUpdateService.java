@@ -50,7 +50,6 @@ public class AdminSurveyUpdateService {
 
         Question savedQuestion = questionRepository.save(questionToUpdate);
 
-        webSocketService.sendMessage("/topic/questions", "update");
         if (questionCanBeAnswered) {
             try {
                 adminNotificationCreateService.sendNotificationToAll("Neue Umfrage verfügbar!",
@@ -59,6 +58,7 @@ public class AdminSurveyUpdateService {
                 log.warn("Could not announce question {}: {}", id, e.getMessage());
             }
         }
+        webSocketService.sendMessage("/topic/questions", "update");
         return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);
     }
 
@@ -100,7 +100,7 @@ public class AdminSurveyUpdateService {
                     ((TeamQuestion) questionToUpdate).setTeams(teamQuestion.getTeams());
                 }
             }
-            case FreeTextQuestion _, TeamOneFreeTextQuestion _ -> {
+            case FreeTextQuestion _,TeamOneFreeTextQuestion _ -> {
                 // nothing to update
             }
             default -> throw new IllegalArgumentException("Question type not supported.");
