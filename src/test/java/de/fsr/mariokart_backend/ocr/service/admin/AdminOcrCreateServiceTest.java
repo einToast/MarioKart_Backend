@@ -227,6 +227,107 @@ class AdminOcrCreateServiceTest {
     }
 
     @Test
+    void givesPlayersTiedForTheLeadTheMaximumRelativePoints() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 31}, {"name": "Luigi", "points": 31},
+                  {"name": "Peach", "points": 20}, {"name": "Bowser", "points": 4}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(8, 8, 4, 2);
+    }
+
+    @Test
+    void givesPlayersTiedForTheLastPlaceThePointsOfTheBetterPlace() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 31}, {"name": "Luigi", "points": 20},
+                  {"name": "Peach", "points": 4}, {"name": "Bowser", "points": 4}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(8, 6, 4, 4);
+    }
+
+    @Test
+    void givesAllPlayersTheMaximumRelativePointsWhenAllAreTied() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 15}, {"name": "Luigi", "points": 15},
+                  {"name": "Peach", "points": 15}, {"name": "Bowser", "points": 15}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(8, 8, 8, 8);
+    }
+
+    @Test
+    void skipsThePlacesSharedByAThreeWayTieAmongEightPlayers() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Daisy", "Yoshi", "Toad", "Wario", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 40}, {"name": "Luigi", "points": 30},
+                  {"name": "Peach", "points": 30}, {"name": "Daisy", "points": 30},
+                  {"name": "Yoshi", "points": 20}, {"name": "Toad", "points": 15},
+                  {"name": "Wario", "points": 10}, {"name": "Bowser", "points": 5}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(8, 7, 7, 7, 4, 3, 2, 1);
+    }
+
+    @Test
+    void ignoresTheDetectedPlaceOfTiedPlayers() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 31, "place": 1}, {"name": "Luigi", "points": 20, "place": 2},
+                  {"name": "Peach", "points": 20, "place": 3}, {"name": "Bowser", "points": 4, "place": 4}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).containsExactly(
+                new OcrCharacterDTO("Mario", 8, 1),
+                new OcrCharacterDTO("Luigi", 6, 2),
+                new OcrCharacterDTO("Peach", 6, 3),
+                new OcrCharacterDTO("Bowser", 2, 4));
+    }
+
+    @Test
+    void scalesRelativePointsByTheTeamsOfTheGameWhenFewerPlayersAreDetected() throws Exception {
+        stubRelativePoints(true);
+        stubGame("Mario", "Luigi", "Peach", "Bowser");
+        stubOcrResponse("""
+                {"result": {"characters": [
+                  {"name": "Mario", "points": 31}, {"name": "Luigi", "points": 20}
+                ]}}
+                """);
+
+        OcrReturnDTO result = service.detectCharactersByRoundAndGame(INPUT, ROUND_ID, GAME_ID);
+
+        assertThat(result.characters()).extracting(OcrCharacterDTO::points).containsExactly(8, 6);
+    }
+
+    @Test
     void roundsRelativePointsWhenTheyAreNotWholeNumbers() throws Exception {
         stubRelativePoints(true);
         stubGame("Mario", "Luigi", "Peach");
