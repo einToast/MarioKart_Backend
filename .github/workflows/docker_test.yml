@@ -10,7 +10,16 @@ permissions:
 
 jobs:
   docker-test:
-    runs-on: ubuntu-latest
+    name: docker-test (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
 
     steps:
     - name: Checkout repository
@@ -27,3 +36,5 @@ jobs:
         push: false
         load: true
         tags: docker-test-java:latest
+        cache-from: type=gha,scope=${{ matrix.arch }}
+        cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
