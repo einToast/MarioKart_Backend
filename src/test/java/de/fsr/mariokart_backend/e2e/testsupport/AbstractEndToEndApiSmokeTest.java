@@ -8,7 +8,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -35,10 +34,10 @@ import de.fsr.mariokart_backend.notification.model.PushSubscription;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
 import de.fsr.mariokart_backend.registration.model.Character;
+import de.fsr.mariokart_backend.registration.model.CharacterNames;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
-import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import de.fsr.mariokart_backend.schedule.model.Round;
 import de.fsr.mariokart_backend.schedule.repository.BreakRepository;
 import de.fsr.mariokart_backend.schedule.repository.GameRepository;
@@ -169,12 +168,7 @@ public abstract class AbstractEndToEndApiSmokeTest extends PostgresTestBase {
     }
 
     protected void seedCharacters() {
-        try {
-            List<String> characters = new AddCharacterService(null, null).getImageNames("media");
-            characters.forEach(name -> characterRepository.save(new Character(null, name, null)));
-        } catch (IOException exception) {
-            throw new IllegalStateException("Failed to load character names from static media.", exception);
-        }
+        CharacterNames.ALL.forEach(name -> characterRepository.save(new Character(null, name, null)));
     }
 
     protected void seedAdminUser() {

@@ -3,13 +3,10 @@ package de.fsr.mariokart_backend.registration.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -24,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.registration.model.Character;
+import de.fsr.mariokart_backend.registration.model.CharacterNames;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
 import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationCreateService;
 import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationReadService;
@@ -42,12 +40,10 @@ class AddCharacterServiceTest {
     private AddCharacterService service;
 
     @Test
-    void addCharactersThrowsWhenCharactersAlreadyExist() throws Exception {
-        AddCharacterService spyService = spy(service);
-        doReturn(List.of("Mario")).when(spyService).getImageNames("media/characters");
+    void addCharactersThrowsWhenCharactersAlreadyExist() {
         when(adminRegistrationReadService.getCharacters()).thenReturn(List.of(new CharacterReturnDTO(1L, "Mario")));
 
-        assertThatThrownBy(() -> spyService.addCharacters("media/characters"))
+        assertThatThrownBy(() -> service.addCharacters())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Characters already exist");
 
@@ -55,10 +51,7 @@ class AddCharacterServiceTest {
     }
 
     @Test
-    void addCharactersImportsAllImagesAndReturnsCreatedCharacters() throws Exception {
-        AddCharacterService spyService = spy(service);
-        doReturn(List.of("Mario", "Luigi")).when(spyService).getImageNames("media/characters");
-
+    void addCharactersCreatesEveryCharacterOfTheList() {
         when(adminRegistrationReadService.getCharacters())
                 .thenReturn(List.of())
                 .thenReturn(List.of(new CharacterReturnDTO(1L, "Mario"), new CharacterReturnDTO(2L, "Luigi")));
@@ -66,25 +59,30 @@ class AddCharacterServiceTest {
         when(adminRegistrationCreateService.addCharacters(anyList()))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        List<Character> result = spyService.addCharacters("media/characters");
+        List<Character> result = service.addCharacters();
 
-        assertThat(result).extracting(Character::getCharacterName).containsExactly("Mario", "Luigi");
+        assertThat(result).extracting(Character::getCharacterName)
+                .containsExactlyElementsOf(CharacterNames.ALL);
 
         ArgumentCaptor<List<Character>> captor = ArgumentCaptor.captor();
         verify(adminRegistrationCreateService).addCharacters(captor.capture());
-        assertThat(captor.getValue()).extracting(Character::getCharacterName).containsExactly("Mario", "Luigi");
+        assertThat(captor.getValue()).extracting(Character::getCharacterName)
+                .containsExactlyElementsOf(CharacterNames.ALL);
     }
 
     @Test
-    void addCharactersKeepsTheImageNamesAsCharacterNames() throws Exception {
-        AddCharacterService spyService = spy(service);
-        doReturn(List.of("Donkey-Kong", "Wendy-O.-Koopa")).when(spyService).getImageNames("media/characters");
+    void addCharactersKeepsTheHyphensInTheCharacterNames() {
         when(adminRegistrationReadService.getCharacters()).thenReturn(List.of());
 
-        List<Character> result = spyService.addCharacters("media/characters");
+        List<Character> result = service.addCharacters();
 
         // The frontend loads the image of a character by its name
-        assertThat(result).extracting(Character::getCharacterName).containsExactly("Donkey-Kong", "Wendy-O.-Koopa");
+        assertThat(result).extracting(Character::getCharacterName).contains("Donkey-Kong", "Wendy-O.-Koopa");
+    }
+
+    @Test
+    void characterNamesContainEveryCharacterOnce() {
+        assertThat(CharacterNames.ALL).hasSize(41).doesNotHaveDuplicates();
     }
 
     @ParameterizedTest
@@ -131,10 +129,10 @@ class AddCharacterServiceTest {
     }
 
     @Test
-    void getCorrectedNameKnowsEveryCharacterImage() throws Exception {
-        // A new image with a hyphen has to be checked against the name the game shows
-        assertThat(service.getImageNames("media"))
-                .filteredOn(imageName -> imageName.contains("-"))
+    void getCorrectedNameKnowsEveryCharacter() {
+        // A new character with a hyphen has to be checked against the name the game shows
+        assertThat(CharacterNames.ALL)
+                .filteredOn(characterName -> characterName.contains("-"))
                 .containsExactlyInAnyOrder(
                         "Baby-Daisy", "Baby-Luigi", "Baby-Mario", "Baby-Peach", "Baby-Rosalina", "Donkey-Kong",
                         "König-Buu-Huu", "Shy-Guy",
@@ -144,10 +142,4 @@ class AddCharacterServiceTest {
                         "Morton-Koopa-Jr", "Roy-Koopa", "Wendy-O.-Koopa");
     }
 
-    @Test
-    void getImageNamesThrowsWhenDirectoryDoesNotExist() {
-        assertThatThrownBy(() -> service.getImageNames("missing-directory"))
-                .isInstanceOf(IOException.class)
-                .hasMessageContaining("does not exist");
-    }
 }

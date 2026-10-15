@@ -1,7 +1,5 @@
 package de.fsr.mariokart_backend;
 
-import java.io.IOException;
-
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -33,9 +31,9 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     @Override
     public void run(String @NonNull... args) throws Exception {
         try {
-            addCharacterService.addCharacters("media");
+            addCharacterService.addCharacters();
             adminSettingsCreateService.createSettings();
-        } catch (IllegalStateException | IOException e) {
+        } catch (IllegalStateException e) {
             System.err.print(e.getMessage());
         }
 
