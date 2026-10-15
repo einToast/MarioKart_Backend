@@ -13,12 +13,9 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.AddCharacterService;
 import de.fsr.mariokart_backend.registration.service.pub.PublicRegistrationCreateService;
-import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
-import de.fsr.mariokart_backend.schedule.service.admin.AdminScheduleCreateService;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsCreateService;
 import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateService;
-import de.fsr.mariokart_backend.survey.service.admin.AdminSurveyCreateService;
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.service.UserService;
 import lombok.AllArgsConstructor;
@@ -27,14 +24,11 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class MarioKartStartupRunner implements CommandLineRunner {
     private final PublicRegistrationCreateService publicRegistrationCreateService;
-    private final AdminScheduleCreateService adminScheduleCreateService;
-    private final RoundRepository roundRepository;
     private final TeamRepository teamRepository;
     private final AddCharacterService addCharacterService;
     private final UserService userService;
     private final AdminSettingsCreateService adminSettingsCreateService;
     private final AdminSettingsUpdateService adminSettingsUpdateService;
-    private final AdminSurveyCreateService adminSurveyCreateService;
 
     @Override
     public void run(String @NonNull... args) throws Exception {
