@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
@@ -127,6 +128,12 @@ public abstract class AbstractEndToEndApiSmokeTest extends PostgresTestBase {
         seedTournamentSettings();
         seedCharacters();
         seedAdminUser();
+    }
+
+    @AfterEach
+    void tearDownEndToEndApiSmokeTest() {
+        resetDatabase();
+        clearCaches();
     }
 
     protected void clearCaches() {
