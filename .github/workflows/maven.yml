@@ -19,7 +19,16 @@ permissions:
 jobs:
   maven-build:
 
-    runs-on: ubuntu-latest
+    name: maven-build (${{ matrix.arch }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
 
     env:
       SECRET_KEY: ${{ vars.SECRET_KEY }}

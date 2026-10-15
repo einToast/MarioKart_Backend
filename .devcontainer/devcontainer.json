@@ -2,7 +2,7 @@
   "name": "MarioKart Backend Dev Container",
   "image": "mcr.microsoft.com/devcontainers/java:25-trixie",
   "features": {
-    "ghcr.io/devcontainers/features/java:1.8.2": {
+    "ghcr.io/devcontainers/features/java:1.8.3": {
       "version": "none",
       "installMaven": true
     }
