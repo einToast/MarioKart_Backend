@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.survey.service.admin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -100,7 +102,8 @@ class AdminSurveyUpdateServiceTest {
         updated.setOneAnswerPerKey(true);
         updated.setOptions(List.of("X", "Y"));
 
-        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "MULTIPLE_CHOICE", "New", List.of("X", "Y"), true, true, true, false, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "MULTIPLE_CHOICE", "New", List.of("X", "Y"), true, true, true,
+                false, false);
 
         when(questionRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
@@ -131,7 +134,8 @@ class AdminSurveyUpdateServiceTest {
         updated.setActive(true);
         updated.setVisible(true);
 
-        QuestionReturnDTO dto = new QuestionReturnDTO(3L, "FREE_TEXT", "New Poll", List.of(), true, true, false, false, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(3L, "FREE_TEXT", "New Poll", List.of(), true, true, false, false,
+                false);
 
         when(questionRepository.findById(3L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
@@ -140,8 +144,9 @@ class AdminSurveyUpdateServiceTest {
 
         service.updateQuestion(3L, new QuestionInputDTO());
 
-        verify(webSocketService).sendMessage("/topic/questions", "update");
-        verify(adminNotificationCreateService).sendNotificationToAll("Neue Umfrage verfügbar!", "New Poll");
+        InOrder inOrder = inOrder(adminNotificationCreateService, webSocketService);
+        inOrder.verify(adminNotificationCreateService).sendNotificationToAll("Neue Umfrage verfügbar!", "New Poll");
+        inOrder.verify(webSocketService).sendMessage("/topic/questions", "update");
     }
 
     @Test

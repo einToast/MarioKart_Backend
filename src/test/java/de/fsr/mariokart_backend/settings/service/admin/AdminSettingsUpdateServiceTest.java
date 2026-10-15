@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.settings.service.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -35,6 +37,9 @@ class AdminSettingsUpdateServiceTest {
 
     @Mock
     private AdminOcrReadService adminOcrReadService;
+
+    @Mock
+    private WebSocketService webSocketService;
 
     @InjectMocks
     private AdminSettingsUpdateService service;
@@ -53,6 +58,7 @@ class AdminSettingsUpdateServiceTest {
         assertThat(result.getTournamentOpen()).isTrue();
         assertThat(result.getRegistrationOpen()).isTrue();
         assertThat(result.getMaxGamesCount()).isEqualTo(8);
+        verify(webSocketService).sendMessage("/topic/settings", "update");
     }
 
     @Test

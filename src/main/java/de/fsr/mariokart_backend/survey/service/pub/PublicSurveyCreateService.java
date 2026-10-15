@@ -50,6 +50,7 @@ public class PublicSurveyCreateService {
     private final ObjectMapper objectMapper;
 
     private static final int MAX_ANSWERS_PER_TEAM = 4;
+    public static final int MAX_FREE_TEXT_ANSWER_LENGTH = 1000;
 
     @Transactional(rollbackFor = Exception.class)
     public AnswerSubmissionResult submitAnswer(AnswerInputDTO answer, String userJson, String surveyKeyToken)
@@ -88,7 +89,8 @@ public class PublicSurveyCreateService {
         }
 
         if (questionType == QuestionType.TEAM_ONE_FREE_TEXT
-                && answerRepository.existsByQuestionIdAndSubmittingTeamId(answer.getQuestionId(), submittingTeam.getId())) {
+                && answerRepository.existsByQuestionIdAndSubmittingTeamId(answer.getQuestionId(),
+                        submittingTeam.getId())) {
             throw new AnswerLimitReachedException("This team has already submitted an answer for this question.");
         }
 
@@ -138,9 +140,9 @@ public class PublicSurveyCreateService {
                         && new HashSet<>(selected).size() == selected.size();
             }
             case TeamQuestion teamQuestion -> isOption(answer.getTeamSelectedOption(), teamQuestion.getTeams());
-            case TeamOneFreeTextQuestion _ -> hasText(answer.getFreeTextAnswer())
+            case TeamOneFreeTextQuestion _ -> isValidFreeText(answer.getFreeTextAnswer())
                     && answer.getTeamSelectedOption() != null;
-            default -> hasText(answer.getFreeTextAnswer());
+            default -> isValidFreeText(answer.getFreeTextAnswer());
         };
         if (!valid) {
             throw new IllegalArgumentException("Invalid answer: no valid option selected.");
@@ -152,8 +154,8 @@ public class PublicSurveyCreateService {
         return index != null && options != null && index >= 0 && index < options.size();
     }
 
-    private static boolean hasText(String text) {
-        return text != null && !text.isBlank();
+    private static boolean isValidFreeText(String text) {
+        return text != null && !text.isBlank() && text.length() <= MAX_FREE_TEXT_ANSWER_LENGTH;
     }
 
     private SurveyKey resolveSurveyKey(SurveyKeyMode mode, String surveyKeyToken) throws SurveyKeyRequiredException {
