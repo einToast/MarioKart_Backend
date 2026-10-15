@@ -16,6 +16,7 @@ import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -36,6 +37,7 @@ public class AdminSettingsUpdateService {
     private final TournamentRepository tournamentRepository;
     private final PublicScheduleReadService publicScheduleReadService;
     private final AdminOcrReadService adminOcrReadService;
+    private final WebSocketService webSocketService;
 
     public TournamentDTO updateSettings(TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
         Tournament tournament = tournamentRepository.findAll().getFirst();
@@ -76,7 +78,9 @@ public class AdminSettingsUpdateService {
             tournament.setRelativePoints(tournamentDTO.getRelativePoints());
         }
 
-        return new TournamentDTO(tournamentRepository.save(tournament));
+        TournamentDTO savedSettings = new TournamentDTO(tournamentRepository.save(tournament));
+        webSocketService.sendMessage("/topic/settings", "update");
+        return savedSettings;
     }
 
     private void updateFinalTeamsCount(Tournament tournament, int finalTeamsCount)
