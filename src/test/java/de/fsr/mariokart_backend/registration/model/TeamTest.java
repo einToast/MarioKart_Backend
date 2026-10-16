@@ -45,6 +45,65 @@ class TeamTest {
     }
 
     @Test
+    void getAverageGroupPointsAveragesOnlyCountedGames() {
+        Team team = new Team();
+
+        team.setPoints(new HashSet<>(Set.of(
+                points(1L, team, 10, 0, numberedRound(1)),
+                points(2L, team, 20, 0, numberedRound(2)),
+                points(3L, team, 90, 0, numberedRound(3)))));
+
+        assertThat(team.getAverageGroupPoints(2)).isEqualTo(15.0);
+    }
+
+    @Test
+    void getAverageGroupPointsUsesPlayedGamesSoFar() {
+        Team team = new Team();
+
+        Round unplayed = playedRound(false);
+        unplayed.setRoundNumber(2);
+
+        team.setPoints(new HashSet<>(Set.of(
+                points(1L, team, 12, 0, numberedRound(1)),
+                points(2L, team, 0, 0, unplayed))));
+
+        assertThat(team.getAverageGroupPoints(6)).isEqualTo(12.0);
+    }
+
+    @Test
+    void getAverageGroupPointsReturnsZeroWithoutPlayedGames() {
+        Team team = new Team();
+
+        assertThat(team.getAverageGroupPoints(6)).isZero();
+    }
+
+    @Test
+    void getAverageGroupPointsOfAllGamesIgnoresUnplayedAndFinalRounds() {
+        Team team = new Team();
+
+        Round finalRound = playedRound(true);
+        finalRound.setFinalGame(true);
+
+        team.setPoints(new HashSet<>(Set.of(
+                points(1L, team, 10, 0, playedRound(true)),
+                points(2L, team, 20, 0, playedRound(true)),
+                points(3L, team, 30, 0, playedRound(true)),
+                points(4L, team, 0, 0, playedRound(false)),
+                points(5L, team, 0, 50, finalRound))));
+
+        assertThat(team.getAverageGroupPointsOfAllGames()).isEqualTo(20.0);
+    }
+
+    @Test
+    void getAverageGroupPointsOfAllGamesReturnsZeroWithoutPlayedGames() {
+        Team team = new Team();
+        assertThat(team.getAverageGroupPointsOfAllGames()).isZero();
+
+        team.setPoints(new HashSet<>(Set.of(points(1L, team, 0, 0, playedRound(false)))));
+        assertThat(team.getAverageGroupPointsOfAllGames()).isZero();
+    }
+
+    @Test
     void getGroupPointsReturnsZeroWhenPointsMissing() {
         Team team = new Team();
 

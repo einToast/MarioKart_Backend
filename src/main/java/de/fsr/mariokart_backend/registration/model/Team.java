@@ -79,11 +79,27 @@ public class Team {
             return 0;
 
         return points.stream()
-                .sorted(Comparator.comparingInt((Points p) -> p.getGame().getRound().getRoundNumber())
+                .sorted(Comparator.comparingInt(Points::getRoundNumber)
                         .thenComparingLong(Points::getId))
                 .limit(maxGames)
                 .mapToInt(Points::getGroupPoints)
                 .sum();
+    }
+
+    public double getAverageGroupPoints(int maxGames) {
+        return getGroupPoints(maxGames) / (double) Math.max(getNumberOfGamesPlayed(maxGames), 1);
+    }
+
+    @JsonIgnore
+    public double getAverageGroupPointsOfAllGames() {
+        if (points == null)
+            return 0;
+
+        return points.stream()
+                .filter(p -> p.getGame().getRound().isPlayed() && !p.getGame().getRound().isFinalGame())
+                .mapToInt(Points::getGroupPoints)
+                .average()
+                .orElse(0);
     }
 
     public int getFinalPoints() {

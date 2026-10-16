@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.schedule.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 import de.fsr.mariokart_backend.registration.model.Team;
@@ -43,6 +44,11 @@ public class Points {
     @JoinColumn(name = "game_ID")
     @JsonBackReference
     private Game game;
+
+    @JsonIgnore
+    public int getRoundNumber() {
+        return game.getRound().getRoundNumber();
+    }
 
     @Override
     public String toString() {
