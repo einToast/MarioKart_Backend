@@ -79,7 +79,8 @@ public class Team {
             return 0;
 
         return points.stream()
-                .sorted(Comparator.comparingLong(Points::getId))
+                .sorted(Comparator.comparingInt((Points p) -> p.getGame().getRound().getRoundNumber())
+                        .thenComparingLong(Points::getId))
                 .limit(maxGames)
                 .mapToInt(Points::getGroupPoints)
                 .sum();

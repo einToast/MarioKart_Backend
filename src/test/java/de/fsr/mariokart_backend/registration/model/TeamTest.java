@@ -20,7 +20,7 @@ import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 class TeamTest {
 
     @Test
-    void getGroupPointsSortsByIdAndLimitsByMaxGames() {
+    void getGroupPointsSortsByIdWithinSameRoundAndLimitsByMaxGames() {
         Team team = new Team();
 
         Points points1 = points(3L, team, 10, 1, playedRound(true));
@@ -30,6 +30,18 @@ class TeamTest {
         team.setPoints(new HashSet<>(Set.of(points1, points2, points3)));
 
         assertThat(team.getGroupPoints(2)).isEqualTo(13);
+    }
+
+    @Test
+    void getGroupPointsSortsByRoundNumberBeforeId() {
+        Team team = new Team();
+
+        Points laterRound = points(1L, team, 100, 0, numberedRound(2));
+        Points earlierRound = points(2L, team, 5, 0, numberedRound(1));
+
+        team.setPoints(new HashSet<>(Set.of(laterRound, earlierRound)));
+
+        assertThat(team.getGroupPoints(1)).isEqualTo(5);
     }
 
     @Test
@@ -120,6 +132,12 @@ class TeamTest {
         round.setPlayed(played);
         round.setStartTime(LocalDateTime.now());
         round.setEndTime(LocalDateTime.now().plusMinutes(20));
+        return round;
+    }
+
+    private Round numberedRound(int roundNumber) {
+        Round round = playedRound(true);
+        round.setRoundNumber(roundNumber);
         return round;
     }
 

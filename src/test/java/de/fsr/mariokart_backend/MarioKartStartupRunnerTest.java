@@ -4,8 +4,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,14 +59,14 @@ class MarioKartStartupRunnerTest {
     void runInvokesBootstrapAndReturnsWhenUserEnvMissing() throws Exception {
         startupRunner.run();
 
-        verify(addCharacterService).addCharacters("media");
+        verify(addCharacterService).addCharacters();
         verify(adminSettingsCreateService).createSettings();
         verify(userService, never()).getUsers();
     }
 
     @Test
     void runSwallowsBootstrapExceptionAndContinues() throws Exception {
-        doThrow(new IOException("boom")).when(addCharacterService).addCharacters("media");
+        doThrow(new IllegalStateException("Characters already exist.")).when(addCharacterService).addCharacters();
 
         startupRunner.run();
 
