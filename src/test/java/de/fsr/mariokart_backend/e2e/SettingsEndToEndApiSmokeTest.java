@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.e2e;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -40,7 +41,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         MockCookie adminCookie = loginAsAdmin();
 
-        mockMvc.perform(put("/admin/settings")
+        mockMvc.perform(put("/admin/settings").with(csrf())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -49,7 +50,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.maxGamesCount").value(8));
 
-        mockMvc.perform(put("/admin/settings")
+        mockMvc.perform(put("/admin/settings").with(csrf())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -69,7 +70,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(jsonPath("$.floorPlan").value("{\"elements\":[]}"))
                 .andExpect(jsonPath("$.program").value("{\"entries\":[]}"));
 
-        mockMvc.perform(put("/admin/settings")
+        mockMvc.perform(put("/admin/settings").with(csrf())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -83,7 +84,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         question.setOptions(List.of("A", "B"));
         questionRepository.save(question);
 
-        mockMvc.perform(delete("/admin/settings/reset").cookie(adminCookie))
+        mockMvc.perform(delete("/admin/settings/reset").with(csrf()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         assertThat(teamRepository.count()).isZero();

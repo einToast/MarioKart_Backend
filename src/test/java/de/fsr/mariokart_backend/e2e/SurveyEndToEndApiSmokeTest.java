@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.e2e;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -36,7 +37,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         Team team = createTeamDirect("Survey Team", "Mario");
         MockCookie adminCookie = loginAsAdmin();
 
-        MvcResult questionResult = mockMvc.perform(post("/admin/survey")
+        MvcResult questionResult = mockMvc.perform(post("/admin/survey").with(csrf())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -52,7 +53,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].questionText").value("Best track?"));
 
-        mockMvc.perform(post("/public/survey/answer")
+        mockMvc.perform(post("/public/survey/answer").with(csrf())
                         .cookie(new MockCookie("user", "{\"teamId\":%d}".formatted(team.getId())))
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -74,7 +75,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("1"));
 
-        mockMvc.perform(put("/admin/survey/{id}", questionId)
+        mockMvc.perform(put("/admin/survey/{id}", questionId).with(csrf())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -88,7 +89,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[1]").value(1));
 
-        mockMvc.perform(delete("/admin/survey/{id}", questionId).cookie(adminCookie))
+        mockMvc.perform(delete("/admin/survey/{id}", questionId).with(csrf()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         assertThat(questionRepository.count()).isZero();
@@ -99,7 +100,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         Team team = createTeamDirect("Free Text Team", "Mario");
         MockCookie adminCookie = loginAsAdmin();
 
-        MvcResult questionResult = mockMvc.perform(post("/admin/survey")
+        MvcResult questionResult = mockMvc.perform(post("/admin/survey").with(csrf())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -110,7 +111,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         long questionId = jsonFieldAsLong(questionResult, "id");
 
-        mockMvc.perform(post("/public/survey/answer")
+        mockMvc.perform(post("/public/survey/answer").with(csrf())
                         .cookie(new MockCookie("user", "{\"teamId\":%d}".formatted(team.getId())))
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -123,7 +124,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].freeTextAnswer").value("Great tournament"));
 
-        mockMvc.perform(delete("/admin/survey").cookie(adminCookie))
+        mockMvc.perform(delete("/admin/survey").with(csrf()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         assertThat(questionRepository.count()).isZero();

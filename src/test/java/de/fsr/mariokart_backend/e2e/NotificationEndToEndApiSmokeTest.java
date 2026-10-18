@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.e2e;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -35,7 +36,7 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("BGENDEGNHWKtakXmUiiZpqmxHgtK0wYMdsEv5ORs80JfFBP8GiZytnUNKKhUAXVain3cpkBa0UEK7GxdhMXTYWM"));
 
-        mockMvc.perform(post("/public/notification/subscribe")
+        mockMvc.perform(post("/public/notification/subscribe").with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"endpoint":"https://example.com/push","p256dh":"p256dh-key","auth":"auth-key","teamId":%d}
@@ -46,7 +47,7 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         MockCookie adminCookie = loginAsAdmin();
 
-        mockMvc.perform(post("/admin/notification/send")
+        mockMvc.perform(post("/admin/notification/send").with(csrf())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -56,6 +57,7 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         mockMvc.perform(post("/admin/notification/send/{teamId}", team.getId())
                         .cookie(adminCookie)
+                        .with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"title":"Team Title","message":"Team Body"}

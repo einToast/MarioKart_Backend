@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -178,7 +179,7 @@ public abstract class AbstractEndToEndApiSmokeTest extends PostgresTestBase {
     }
 
     protected MockCookie loginAsAdmin() throws Exception {
-        MvcResult loginResult = mockMvc.perform(post("/public/user/login")
+        MvcResult loginResult = mockMvc.perform(post("/public/user/login").with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"username":"admin","password":"secret"}
