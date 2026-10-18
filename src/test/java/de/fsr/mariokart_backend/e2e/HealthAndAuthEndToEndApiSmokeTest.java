@@ -40,7 +40,7 @@ class HealthAndAuthEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
     @Test
     void publicUserAuthControllerSmoke() throws Exception {
-        MvcResult loginResult = mockMvc.perform(post("/public/user/login").with(csrf())
+        MvcResult loginResult = mockMvc.perform(post("/public/user/login").with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"username":"admin","password":"secret"}
@@ -56,7 +56,7 @@ class HealthAndAuthEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.username").value("admin"));
 
-        MvcResult logoutResult = mockMvc.perform(post("/public/user/logout").with(csrf()))
+        MvcResult logoutResult = mockMvc.perform(post("/public/user/logout").with(csrf().asHeader()))
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists(AuthCookieConstants.AUTH_COOKIE_NAME))
                 .andReturn();

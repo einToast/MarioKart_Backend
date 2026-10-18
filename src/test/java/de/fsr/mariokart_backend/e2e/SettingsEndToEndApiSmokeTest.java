@@ -41,7 +41,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         MockCookie adminCookie = loginAsAdmin();
 
-        mockMvc.perform(put("/admin/settings").with(csrf())
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -50,7 +50,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.maxGamesCount").value(8));
 
-        mockMvc.perform(put("/admin/settings").with(csrf())
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -70,7 +70,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(jsonPath("$.floorPlan").value("{\"elements\":[]}"))
                 .andExpect(jsonPath("$.program").value("{\"entries\":[]}"));
 
-        mockMvc.perform(put("/admin/settings").with(csrf())
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -84,7 +84,7 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         question.setOptions(List.of("A", "B"));
         questionRepository.save(question);
 
-        mockMvc.perform(delete("/admin/settings/reset").with(csrf()).cookie(adminCookie))
+        mockMvc.perform(delete("/admin/settings/reset").with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         assertThat(teamRepository.count()).isZero();

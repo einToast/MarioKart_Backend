@@ -179,7 +179,7 @@ public abstract class AbstractEndToEndApiSmokeTest extends PostgresTestBase {
     }
 
     protected MockCookie loginAsAdmin() throws Exception {
-        MvcResult loginResult = mockMvc.perform(post("/public/user/login").with(csrf())
+        MvcResult loginResult = mockMvc.perform(post("/public/user/login").with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"username":"admin","password":"secret"}

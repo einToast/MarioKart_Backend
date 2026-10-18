@@ -36,7 +36,7 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("BGENDEGNHWKtakXmUiiZpqmxHgtK0wYMdsEv5ORs80JfFBP8GiZytnUNKKhUAXVain3cpkBa0UEK7GxdhMXTYWM"));
 
-        mockMvc.perform(post("/public/notification/subscribe").with(csrf())
+        mockMvc.perform(post("/public/notification/subscribe").with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"endpoint":"https://example.com/push","p256dh":"p256dh-key","auth":"auth-key","teamId":%d}
@@ -47,7 +47,7 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         MockCookie adminCookie = loginAsAdmin();
 
-        mockMvc.perform(post("/admin/notification/send").with(csrf())
+        mockMvc.perform(post("/admin/notification/send").with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -57,7 +57,7 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         mockMvc.perform(post("/admin/notification/send/{teamId}", team.getId())
                         .cookie(adminCookie)
-                        .with(csrf())
+                        .with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"title":"Team Title","message":"Team Body"}

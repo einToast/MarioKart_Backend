@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -154,6 +156,18 @@ class ApplicationSecurityIntegrationTest {
     }
 
     @Test
+    void csrfTokenIsOnlyAcceptedFromHeader() throws Exception {
+        // A sibling subdomain can plant its own XSRF-TOKEN cookie and send the matching token as a
+        // request parameter, which unlike a custom header needs no CORS preflight
+        String plantedToken = "planted-token";
+
+        mockMvc.perform(post("/public/user/logout")
+                        .cookie(new MockCookie(CSRF_COOKIE_NAME, plantedToken))
+                        .queryParam("_csrf", maskedCsrfToken(plantedToken)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void stateChangingRequestWithBearerTokenSkipsCsrf() throws Exception {
         User user = new User("admin-bearer", true);
         user.setPassword("secret");
@@ -164,6 +178,29 @@ class ApplicationSecurityIntegrationTest {
         mockMvc.perform(post("/public/user/logout")
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void bearerHeaderNeverFallsBackToAuthCookie() throws Exception {
+        User user = new User("admin-cookie-bearer", true);
+        user.setPassword("secret");
+        userRepository.save(user);
+
+        MockCookie authCookie = new MockCookie(AuthCookieConstants.AUTH_COOKIE_NAME,
+                jwtManagerService.generateJWT(user));
+
+        mockMvc.perform(post("/admin/schedule/create/schedule")
+                        .cookie(authCookie)
+                        .header("Authorization", "Bearer invalid.token.value"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    // Same encoding as Spring's XorCsrfTokenRequestAttributeHandler, with an all-zero mask
+    private static String maskedCsrfToken(String token) {
+        byte[] tokenBytes = token.getBytes(StandardCharsets.UTF_8);
+        byte[] masked = new byte[tokenBytes.length * 2];
+        System.arraycopy(tokenBytes, 0, masked, tokenBytes.length, tokenBytes.length);
+        return Base64.getUrlEncoder().encodeToString(masked);
     }
 
     private Cookie fetchCsrfCookie() throws Exception {

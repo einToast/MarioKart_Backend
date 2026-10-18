@@ -56,8 +56,8 @@ public class ApplicationSecurity {
                         // Default for any other requests
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf
-                        .spa()
                         .csrfTokenRepository(csrfTokenRepository())
+                        .csrfTokenRequestHandler(new HeaderCsrfTokenRequestHandler())
                         // SockJS fallback transports POST to /ws/**
                         .ignoringRequestMatchers("/ws/**")
                         .ignoringRequestMatchers(ApplicationSecurity::hasBearerToken))

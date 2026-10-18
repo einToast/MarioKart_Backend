@@ -42,7 +42,7 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         seedSixteenTeams();
         MockCookie adminCookie = loginAsAdmin();
 
-        MvcResult createScheduleResult = mockMvc.perform(post("/admin/schedule/create/schedule").with(csrf())
+        MvcResult createScheduleResult = mockMvc.perform(post("/admin/schedule/create/schedule").with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -92,7 +92,7 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         mockMvc.perform(put("/admin/schedule/rounds/{roundId}/games/{gameId}/teams/{teamId}/points",
                         firstRound.getId(), firstGame.getId(), firstPoints.getTeam().getId())
                         .cookie(adminCookie)
-                        .with(csrf())
+                        .with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"points":12}
@@ -100,7 +100,7 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.points").value(12));
 
-        mockMvc.perform(delete("/admin/schedule/create/schedule").with(csrf()).cookie(adminCookie))
+        mockMvc.perform(delete("/admin/schedule/create/schedule").with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         assertThat(roundRepository.count()).isZero();
@@ -111,7 +111,7 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         seedSixteenTeams();
         MockCookie adminCookie = loginAsAdmin();
 
-        mockMvc.perform(post("/admin/schedule/create/schedule").with(csrf())
+        mockMvc.perform(post("/admin/schedule/create/schedule").with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -123,7 +123,7 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         rounds.forEach(round -> round.setPlayed(true));
         roundRepository.saveAll(rounds);
 
-        mockMvc.perform(post("/admin/schedule/create/final_schedule").with(csrf()).cookie(adminCookie))
+        mockMvc.perform(post("/admin/schedule/create/final_schedule").with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", Matchers.hasSize(11)));
 
@@ -131,7 +131,7 @@ class ScheduleEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
 
-        mockMvc.perform(delete("/admin/schedule/create/final_schedule").with(csrf()).cookie(adminCookie))
+        mockMvc.perform(delete("/admin/schedule/create/final_schedule").with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         assertThat(roundRepository.findByFinalGameTrue()).isEmpty();

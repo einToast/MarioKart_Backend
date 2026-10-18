@@ -36,7 +36,7 @@ class RegistrationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].characterName").exists());
 
-        MvcResult createResult = mockMvc.perform(post("/public/teams").with(csrf())
+        MvcResult createResult = mockMvc.perform(post("/public/teams").with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"teamName":"Alpha","characterName":"Mario","finalReady":true,"active":true}
@@ -61,7 +61,7 @@ class RegistrationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].teamName").value("Alpha"));
 
-        mockMvc.perform(put("/admin/teams/{id}", teamId).with(csrf())
+        mockMvc.perform(put("/admin/teams/{id}", teamId).with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)
                         .content("""
@@ -72,12 +72,12 @@ class RegistrationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(jsonPath("$.finalReady").value(false))
                 .andExpect(jsonPath("$.active").value(false));
 
-        mockMvc.perform(put("/admin/teams/finalParticipation/reset").with(csrf()).cookie(adminCookie))
+        mockMvc.perform(put("/admin/teams/finalParticipation/reset").with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].finalReady").value(true))
                 .andExpect(jsonPath("$[0].active").value(true));
 
-        mockMvc.perform(delete("/admin/teams/{id}", teamId).with(csrf()).cookie(adminCookie))
+        mockMvc.perform(delete("/admin/teams/{id}", teamId).with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         assertThat(teamRepository.count()).isZero();
@@ -88,7 +88,7 @@ class RegistrationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
         createTeamDirect("Alpha", "Mario");
         createTeamDirect("Beta", "Luigi");
 
-        mockMvc.perform(delete("/admin/teams").with(csrf()).cookie(loginAsAdmin()))
+        mockMvc.perform(delete("/admin/teams").with(csrf().asHeader()).cookie(loginAsAdmin()))
                 .andExpect(status().isOk());
 
         assertThat(teamRepository.count()).isZero();

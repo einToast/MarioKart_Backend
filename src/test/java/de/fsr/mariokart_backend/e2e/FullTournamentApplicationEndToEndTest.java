@@ -75,7 +75,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         renameTeam(adminCookie, renamedTeamId, "FairPlayCrew", "Waluigi");
         teamStrength.put("FairPlayCrew", teamStrength.remove("RudeName"));
 
-        MvcResult scheduleCreateResult = mockMvc.perform(post("/admin/schedule/create/schedule").with(csrf())
+        MvcResult scheduleCreateResult = mockMvc.perform(post("/admin/schedule/create/schedule").with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -157,7 +157,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         assertThat(finalists).hasSize(4);
         assertThat(teamNames(finalists)).contains("FSR");
 
-        mockMvc.perform(post("/admin/schedule/create/final_schedule").with(csrf()).cookie(adminCookie))
+        mockMvc.perform(post("/admin/schedule/create/final_schedule").with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         while (getUnplayedRoundCount() > 0) {
@@ -181,7 +181,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
     private void updateTournamentSettings(MockCookie adminCookie, boolean tournamentOpen, boolean registrationOpen,
             int maxGamesCount)
             throws Exception {
-        mockMvc.perform(put("/admin/settings").with(csrf())
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -191,7 +191,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
     }
 
     private long registerTeam(String teamName, String characterName) throws Exception {
-        MvcResult result = mockMvc.perform(post("/public/teams").with(csrf())
+        MvcResult result = mockMvc.perform(post("/public/teams").with(csrf().asHeader())
                 .contentType(APPLICATION_JSON)
                 .content("""
                         {"teamName":"%s","characterName":"%s","finalReady":true,"active":true}
@@ -205,7 +205,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
     private void renameTeam(MockCookie adminCookie, long teamId, String newName, String characterName)
             throws Exception {
-        mockMvc.perform(put("/admin/teams/{id}", teamId).with(csrf())
+        mockMvc.perform(put("/admin/teams/{id}", teamId).with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -259,7 +259,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
     private JsonNode updateBreak(MockCookie adminCookie, long roundId, int duration, boolean breakEnded)
             throws Exception {
-        MvcResult result = mockMvc.perform(put("/admin/schedule/break").with(csrf())
+        MvcResult result = mockMvc.perform(put("/admin/schedule/break").with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -282,7 +282,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                 mockMvc.perform(put("/admin/schedule/rounds/{roundId}/games/{gameId}/teams/{teamId}/points",
                         roundDetails.path("id").asLong(), gameId, teamId)
                         .cookie(adminCookie)
-                        .with(csrf())
+                        .with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"points":%d}
@@ -293,7 +293,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
     }
 
     private void markRoundPlayed(MockCookie adminCookie, long roundId) throws Exception {
-        mockMvc.perform(put("/admin/schedule/rounds/{roundId}", roundId).with(csrf())
+        mockMvc.perform(put("/admin/schedule/rounds/{roundId}", roundId).with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
