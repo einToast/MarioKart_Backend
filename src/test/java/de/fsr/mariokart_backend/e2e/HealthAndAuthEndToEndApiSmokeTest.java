@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.e2e;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -39,7 +40,7 @@ class HealthAndAuthEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
     @Test
     void publicUserAuthControllerSmoke() throws Exception {
-        MvcResult loginResult = mockMvc.perform(post("/public/user/login")
+        MvcResult loginResult = mockMvc.perform(post("/public/user/login").with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"username":"admin","password":"secret"}
@@ -55,7 +56,7 @@ class HealthAndAuthEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.username").value("admin"));
 
-        MvcResult logoutResult = mockMvc.perform(post("/public/user/logout"))
+        MvcResult logoutResult = mockMvc.perform(post("/public/user/logout").with(csrf().asHeader()))
                 .andExpect(status().isOk())
                 .andExpect(cookie().exists(AuthCookieConstants.AUTH_COOKIE_NAME))
                 .andReturn();

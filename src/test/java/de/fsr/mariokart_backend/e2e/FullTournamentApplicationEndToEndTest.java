@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.e2e;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -74,7 +75,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         renameTeam(adminCookie, renamedTeamId, "FairPlayCrew", "Waluigi");
         teamStrength.put("FairPlayCrew", teamStrength.remove("RudeName"));
 
-        MvcResult scheduleCreateResult = mockMvc.perform(post("/admin/schedule/create/schedule")
+        MvcResult scheduleCreateResult = mockMvc.perform(post("/admin/schedule/create/schedule").with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -156,7 +157,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         assertThat(finalists).hasSize(4);
         assertThat(teamNames(finalists)).contains("FSR");
 
-        mockMvc.perform(post("/admin/schedule/create/final_schedule").cookie(adminCookie))
+        mockMvc.perform(post("/admin/schedule/create/final_schedule").with(csrf().asHeader()).cookie(adminCookie))
                 .andExpect(status().isOk());
 
         while (getUnplayedRoundCount() > 0) {
@@ -180,7 +181,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
     private void updateTournamentSettings(MockCookie adminCookie, boolean tournamentOpen, boolean registrationOpen,
             int maxGamesCount)
             throws Exception {
-        mockMvc.perform(put("/admin/settings")
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -190,7 +191,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
     }
 
     private long registerTeam(String teamName, String characterName) throws Exception {
-        MvcResult result = mockMvc.perform(post("/public/teams")
+        MvcResult result = mockMvc.perform(post("/public/teams").with(csrf().asHeader())
                 .contentType(APPLICATION_JSON)
                 .content("""
                         {"teamName":"%s","characterName":"%s","finalReady":true,"active":true}
@@ -204,7 +205,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
     private void renameTeam(MockCookie adminCookie, long teamId, String newName, String characterName)
             throws Exception {
-        mockMvc.perform(put("/admin/teams/{id}", teamId)
+        mockMvc.perform(put("/admin/teams/{id}", teamId).with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -258,7 +259,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
     private JsonNode updateBreak(MockCookie adminCookie, long roundId, int duration, boolean breakEnded)
             throws Exception {
-        MvcResult result = mockMvc.perform(put("/admin/schedule/break")
+        MvcResult result = mockMvc.perform(put("/admin/schedule/break").with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
@@ -281,6 +282,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                 mockMvc.perform(put("/admin/schedule/rounds/{roundId}/games/{gameId}/teams/{teamId}/points",
                         roundDetails.path("id").asLong(), gameId, teamId)
                         .cookie(adminCookie)
+                        .with(csrf().asHeader())
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"points":%d}
@@ -291,7 +293,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
     }
 
     private void markRoundPlayed(MockCookie adminCookie, long roundId) throws Exception {
-        mockMvc.perform(put("/admin/schedule/rounds/{roundId}", roundId)
+        mockMvc.perform(put("/admin/schedule/rounds/{roundId}", roundId).with(csrf().asHeader())
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
                 .content("""
