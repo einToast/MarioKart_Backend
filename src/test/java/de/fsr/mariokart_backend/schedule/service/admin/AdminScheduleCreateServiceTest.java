@@ -521,7 +521,7 @@ class AdminScheduleCreateServiceTest {
         when(scheduleReturnDTOService.roundToRoundDTO(any(Round.class))).thenAnswer(invocation -> {
             Round round = invocation.getArgument(0);
             return new RoundReturnDTO(round.getId(), round.getRoundNumber(), round.getStartTime(), round.getEndTime(),
-                    round.isFinalGame(), round.isPlayed(), null, round.getBreakTime());
+                    round.isFinalGame(), round.isPlayed(), null, null);
         });
 
         List<RoundReturnDTO> result = service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4));
@@ -666,7 +666,7 @@ class AdminScheduleCreateServiceTest {
         when(scheduleReturnDTOService.roundToRoundDTO(any(Round.class))).thenAnswer(invocation -> {
             Round round = invocation.getArgument(0);
             return new RoundReturnDTO(round.getId(), round.getRoundNumber(), round.getStartTime(), round.getEndTime(),
-                    round.isFinalGame(), round.isPlayed(), null, round.getBreakTime());
+                    round.isFinalGame(), round.isPlayed(), null, null);
         });
 
         service.createFinalSchedule();

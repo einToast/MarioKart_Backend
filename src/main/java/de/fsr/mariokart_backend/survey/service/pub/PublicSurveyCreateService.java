@@ -117,8 +117,8 @@ public class PublicSurveyCreateService {
                 issuedSurveyKey);
     }
 
-    private QuestionType validateAnswer(Question question, AnswerInputDTO answer) {
-        QuestionType questionType = switch (question) {
+    private static QuestionType questionTypeOf(Question question) {
+        return switch (question) {
             case MultipleChoiceQuestion _ -> QuestionType.MULTIPLE_CHOICE;
             case CheckboxQuestion _ -> QuestionType.CHECKBOX;
             case FreeTextQuestion _ -> QuestionType.FREE_TEXT;
@@ -126,6 +126,10 @@ public class PublicSurveyCreateService {
             case TeamOneFreeTextQuestion _ -> QuestionType.TEAM_ONE_FREE_TEXT;
             default -> throw new IllegalArgumentException("Invalid answer: unknown question type.");
         };
+    }
+
+    private QuestionType validateAnswer(Question question, AnswerInputDTO answer) {
+        QuestionType questionType = questionTypeOf(question);
         if (!questionType.toString().equals(answer.getAnswerType())) {
             throw new IllegalArgumentException("Invalid answer: the answer type does not match the question.");
         }

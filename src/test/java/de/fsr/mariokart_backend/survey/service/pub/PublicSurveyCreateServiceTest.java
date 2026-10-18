@@ -135,8 +135,9 @@ class PublicSurveyCreateServiceTest {
         MultipleChoiceQuestion question = new MultipleChoiceQuestion();
         question.setOptions(List.of("A", "B"));
         stubQuestion(question);
+        AnswerInputDTO input = freeTextInput();
 
-        assertThatThrownBy(() -> service.submitAnswer(freeTextInput(), USER_JSON, null))
+        assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("does not match the question");
         verify(answerRepository, never()).save(any());
@@ -182,8 +183,9 @@ class PublicSurveyCreateServiceTest {
     void submitAnswerRejectsUserJsonWithoutTeam() throws Exception {
         when(objectMapper.readValue(eq("{}"), ArgumentMatchers.<TypeReference<Map<String, Object>>>any()))
                 .thenReturn(Map.of());
+        AnswerInputDTO input = freeTextInput();
 
-        assertThatThrownBy(() -> service.submitAnswer(freeTextInput(), "{}", null))
+        assertThatThrownBy(() -> service.submitAnswer(input, "{}", null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("has no team");
     }

@@ -69,15 +69,31 @@ class AdminRegistrationReadServiceTest {
         when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 4, null));
         when(teamRepository.findAll()).thenReturn(List.of(lowAverage, highAverage));
 
-        when(lowAverage.getGroupPoints(4)).thenReturn(8);
-        when(lowAverage.getNumberOfGamesPlayed(4)).thenReturn(2);
-
-        when(highAverage.getGroupPoints(4)).thenReturn(15);
-        when(highAverage.getNumberOfGamesPlayed(4)).thenReturn(3);
+        when(lowAverage.getAverageGroupPoints(4)).thenReturn(4.0);
+        when(highAverage.getAverageGroupPoints(4)).thenReturn(5.0);
 
         List<Team> result = service.getTeamsSortedByGroupPoints();
 
         assertThat(result).containsExactly(highAverage, lowAverage);
+    }
+
+    @Test
+    void getTeamsSortedByGroupPointsBreaksTiesByAverageOfAllGames() {
+        Team lowAllGames = mock(Team.class);
+        Team highAllGames = mock(Team.class);
+
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, true, 4, null));
+        when(teamRepository.findAll()).thenReturn(List.of(lowAllGames, highAllGames));
+
+        when(lowAllGames.getAverageGroupPoints(4)).thenReturn(10.0);
+        when(lowAllGames.getAverageGroupPointsOfAllGames()).thenReturn(9.0);
+
+        when(highAllGames.getAverageGroupPoints(4)).thenReturn(10.0);
+        when(highAllGames.getAverageGroupPointsOfAllGames()).thenReturn(11.0);
+
+        List<Team> result = service.getTeamsSortedByGroupPoints();
+
+        assertThat(result).containsExactly(highAllGames, lowAllGames);
     }
 
     @Test
