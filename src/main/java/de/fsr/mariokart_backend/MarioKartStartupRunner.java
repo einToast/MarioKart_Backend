@@ -17,7 +17,9 @@ import de.fsr.mariokart_backend.settings.service.admin.AdminSettingsUpdateServic
 import de.fsr.mariokart_backend.user.model.User;
 import de.fsr.mariokart_backend.user.service.UserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class MarioKartStartupRunner implements CommandLineRunner {
@@ -34,11 +36,11 @@ public class MarioKartStartupRunner implements CommandLineRunner {
             addCharacterService.addCharacters();
             adminSettingsCreateService.createSettings();
         } catch (IllegalStateException e) {
-            System.err.print(e.getMessage());
+            log.warn(e.getMessage());
         }
 
         addUser();
-        addTeams();
+        // addTeams();
 
     }
 
@@ -47,18 +49,18 @@ public class MarioKartStartupRunner implements CommandLineRunner {
         String password = System.getenv("USER_PASSWORD");
 
         if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
-            System.err.println("Skipping admin bootstrap user: USER_NAME or USER_PASSWORD is not set.");
+            log.warn("Skipping admin bootstrap user: USER_NAME or USER_PASSWORD is not set.");
             return;
         }
 
         if (userService.getUsers().isEmpty()) {
             try {
                 if (userService.getUser(username) != null) {
-                    System.err.print("User already exists!");
+                    log.info("User already exists!");
                     return;
                 }
             } catch (EntityNotFoundException e) {
-                System.err.print(e.getMessage());
+                log.info(e.getMessage());
             }
             User user = new User(username, true);
             user.setPassword(password);
@@ -69,7 +71,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
 
     private void addTeams() {
         if (!teamRepository.findAll().isEmpty()) {
-            System.err.print("Teams already exist!");
+            log.info("Teams already exist!");
             return;
         }
         try {
@@ -138,7 +140,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
             TeamInputDTO team21 = new TeamInputDTO("Isabelle'sIsle", "Melinda");
             publicRegistrationCreateService.registerTeam(team21);
         } catch (IllegalArgumentException | EntityNotFoundException | RoundsAlreadyExistsException e) {
-            System.err.print(e.getMessage());
+            log.warn(e.getMessage());
         }
 
     }

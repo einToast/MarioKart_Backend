@@ -99,7 +99,7 @@ class ScheduleReturnDTOServiceTest {
         GameReturnDTO gameDto = result.getGames().iterator().next();
         assertThat(gameDto.getId()).isEqualTo(9L);
         assertThat(gameDto.getSwitchIndex()).isEqualTo(3);
-        assertThat(result.getBreakTime()).isEqualTo(aBreak);
+        assertThat(result.getBreakTime().getId()).isEqualTo(4L);
     }
 
     @Test

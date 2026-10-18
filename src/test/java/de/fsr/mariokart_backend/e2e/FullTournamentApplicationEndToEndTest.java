@@ -38,15 +38,23 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
     @Test
     void runsFullTournamentLifecycle() throws Exception {
         MockCookie adminCookie = loginAsAdmin();
+
+        mockMvc.perform(get("/public/healthcheck"))
+                .andExpect(status().isOk());
+
+        Map<String, Integer> teamStrength = registerTeams(adminCookie);
+        createGroupSchedule(adminCookie);
+        playGroupRounds(adminCookie, teamStrength);
+        playFinalRounds(adminCookie, teamStrength);
+    }
+
+    private Map<String, Integer> registerTeams(MockCookie adminCookie) throws Exception {
         Map<String, Integer> teamStrength = new LinkedHashMap<>();
         List<String> availableCharacters = characterRepository.findAll().stream()
                 .map(character -> character.getCharacterName())
                 .filter(name -> !"Toad".equals(name))
                 .limit(20)
                 .toList();
-
-        mockMvc.perform(get("/public/healthcheck"))
-                .andExpect(status().isOk());
 
         updateTournamentSettings(adminCookie, true, true, 6);
 
@@ -73,7 +81,10 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
         renameTeam(adminCookie, renamedTeamId, "FairPlayCrew", "Waluigi");
         teamStrength.put("FairPlayCrew", teamStrength.remove("RudeName"));
+        return teamStrength;
+    }
 
+    private void createGroupSchedule(MockCookie adminCookie) throws Exception {
         MvcResult scheduleCreateResult = mockMvc.perform(post("/admin/schedule/create/schedule")
                 .cookie(adminCookie)
                 .contentType(APPLICATION_JSON)
@@ -89,7 +100,9 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
         JsonNode initialStandings = getPublicGroupStandings();
         assertThat(initialStandings).hasSize(21);
+    }
 
+    private void playGroupRounds(MockCookie adminCookie, Map<String, Integer> teamStrength) throws Exception {
         boolean breakMoved = false;
         boolean breakCompleted = false;
         int playedGroupRounds = 0;
@@ -151,7 +164,9 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
         assertThat(breakMoved).isTrue();
         assertThat(breakCompleted).isTrue();
+    }
 
+    private void playFinalRounds(MockCookie adminCookie, Map<String, Integer> teamStrength) throws Exception {
         JsonNode finalists = getFinalTeams(adminCookie);
         assertThat(finalists).hasSize(4);
         assertThat(teamNames(finalists)).contains("FSR");

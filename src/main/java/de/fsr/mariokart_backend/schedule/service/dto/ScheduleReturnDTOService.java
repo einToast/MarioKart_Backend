@@ -45,7 +45,7 @@ public class ScheduleReturnDTOService {
                         .map(this::gameToGameDTO)
                         .collect(Collectors.toSet())
                         : null,
-                round.getBreakTime()); // TODO: How is this not a circular reference?
+                breakToBreakDTO(round.getBreakTime()));
     }
 
     public PointsReturnDTO pointsToPointsDTO(Points points) {

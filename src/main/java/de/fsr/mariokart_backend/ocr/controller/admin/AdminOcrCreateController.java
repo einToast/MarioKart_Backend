@@ -6,6 +6,7 @@ import org.springframework.web.server.ResponseStatusException;
 import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
+import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.ocr.model.dto.OcrInputDTO;
 import de.fsr.mariokart_backend.ocr.model.dto.OcrReturnDTO;
 import de.fsr.mariokart_backend.ocr.service.admin.AdminOcrCreateService;
@@ -26,10 +27,11 @@ public class AdminOcrCreateController {
     @PostMapping("{roundId}/{gameId}")
     public OcrReturnDTO detectCharactersByRoundAndGame(@RequestBody OcrInputDTO ocrInputDTO, @PathVariable Long roundId,
             @PathVariable Long gameId) {
-        // TODO: better error handling
         try {
             return adminOcrCreateService.detectCharactersByRoundAndGame(ocrInputDTO, roundId, gameId);
-        } catch (Exception e) {
+        } catch (EntityNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (RuntimeException _) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to detect characters");
         }
     }
