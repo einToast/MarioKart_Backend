@@ -4,8 +4,9 @@
   "$defs": {
     "answer_return": {
       "type": "object",
-      "required": ["questionId", "answerType"],
+      "required": ["id", "questionId", "answerType"],
       "properties": {
+        "id": { "type": "integer" },
         "questionId": { "type": "integer" },
         "answerType": { "type": "string" },
         "freeTextAnswer": { "type": ["string", "null"] },

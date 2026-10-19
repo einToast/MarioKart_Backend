@@ -30,11 +30,13 @@ class AnswerReturnDTOServiceTest {
         question.setId(1L);
 
         MultipleChoiceAnswer answer = new MultipleChoiceAnswer();
+        answer.setId(5L);
         answer.setQuestion(question);
         answer.setSelectedOption(2);
 
         AnswerReturnDTO dto = service.answerToAnswerReturnDTO(answer);
 
+        assertThat(dto.getId()).isEqualTo(5L);
         assertThat(dto.getQuestionId()).isEqualTo(1L);
         assertThat(dto.getAnswerType()).isEqualTo("MULTIPLE_CHOICE");
         assertThat(dto.getMultipleChoiceSelectedOption()).isEqualTo(2);

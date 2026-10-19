@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 public class AnswerReturnDTOService {
     public AnswerReturnDTO answerToAnswerReturnDTO(Answer answer) {
         AnswerReturnDTO answerReturnDTO = new AnswerReturnDTO();
+        answerReturnDTO.setId(answer.getId());
         answerReturnDTO.setQuestionId(answer.getQuestion().getId());
         switch (answer) {
             case MultipleChoiceAnswer choiceAnswer -> {

@@ -79,7 +79,7 @@ class AdminSurveyReadServiceTest {
         FreeTextAnswer answer = new FreeTextAnswer();
         answer.setQuestion(question);
         answer.setTextAnswer("Hello");
-        AnswerReturnDTO dto = new AnswerReturnDTO(1L, "FREE_TEXT", "Hello", null, null, null);
+        AnswerReturnDTO dto = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "Hello", null, null, null);
 
         when(questionRepository.findById(1L)).thenReturn(Optional.of(question));
         when(answerRepository.findAllByQuestionId(1L)).thenReturn(List.of(answer));
