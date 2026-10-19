@@ -60,6 +60,7 @@ class SurveyEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                                 {"questionId":%d,"answerType":"MULTIPLE_CHOICE","multipleChoiceSelectedOption":1}
                                 """.formatted(questionId)))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.questionId").value(questionId))
                 .andExpect(jsonPath("$.multipleChoiceSelectedOption").value(1));
 

@@ -61,7 +61,7 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void submitAnswerReturnsAnswer() throws Exception {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
-        AnswerReturnDTO response = new AnswerReturnDTO(1L, "FREE_TEXT", "A", null, null, null);
+        AnswerReturnDTO response = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "A", null, null, null);
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
                 .thenReturn(new AnswerSubmissionResult(response, null));
 
@@ -146,7 +146,7 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void submitAnswerSetsSurveyKeyCookieWhenKeyIssued() throws Exception {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
-        AnswerReturnDTO response = new AnswerReturnDTO(1L, "FREE_TEXT", "A", null, null, null);
+        AnswerReturnDTO response = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "A", null, null, null);
         when(cookieProperties.getPath()).thenReturn("/");
         when(cookieProperties.getSameSite()).thenReturn("Lax");
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), isNull()))
@@ -165,7 +165,7 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void submitAnswerPassesSurveyKeyCookieAndSetsNoCookieWhenNoKeyIssued() throws Exception {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
-        AnswerReturnDTO response = new AnswerReturnDTO(1L, "FREE_TEXT", "A", null, null, null);
+        AnswerReturnDTO response = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "A", null, null, null);
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), eq("known-key")))
                 .thenReturn(new AnswerSubmissionResult(response, null));
 

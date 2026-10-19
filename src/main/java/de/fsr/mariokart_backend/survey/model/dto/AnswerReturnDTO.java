@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class AnswerReturnDTO {
+    private Long id;
     private Long questionId;
     private String answerType;
     private String freeTextAnswer;

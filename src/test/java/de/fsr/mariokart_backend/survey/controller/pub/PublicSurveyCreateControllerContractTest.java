@@ -51,7 +51,7 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
     @Test
     void submitAnswerSuccessMatchesContract() throws Exception {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
-        AnswerReturnDTO response = new AnswerReturnDTO(1L, "FREE_TEXT", "A", null, null, null);
+        AnswerReturnDTO response = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "A", null, null, null);
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
                 .thenReturn(new AnswerSubmissionResult(response, null));
 

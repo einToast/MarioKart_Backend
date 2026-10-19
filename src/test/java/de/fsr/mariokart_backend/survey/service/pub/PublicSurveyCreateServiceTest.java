@@ -197,7 +197,7 @@ class PublicSurveyCreateServiceTest {
         FreeTextAnswer mapped = new FreeTextAnswer();
         mapped.setTextAnswer("lets go");
 
-        AnswerReturnDTO expected = new AnswerReturnDTO(1L, "FREE_TEXT", "lets go", null, null, null);
+        AnswerReturnDTO expected = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "lets go", null, null, null);
 
         when(tournamentRepository.findAll()).thenReturn(List.of());
         when(answerInputDTOService.answerInputDTOToAnswer(input, 7L)).thenReturn(mapped);
@@ -374,7 +374,7 @@ class PublicSurveyCreateServiceTest {
         when(answerInputDTOService.answerInputDTOToAnswer(any(AnswerInputDTO.class), eq(7L))).thenReturn(mapped);
         when(answerRepository.save(mapped)).thenReturn(mapped);
         when(answerReturnDTOService.answerToAnswerReturnDTO(mapped))
-                .thenReturn(new AnswerReturnDTO(1L, "FREE_TEXT", "lets go", null, null, null));
+                .thenReturn(new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "lets go", null, null, null));
         return mapped;
     }
 }
