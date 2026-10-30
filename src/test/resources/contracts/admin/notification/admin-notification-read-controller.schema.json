@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/notification/admin-notification-read-controller.schema.json",
+  "$defs": {
+    "get_subscriptions_count_success": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}
