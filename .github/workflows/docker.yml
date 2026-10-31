@@ -21,6 +21,9 @@ jobs:
       - maven-build
 
     runs-on: ubuntu-24.04
+    concurrency:
+      group: docker-push-${{ github.repository }}-${{ github.ref }}
+      cancel-in-progress: false
 
     env:
       SECRET_KEY: ${{ vars.SECRET_KEY }}
