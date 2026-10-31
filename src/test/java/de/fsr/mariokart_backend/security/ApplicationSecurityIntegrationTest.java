@@ -130,6 +130,23 @@ class ApplicationSecurityIntegrationTest {
     }
 
     @Test
+    void authenticatedRequestKeepsTheCsrfCookie() throws Exception {
+        User user = new User("admin-keeps-csrf", true);
+        user.setPassword("secret");
+        userRepository.save(user);
+        Cookie csrfCookie = fetchCsrfCookie();
+        MockCookie authCookie = new MockCookie(AuthCookieConstants.AUTH_COOKIE_NAME,
+                jwtManagerService.generateJWT(user));
+
+        MvcResult result = mockMvc.perform(get("/admin/schedule/rounds")
+                        .cookie(authCookie, csrfCookie))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThat(result.getResponse().getCookie(CSRF_COOKIE_NAME)).isNull();
+    }
+
+    @Test
     void stateChangingRequestWithoutCsrfTokenIsForbidden() throws Exception {
         mockMvc.perform(post("/public/user/logout"))
                 .andExpect(status().isForbidden());
