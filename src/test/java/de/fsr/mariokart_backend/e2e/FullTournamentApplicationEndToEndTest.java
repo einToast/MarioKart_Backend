@@ -53,7 +53,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                 Map<String, Integer> teamStrength = new LinkedHashMap<>();
                 List<String> availableCharacters = characterRepository.findAll().stream()
                                 .map(character -> character.getCharacterName())
-                                .filter(name -> !"Toad".equals(name))
+                                .filter(name -> !"Toad".equals(name) && !"Waluigi".equals(name))
                                 .limit(20)
                                 .toList();
 
