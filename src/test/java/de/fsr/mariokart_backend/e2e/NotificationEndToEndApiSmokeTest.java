@@ -47,6 +47,10 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
 
         MockCookie adminCookie = loginAsAdmin();
 
+        mockMvc.perform(get("/admin/notification/subscriptions/count").cookie(adminCookie))
+                .andExpect(status().isOk())
+                .andExpect(content().string("1"));
+
         mockMvc.perform(post("/admin/notification/send").with(csrf().asHeader())
                         .cookie(adminCookie)
                         .contentType(APPLICATION_JSON)

@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -245,8 +246,9 @@ class AdminScheduleCreateServiceTest {
                 .hasMessageContaining("Invalid schedule parameters");
     }
 
-    @Test
-    void createScheduleSendsTheTeamsOfEveryFieldToSchedulerVersionFour() throws Exception {
+    @ParameterizedTest
+    @ValueSource(ints = { 4, 5 })
+    void createScheduleSendsTheTeamsOfEveryFieldToSchedulerVersionsFromFour(int version) throws Exception {
         List<Team> teams = buildTeams(16);
         List<Round> savedRounds = new ArrayList<>();
         AtomicLong roundIds = new AtomicLong(1L);
@@ -277,12 +279,12 @@ class AdminScheduleCreateServiceTest {
         when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        service.createSchedule(new ScheduleInputDTO(4, 3, 1, 8, List.of(8, 4, 4)));
+        service.createSchedule(new ScheduleInputDTO(version, 3, 1, 8, List.of(8, 4, 4)));
 
         ArgumentCaptor<Map<String, Object>> body = ArgumentCaptor.captor();
         verify(scheduleRestClient.post().uri("/schedule"), atLeastOnce()).body(body.capture());
         assertThat(body.getValue())
-                .containsEntry("version", 4)
+                .containsEntry("version", version)
                 .containsEntry("num_teams", 16)
                 .containsEntry("num_fields", 3)
                 .containsEntry("num_teams_per_game", List.of(8, 4, 4));
@@ -328,6 +330,8 @@ class AdminScheduleCreateServiceTest {
             "4, 3, '8,4,4,4'",
             "4, 3, '8,4,1'",
             "4, 3, '9,4,4'",
+            "5, 3, '8,4'",
+            "5, 3, '9,4,4'",
             "3, 3, '4,4,4'",
             "2, 3, '4,4,4'"
     })
