@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ class PublicSettingsReadServiceTest {
     @Test
     void getSettingsReturnsFirstTournament() {
         Tournament tournament = new Tournament(1L, true, true, 6, SurveyKeyMode.DISABLED);
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(tournament)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(tournament));
 
         TournamentDTO dto = service.getSettings();
 
@@ -43,7 +42,7 @@ class PublicSettingsReadServiceTest {
 
     @Test
     void getSettingsThrowsWhenSettingsMissing() {
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>());
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getSettings())
                 .isInstanceOf(IllegalStateException.class)

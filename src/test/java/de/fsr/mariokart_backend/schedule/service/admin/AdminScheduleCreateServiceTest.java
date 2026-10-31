@@ -127,7 +127,7 @@ class AdminScheduleCreateServiceTest {
         round.setEndTime(LocalDateTime.now().plusMinutes(20));
 
         when(scheduleInputDTOService.roundInputDTOToRound(new RoundInputDTO(false))).thenReturn(round);
-        when(roundRepository.findAll()).thenReturn(List.of(new Round(), new Round()));
+        when(roundRepository.count()).thenReturn(2L);
         when(roundRepository.save(round)).thenReturn(round);
         when(scheduleReturnDTOService.roundToRoundDTO(round))
                 .thenReturn(new RoundReturnDTO(3L, 3, round.getStartTime(), round.getEndTime(), false, false, null, null));
@@ -153,7 +153,7 @@ class AdminScheduleCreateServiceTest {
         RoundReturnDTO dto = service.addRound(new RoundInputDTO(false));
 
         assertThat(dto.getRoundNumber()).isEqualTo(7);
-        verify(roundRepository, never()).findAll();
+        verify(roundRepository, never()).count();
     }
 
     @Test
@@ -207,7 +207,7 @@ class AdminScheduleCreateServiceTest {
     @Test
     void createScheduleThrowsWhenNotEnoughTeams() {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
-        when(teamRepository.findAll()).thenReturn(List.of());
+        when(teamRepository.count()).thenReturn(0L);
 
         assertThatThrownBy(() -> service.createSchedule(new ScheduleInputDTO(1, 4, 6, 4)))
                 .isInstanceOf(NotEnoughTeamsException.class)
@@ -218,7 +218,7 @@ class AdminScheduleCreateServiceTest {
     void createScheduleThrowsWhenTeamsCannotFillAllFieldsOfARound() {
         List<Team> teams = buildTeams(11);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
-        when(teamRepository.findAll()).thenReturn(teams);
+        when(teamRepository.count()).thenReturn((long) teams.size());
 
         ScheduleInputDTO scheduleInput = new ScheduleInputDTO(2, 4, 8, 4);
 
@@ -257,6 +257,7 @@ class AdminScheduleCreateServiceTest {
                 List.of(0, 1, 2, 3, 4, 5, 6, 7), List.of(8, 9, 10, 11), List.of(12, 13, 14, 15))));
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(teamRepository.findAll()).thenReturn(teams);
         when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
                 .thenReturn("payload");
@@ -296,7 +297,7 @@ class AdminScheduleCreateServiceTest {
     void createScheduleSendsOneTeamCountToSchedulerVersionFourWithoutTeamsPerField() {
         List<Team> teams = buildTeams(16);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
-        when(teamRepository.findAll()).thenReturn(teams);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
                 .thenReturn("payload");
         when(objectMapper.readValue("payload", ScheduleDTO.class)).thenThrow(new RuntimeException("stop"));
@@ -314,7 +315,7 @@ class AdminScheduleCreateServiceTest {
     void createScheduleThrowsWhenTeamsCannotFillFieldsOfDifferentSizes() {
         List<Team> teams = buildTeams(15);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
-        when(teamRepository.findAll()).thenReturn(teams);
+        when(teamRepository.count()).thenReturn((long) teams.size());
 
         ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 3, 8, 4, List.of(8, 4, 4));
 
@@ -372,6 +373,7 @@ class AdminScheduleCreateServiceTest {
                 List.of(List.of(0, 2, 4, 6, 1, 3, 5, 7))));
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(teamRepository.findAll()).thenReturn(teams);
         when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
                 .thenReturn("payload");
@@ -417,6 +419,7 @@ class AdminScheduleCreateServiceTest {
                 List.of(0, 1, 2, 3), List.of(4, 5, 6, 7), List.of(8, 9, 10, 11), List.of(12, 13, 14, 15))));
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(teamRepository.findAll()).thenReturn(teams);
         when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
                 .thenReturn("payload");
@@ -451,7 +454,7 @@ class AdminScheduleCreateServiceTest {
     void createScheduleThrowsWhenScheduleGeneratorRequestFails() {
         List<Team> teams = buildTeams(16);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
-        when(teamRepository.findAll()).thenReturn(teams);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(scheduleRestClient.post()).thenThrow(new RuntimeException("generator down"));
 
         ScheduleInputDTO scheduleInput = new ScheduleInputDTO(1, 4, 6, 4);
@@ -465,7 +468,7 @@ class AdminScheduleCreateServiceTest {
     void createScheduleThrowsWhenScheduleGeneratorResponseCannotBeParsed() {
         List<Team> teams = buildTeams(16);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
-        when(teamRepository.findAll()).thenReturn(teams);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
                 .thenReturn("invalid-json");
         when(objectMapper.readValue("invalid-json", ScheduleDTO.class)).thenThrow(new RuntimeException("bad json"));
@@ -488,6 +491,7 @@ class AdminScheduleCreateServiceTest {
         ScheduleDTO scheduleDTO = new ScheduleDTO(12, buildSchedulePlan(6, 1));
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false, false);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(teamRepository.findAll()).thenReturn(teams);
         when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
                 .thenReturn("payload");
@@ -546,6 +550,7 @@ class AdminScheduleCreateServiceTest {
         AtomicLong roundIds = new AtomicLong(1L);
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        when(teamRepository.count()).thenReturn((long) teams.size());
         when(teamRepository.findAll()).thenReturn(teams);
         when(scheduleRestClient.post().uri("/schedule").body(anyMap()).retrieve().body(String.class))
                 .thenReturn("payload");
@@ -655,6 +660,7 @@ class AdminScheduleCreateServiceTest {
         when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4, null));
         when(teamRepository.findByFinalReadyTrue()).thenReturn(finalTeams);
         when(adminRegistrationReadService.getFinalTeams()).thenReturn(finalTeams);
+        when(roundRepository.count()).thenAnswer(invocation -> (long) savedRounds.size());
         when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
             Round round = invocation.getArgument(0);
@@ -698,6 +704,7 @@ class AdminScheduleCreateServiceTest {
         when(publicSettingsReadService.getSettings()).thenReturn(settings);
         when(teamRepository.findByFinalReadyTrue()).thenReturn(finalTeams);
         when(adminRegistrationReadService.getFinalTeams()).thenReturn(finalTeams);
+        when(roundRepository.count()).thenAnswer(invocation -> (long) savedRounds.size());
         when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
             Round round = invocation.getArgument(0);

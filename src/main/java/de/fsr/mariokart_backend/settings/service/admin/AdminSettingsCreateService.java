@@ -20,7 +20,7 @@ public class AdminSettingsCreateService {
     private final TournamentRepository tournamentRepository;
 
     public TournamentDTO createSettings() {
-        if (!tournamentRepository.findAll().isEmpty()) {
+        if (tournamentRepository.count() > 0) {
             throw new IllegalStateException("Settings already exist.");
         }
         return new TournamentDTO(tournamentRepository.save(new Tournament()));

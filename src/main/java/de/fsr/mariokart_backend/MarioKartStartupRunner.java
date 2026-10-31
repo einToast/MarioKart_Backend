@@ -70,7 +70,7 @@ public class MarioKartStartupRunner implements CommandLineRunner {
     }
 
     private void addTeams() {
-        if (!teamRepository.findAll().isEmpty()) {
+        if (teamRepository.count() > 0) {
             log.info("Teams already exist!");
             return;
         }

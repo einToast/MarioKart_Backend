@@ -94,7 +94,7 @@ public class PublicSurveyCreateService {
             throw new AnswerLimitReachedException("This team has already submitted an answer for this question.");
         }
 
-        Tournament settings = tournamentRepository.findAll().stream().findFirst().orElseGet(Tournament::new);
+        Tournament settings = tournamentRepository.findFirstByOrderByIdAsc().orElseGet(Tournament::new);
         SurveyKey surveyKey = resolveSurveyKey(settings.getSurveyKeyMode(), surveyKeyToken);
 
         if (surveyKey != null && question.isOneAnswerPerKey()

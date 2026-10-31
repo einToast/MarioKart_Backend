@@ -42,7 +42,7 @@ public class AdminSettingsUpdateService {
     private final WebSocketService webSocketService;
 
     public TournamentDTO updateSettings(TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
-        Tournament tournament = tournamentRepository.findAll().getFirst();
+        Tournament tournament = tournamentRepository.findFirstByOrderByIdAsc().orElseThrow();
         if (tournamentDTO.getRegistrationOpen() != null && tournamentDTO.getRegistrationOpen()
                 && publicScheduleReadService.isScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Matches already exist. Can't open registration.");

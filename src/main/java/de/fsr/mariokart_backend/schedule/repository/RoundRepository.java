@@ -20,6 +20,10 @@ public interface RoundRepository extends JpaRepository<Round, Long> {
 
     Optional<Round> findByRoundNumber(int roundNumber);
 
+    Optional<Round> findFirstByRoundNumberLessThanOrderByRoundNumberDesc(int roundNumber);
+
+    boolean existsByFinalGameTrue();
+
     Integer countByPlayedFalse();
 
     @Transactional

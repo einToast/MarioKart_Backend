@@ -96,25 +96,9 @@ public class AdminScheduleUpdateService {
     }
 
     private LocalDateTime calculateBreakStartTime(Round breakRound) {
-        // Find the previous round to use its end time for the break start time
-        List<Round> allRounds = roundRepository.findAll();
-        allRounds.sort(Comparator.comparing(Round::getRoundNumber));
-
-        // Find the index of the break round
-        int breakRoundIndex = -1;
-        for (int i = 0; i < allRounds.size(); i++) {
-            if (allRounds.get(i).getId().equals(breakRound.getId())) {
-                breakRoundIndex = i;
-                break;
-            }
-        }
-
-        if (breakRoundIndex > 0) {
-            // Use the end time of the previous round as break start time
-            return allRounds.get(breakRoundIndex - 1).getEndTime();
-        }
-        // Fallback if there's no previous round (shouldn't happen in normal use)
-        return LocalDateTime.now(ZoneId.systemDefault());
+        return roundRepository.findFirstByRoundNumberLessThanOrderByRoundNumberDesc(breakRound.getRoundNumber())
+                .map(Round::getEndTime)
+                .orElseGet(() -> LocalDateTime.now(ZoneId.systemDefault()));
     }
 
     private void updateRoundsAfterBreak(List<Round> roundsAfterBreak, Round breakRound) {
@@ -152,14 +136,15 @@ public class AdminScheduleUpdateService {
             notPlayedRounds.sort(Comparator.comparing(Round::getRoundNumber));
         }
 
-        if (!adminScheduleReadService.isBreakFinished()
+        boolean breakFinished = adminScheduleReadService.isBreakFinished();
+        if (!breakFinished
                 && notPlayedRounds.stream().noneMatch(r -> r.getBreakTime() != null)) {
             throw new RoundsAlreadyExistsException("Break not finished.");
         }
 
         updateNotPlayedRoundsSchedule(notPlayedRounds);
 
-        if (!adminScheduleReadService.isBreakFinished()) {
+        if (!breakFinished) {
 
             Round breakRound = notPlayedRounds.stream()
                     .filter(r -> r.getBreakTime() != null)
@@ -212,7 +197,7 @@ public class AdminScheduleUpdateService {
             throw new EntityNotFoundException("Schedule not created yet.");
         }
 
-        Break aBreak = breakRepository.findAll().getFirst();
+        Break aBreak = breakRepository.findFirstByOrderByIdAsc().orElseThrow();
         Round oldRound = aBreak.getRound();
         Round newRound = roundRepository.findById(breakCreation.getRoundId())
                 .orElseThrow(() -> new EntityNotFoundException(ROUND_NOT_FOUND));

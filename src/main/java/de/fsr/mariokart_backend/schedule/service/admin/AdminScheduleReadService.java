@@ -38,11 +38,11 @@ public class AdminScheduleReadService {
     }
 
     public BreakReturnDTO getBreak() {
-        return scheduleReturnDTOService.breakToBreakDTO(breakRepository.findAll().getFirst());
+        return scheduleReturnDTOService.breakToBreakDTO(breakRepository.findFirstByOrderByIdAsc().orElseThrow());
     }
 
     public boolean isBreakFinished() {
-        return breakRepository.findAll().getFirst().isBreakEnded();
+        return breakRepository.findFirstByOrderByIdAsc().orElseThrow().isBreakEnded();
     }
 
 }

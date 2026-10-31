@@ -5,8 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class AdminSettingsUpdateServiceTest {
         Tournament existing = new Tournament(1L, false, false, 4, SurveyKeyMode.DISABLED);
         Tournament saved = new Tournament(1L, true, true, 8, SurveyKeyMode.DISABLED);
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
         when(tournamentRepository.save(existing)).thenReturn(saved);
 
@@ -65,7 +65,7 @@ class AdminSettingsUpdateServiceTest {
     void updateSettingsUpdatesSurveyKeySettings() throws RoundsAlreadyExistsException {
         Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         TournamentDTO result = service.updateSettings(
@@ -80,7 +80,7 @@ class AdminSettingsUpdateServiceTest {
     void updateSettingsKeepsSurveyKeySettingsWhenNotProvided() throws RoundsAlreadyExistsException {
         Tournament existing = new Tournament(1L, false, false, 4, SurveyKeyMode.DISTRIBUTING);
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         TournamentDTO result = service.updateSettings(new TournamentDTO(true, null, null, null));
@@ -99,7 +99,7 @@ class AdminSettingsUpdateServiceTest {
     void updateSettingsThrowsConflictWhenReopeningRegistrationAfterScheduleCreation() {
         Tournament existing = new Tournament(1L, false, false, 4, SurveyKeyMode.DISABLED);
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
 
         assertThatThrownBy(() -> service.updateSettings(new TournamentDTO(null, true, null, null)))
@@ -127,7 +127,7 @@ class AdminSettingsUpdateServiceTest {
         update.setSwitches(List.of(new SwitchDTO(" Blau ", "#9DAEDA"), new SwitchDTO("Rot", "#da9dc9")));
         update.setFloorPlan("{\"elements\":[]}");
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
@@ -146,7 +146,7 @@ class AdminSettingsUpdateServiceTest {
         existing.setFloorPlan("{}");
         existing.getSwitches().add(new de.fsr.mariokart_backend.settings.model.SwitchConfig("Blau", "#9DAEDA"));
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         TournamentDTO result = service.updateSettings(new TournamentDTO(false, null, null, null));
@@ -162,7 +162,7 @@ class AdminSettingsUpdateServiceTest {
         TournamentDTO update = new TournamentDTO();
         update.setFloorPlan("");
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         assertThat(service.updateSettings(update).getFloorPlan()).isNull();
@@ -176,7 +176,7 @@ class AdminSettingsUpdateServiceTest {
         TournamentDTO removal = new TournamentDTO();
         removal.setProgram(" ");
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         assertThat(service.updateSettings(update).getProgram()).isEqualTo("{\"entries\":[]}");
@@ -191,7 +191,7 @@ class AdminSettingsUpdateServiceTest {
         TournamentDTO update = new TournamentDTO();
         update.setProgram("x".repeat(AdminSettingsUpdateService.MAX_PROGRAM_LENGTH + 1));
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
 
         assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
     }
@@ -204,7 +204,7 @@ class AdminSettingsUpdateServiceTest {
         TournamentDTO removal = new TournamentDTO();
         removal.setOcrProvider(" ");
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(adminOcrReadService.getProviders()).thenReturn(List.of("gemini", "openai"));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
@@ -222,7 +222,7 @@ class AdminSettingsUpdateServiceTest {
         TournamentDTO disable = new TournamentDTO();
         disable.setRelativePoints(false);
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         assertThat(service.updateSettings(enable).getRelativePoints()).isTrue();
@@ -236,7 +236,7 @@ class AdminSettingsUpdateServiceTest {
         TournamentDTO update = new TournamentDTO();
         update.setOcrProvider("unknown");
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(adminOcrReadService.getProviders()).thenReturn(List.of("gemini", "openai"));
 
         assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
@@ -245,7 +245,7 @@ class AdminSettingsUpdateServiceTest {
     @Test
     void updateSettingsRejectsInvalidSwitches() {
         Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
 
         TournamentDTO blankName = new TournamentDTO();
         blankName.setSwitches(List.of(new SwitchDTO("  ", "#9DAEDA")));
@@ -262,7 +262,7 @@ class AdminSettingsUpdateServiceTest {
     @Test
     void updateSettingsRejectsFinalTeamsOutOfRange() {
         Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
 
         TournamentDTO tooFew = new TournamentDTO();
         tooFew.setFinalTeamsCount(1);
@@ -279,7 +279,7 @@ class AdminSettingsUpdateServiceTest {
         TournamentDTO update = new TournamentDTO();
         update.setFinalTeamsCount(6);
 
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>(List.of(existing)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(true);
 
         assertThatThrownBy(() -> service.updateSettings(update))
@@ -289,7 +289,7 @@ class AdminSettingsUpdateServiceTest {
 
     @Test
     void updateSettingsThrowsWhenSettingsMissing() {
-        when(tournamentRepository.findAll()).thenReturn(new ArrayList<>());
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateSettings(new TournamentDTO(true, true, 3, null)))
                 .isInstanceOf(java.util.NoSuchElementException.class);

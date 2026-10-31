@@ -37,9 +37,10 @@ public class PublicScheduleReadService {
                 .map(scheduleReturnDTOService::roundToRoundDTO)
                 .toList();
 
+        boolean finalScheduleExists = finalScheduleExists();
         roundReturnDTOs.forEach(roundReturnDTO -> {
             roundReturnDTO.getGames().forEach(game -> {
-                game.setTeams(deleteUnnecessaryInformationFromTeams(game.getTeams()));
+                game.setTeams(deleteUnnecessaryInformationFromTeams(game.getTeams(), finalScheduleExists));
                 game.setPoints(null);
             });
         });
@@ -55,7 +56,7 @@ public class PublicScheduleReadService {
 
     @Cacheable(key = "'isScheduleCreated'", sync = true)
     public boolean isScheduleCreated() {
-        return !roundRepository.findAll().isEmpty();
+        return roundRepository.count() > 0;
     }
 
     @Cacheable(key = "'isFinalScheduleCreated'", sync = true)
@@ -64,11 +65,16 @@ public class PublicScheduleReadService {
     }
 
     private boolean finalScheduleExists() {
-        return !roundRepository.findByFinalGameTrue().isEmpty();
+        return roundRepository.existsByFinalGameTrue();
     }
 
     public Set<TeamReturnDTO> deleteUnnecessaryInformationFromTeams(Set<TeamReturnDTO> teams) {
-        if (!finalScheduleExists()) {
+        return deleteUnnecessaryInformationFromTeams(teams, finalScheduleExists());
+    }
+
+    private Set<TeamReturnDTO> deleteUnnecessaryInformationFromTeams(Set<TeamReturnDTO> teams,
+            boolean finalScheduleExists) {
+        if (!finalScheduleExists) {
             teams.forEach(team -> team.setGroupPoints(0));
         }
         teams.forEach(team -> team.setFinalPoints(0));

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ class AdminSettingsCreateServiceTest {
     void createSettingsCreatesDefaultTournamentWhenMissing() {
         Tournament saved = new Tournament(1L, true, true, 6, SurveyKeyMode.DISABLED);
 
-        when(tournamentRepository.findAll()).thenReturn(List.of());
+        when(tournamentRepository.count()).thenReturn(0L);
         when(tournamentRepository.save(org.mockito.ArgumentMatchers.any(Tournament.class))).thenReturn(saved);
 
         TournamentDTO dto = service.createSettings();
@@ -44,7 +43,7 @@ class AdminSettingsCreateServiceTest {
 
     @Test
     void createSettingsThrowsWhenAlreadyPresent() {
-        when(tournamentRepository.findAll()).thenReturn(List.of(new Tournament(1L, true, true, 6, SurveyKeyMode.DISABLED)));
+        when(tournamentRepository.count()).thenReturn(1L);
 
         assertThatThrownBy(() -> service.createSettings())
                 .isInstanceOf(IllegalStateException.class)

@@ -86,7 +86,7 @@ public class AdminScheduleCreateService {
     public RoundReturnDTO addRound(RoundInputDTO roundCreation) {
         Round round = scheduleInputDTOService.roundInputDTOToRound(roundCreation);
         if (round.getRoundNumber() == 0) {
-            round.setRoundNumber(roundRepository.findAll().size() + 1);
+            round.setRoundNumber((int) roundRepository.count() + 1);
         }
         return scheduleReturnDTOService.roundToRoundDTO(roundRepository.save(round));
     }
@@ -153,7 +153,7 @@ public class AdminScheduleCreateService {
 
     private void createFinalBonusRound(List<Team> teams, LocalDateTime startTime) {
         Round round = new Round();
-        round.setRoundNumber(roundRepository.findAll().size() + 1);
+        round.setRoundNumber((int) roundRepository.count() + 1);
         round.setFinalGame(true);
         round.setPlayed(true);
         round.setStartTime(startTime);
@@ -177,7 +177,7 @@ public class AdminScheduleCreateService {
 
     private void createFinalRounds(List<Team> teams, LocalDateTime startTime) {
         Round round = new Round();
-        round.setRoundNumber(roundRepository.findAll().size() + 1);
+        round.setRoundNumber((int) roundRepository.count() + 1);
         round.setFinalGame(true);
         round.setPlayed(false);
         round.setStartTime(startTime);
@@ -204,7 +204,7 @@ public class AdminScheduleCreateService {
             NotificationNotSentException, IllegalArgumentException {
         validateScheduleCreation(scheduleCreation);
 
-        int numTeams = teamRepository.findAll().size();
+        int numTeams = (int) teamRepository.count();
         ScheduleDTO scheduleDTO = getGeneratedSchedule(scheduleCreation, numTeams);
 
         validateScheduleCreation(scheduleCreation);
@@ -228,7 +228,7 @@ public class AdminScheduleCreateService {
         }
         if (scheduleCreation.getVersion() == LEGACY_SCHEDULER_VERSION) {
             // The first scheduler only knows four fields with four teams each
-            if (teamRepository.findAll().size() < 16) {
+            if (teamRepository.count() < 16) {
                 throw new NotEnoughTeamsException("Not enough teams");
             }
         } else {
@@ -245,7 +245,7 @@ public class AdminScheduleCreateService {
             // A team can only play on one field per round, so every field needs its own
             // teams
             int teamsPerRound = teamsPerField.stream().mapToInt(Integer::intValue).sum();
-            if (teamRepository.findAll().size() < teamsPerRound) {
+            if (teamRepository.count() < teamsPerRound) {
                 throw new NotEnoughTeamsException(
                         "Not enough teams: fields with %s teams need at least %d teams".formatted(
                                 teamsPerField, teamsPerRound));

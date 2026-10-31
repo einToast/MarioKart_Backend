@@ -176,7 +176,8 @@ class AdminScheduleUpdateServiceTest {
                 .thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)))
                 .thenReturn(new ArrayList<>(List.of(breakRound, afterBreakRound)));
         when(adminScheduleReadService.isBreakFinished()).thenReturn(false);
-        when(roundRepository.findAll()).thenReturn(new ArrayList<>(List.of(currentRound, breakRound, afterBreakRound)));
+        when(roundRepository.findFirstByRoundNumberLessThanOrderByRoundNumberDesc(2))
+                .thenReturn(Optional.of(currentRound));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(scheduleReturnDTOService.roundToRoundDTO(any(Round.class)))
@@ -186,6 +187,8 @@ class AdminScheduleUpdateServiceTest {
 
         verify(breakRepository, atLeastOnce()).save(any(Break.class));
         verify(webSocketService).sendMessage("/topic/rounds", "update");
+        verify(adminScheduleReadService, times(1)).isBreakFinished();
+        assertThat(aBreak.getStartTime()).isEqualTo(currentRound.getEndTime());
     }
 
     @Test
@@ -284,9 +287,10 @@ class AdminScheduleUpdateServiceTest {
         oldRound.setBreakTime(aBreak);
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
-        when(breakRepository.findAll()).thenReturn(List.of(aBreak));
+        when(breakRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(aBreak));
         when(roundRepository.findById(2L)).thenReturn(Optional.of(newRound));
-        when(roundRepository.findAll()).thenReturn(new ArrayList<>(List.of(oldRound, newRound, followingRound)));
+        when(roundRepository.findFirstByRoundNumberLessThanOrderByRoundNumberDesc(2))
+                .thenReturn(Optional.of(oldRound));
         when(roundRepository.findByPlayedFalse()).thenReturn(new ArrayList<>(List.of(newRound, followingRound)));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -328,9 +332,10 @@ class AdminScheduleUpdateServiceTest {
         breakRound.setBreakTime(aBreak);
 
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
-        when(breakRepository.findAll()).thenReturn(List.of(aBreak));
+        when(breakRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(aBreak));
         when(roundRepository.findById(2L)).thenReturn(Optional.of(breakRound));
-        when(roundRepository.findAll()).thenReturn(new ArrayList<>(List.of(previousRound, breakRound, afterBreakRound)));
+        when(roundRepository.findFirstByRoundNumberLessThanOrderByRoundNumberDesc(2))
+                .thenReturn(Optional.of(previousRound));
         when(roundRepository.findByPlayedFalse()).thenReturn(new ArrayList<>(List.of(breakRound, afterBreakRound)));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));

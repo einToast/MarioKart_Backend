@@ -19,9 +19,8 @@ public class PublicSettingsReadService {
 
     @Cacheable(key = "'tournamentSettings'", sync = true)
     public TournamentDTO getSettings() {
-        if (tournamentRepository.findAll().isEmpty()) {
-            throw new IllegalStateException("Settings do not exist.");
-        }
-        return new TournamentDTO(tournamentRepository.findAll().getFirst());
+        return tournamentRepository.findFirstByOrderByIdAsc()
+                .map(TournamentDTO::new)
+                .orElseThrow(() -> new IllegalStateException("Settings do not exist."));
     }
 }
