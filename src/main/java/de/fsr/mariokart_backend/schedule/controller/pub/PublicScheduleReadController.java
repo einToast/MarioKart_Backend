@@ -9,6 +9,8 @@ import de.fsr.mariokart_backend.controller.annotation.ApiController;
 import de.fsr.mariokart_backend.controller.annotation.ApiType;
 import de.fsr.mariokart_backend.controller.annotation.ControllerType;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleOverviewDTO;
+import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleOverviewService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import lombok.AllArgsConstructor;
 
@@ -18,6 +20,12 @@ import lombok.AllArgsConstructor;
 public class PublicScheduleReadController {
 
     private final PublicScheduleReadService publicScheduleReadService;
+    private final PublicScheduleOverviewService publicScheduleOverviewService;
+
+    @GetMapping("/overview")
+    public ScheduleOverviewDTO getOverview() {
+        return publicScheduleOverviewService.getOverview();
+    }
 
     @GetMapping("/rounds/current")
     public List<RoundReturnDTO> getCurrentRounds() {

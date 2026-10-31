@@ -18,6 +18,36 @@
       "type": "array",
       "items": { "$ref": "#/$defs/round_return" }
     },
+    "get_overview_success": {
+      "type": "object",
+      "required": ["currentRounds", "teamsNotInRound", "scheduleCreated", "finalScheduleCreated", "numberOfRoundsUnplayed", "tournamentOpen"],
+      "properties": {
+        "currentRounds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/round_return" }
+        },
+        "teamsNotInRound": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "teamName"],
+              "properties": {
+                "id": { "type": "integer" },
+                "teamName": { "type": "string" }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "scheduleCreated": { "type": "boolean" },
+        "finalScheduleCreated": { "type": "boolean" },
+        "numberOfRoundsUnplayed": { "type": "integer" },
+        "tournamentOpen": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
     "get_rounds_unplayed_success": {
       "type": "integer"
     },

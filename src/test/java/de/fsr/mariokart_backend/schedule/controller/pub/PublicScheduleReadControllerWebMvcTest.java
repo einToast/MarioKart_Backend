@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Tag;
@@ -19,7 +20,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleOverviewDTO;
+import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleOverviewService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 
@@ -34,6 +38,9 @@ class PublicScheduleReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private PublicScheduleReadService publicScheduleReadService;
+
+    @MockitoBean
+    private PublicScheduleOverviewService publicScheduleOverviewService;
 
     @Test
     void contextLoads() {
@@ -66,6 +73,23 @@ class PublicScheduleReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
         mockMvc.perform(get("/public/schedule/create/schedule"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
+    }
+
+    @Test
+    void getOverviewReturnsRoundsTeamsAndFlags() throws Exception {
+        TeamReturnDTO pausing = new TeamReturnDTO(9L, "Team Yoshi", null, true, true, 0, 0, 2);
+        when(publicScheduleOverviewService.getOverview()).thenReturn(new ScheduleOverviewDTO(
+                List.of(new RoundReturnDTO(5L, 5, null, null, false, false, Set.of(), null)),
+                Map.of(5L, List.of(pausing)), true, false, 4, true));
+
+        mockMvc.perform(get("/public/schedule/overview"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentRounds[0].id").value(5))
+                .andExpect(jsonPath("$.teamsNotInRound['5'][0].teamName").value("Team Yoshi"))
+                .andExpect(jsonPath("$.scheduleCreated").value(true))
+                .andExpect(jsonPath("$.finalScheduleCreated").value(false))
+                .andExpect(jsonPath("$.numberOfRoundsUnplayed").value(4))
+                .andExpect(jsonPath("$.tournamentOpen").value(true));
     }
 
     @Test
