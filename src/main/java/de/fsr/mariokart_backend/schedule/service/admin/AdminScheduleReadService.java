@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.schedule.model.Round;
@@ -16,6 +17,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class AdminScheduleReadService {
 
     private final RoundRepository roundRepository;

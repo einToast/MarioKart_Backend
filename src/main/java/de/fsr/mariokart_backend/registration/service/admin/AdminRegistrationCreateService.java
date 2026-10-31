@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.repository.CharacterRepository;
@@ -14,6 +15,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @CacheConfig(cacheNames = {"schedule", "registration"})
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class AdminRegistrationCreateService {
     private final CharacterRepository characterRepository;
 

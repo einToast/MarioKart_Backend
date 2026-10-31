@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.survey.service.admin;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @CacheConfig(cacheNames = "survey")
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class AdminSurveyUpdateService {
     private final QuestionRepository questionRepository;
     private final QuestionInputDTOService questionInputDTOService;

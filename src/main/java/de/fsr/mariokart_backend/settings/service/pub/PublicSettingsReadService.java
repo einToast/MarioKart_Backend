@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.settings.service.pub;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
@@ -11,6 +12,7 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = "settings")
+@Transactional(readOnly = true)
 public class PublicSettingsReadService {
 
     private final TournamentRepository tournamentRepository;

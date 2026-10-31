@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.Round;
@@ -18,6 +19,7 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = "schedule")
+@Transactional(readOnly = true)
 public class PublicScheduleReadService {
 
     private final RoundRepository roundRepository;

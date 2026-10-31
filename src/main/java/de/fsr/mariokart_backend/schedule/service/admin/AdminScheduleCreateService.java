@@ -12,6 +12,7 @@ import java.util.Map;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 import tools.jackson.databind.ObjectMapper;
@@ -50,6 +51,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @CacheConfig(cacheNames = {"schedule", "registration"})
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class AdminScheduleCreateService {
 
     public static final int MAX_FIELDS = 16;

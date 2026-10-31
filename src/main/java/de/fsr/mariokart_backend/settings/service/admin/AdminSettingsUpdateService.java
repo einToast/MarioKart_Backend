@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.ocr.service.admin.AdminOcrReadService;
@@ -23,6 +24,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @CacheConfig(cacheNames = "settings")
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class AdminSettingsUpdateService {
 
     public static final int MIN_FINAL_TEAMS = 2;

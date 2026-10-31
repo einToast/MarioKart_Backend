@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.registration.service.pub;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
@@ -20,6 +21,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @CacheConfig(cacheNames = "registration")
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class PublicRegistrationCreateService {
     private final TeamRepository teamRepository;
     private final PublicSettingsReadService settingsReadService;

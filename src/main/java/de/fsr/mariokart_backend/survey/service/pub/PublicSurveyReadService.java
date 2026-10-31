@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.Question;
@@ -17,6 +18,7 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = "survey")
+@Transactional(readOnly = true)
 public class PublicSurveyReadService {
     private final QuestionRepository questionRepository;
     private final QuestionReturnDTOService questionReturnDTOService;

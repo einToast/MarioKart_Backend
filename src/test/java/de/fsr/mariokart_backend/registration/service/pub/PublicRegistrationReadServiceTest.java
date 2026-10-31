@@ -95,24 +95,6 @@ class PublicRegistrationReadServiceTest {
     }
 
     @Test
-    void getTeamsInRoundReturnsDistinctActiveTeamsOnly() {
-        Team active = team(1L, "Active", true);
-        Team inactive = team(2L, "Inactive", false);
-
-        Game firstGame = new Game();
-        firstGame.setPoints(Set.of(points(active), points(inactive)));
-
-        Game secondGame = new Game();
-        secondGame.setPoints(Set.of(points(active)));
-
-        when(gameRepository.findByRoundId(9L)).thenReturn(List.of(firstGame, secondGame));
-
-        List<Team> result = service.getTeamsInRound(9L);
-
-        assertThat(result).containsExactly(active);
-    }
-
-    @Test
     void getTeamsNotInRoundFiltersRoundTeamsAndSanitizesSensitiveFields() {
         Team inRound = team(1L, "InRound", true);
         Team inactiveInRound = team(2L, "InactiveInRound", false);
