@@ -4,10 +4,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface PushSubscriptionRepository extends JpaRepository<PushSubscription, Long> {
     List<PushSubscription> findByTeamId(Long teamId);
+
+    List<PushSubscription> findByTeamIdIn(Collection<Long> teamIds);
 
     List<PushSubscription> findByEndpoint(String endpoint);
 }

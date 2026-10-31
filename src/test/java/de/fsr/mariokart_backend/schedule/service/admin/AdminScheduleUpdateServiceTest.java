@@ -3,7 +3,6 @@ package de.fsr.mariokart_backend.schedule.service.admin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -22,11 +21,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
-import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.TeamInputDTO;
@@ -51,9 +50,6 @@ import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
-import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
-import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
-import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,16 +78,13 @@ class AdminScheduleUpdateServiceTest {
     private PublicScheduleReadService publicScheduleReadService;
 
     @Mock
-    private PublicSettingsReadService publicSettingsReadService;
-
-    @Mock
     private ScheduleReturnDTOService scheduleReturnDTOService;
 
     @Mock
     private WebSocketService webSocketService;
 
     @Mock
-    private AdminNotificationCreateService adminNotificationCreateService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private AdminScheduleUpdateService service;
@@ -137,6 +130,7 @@ class AdminScheduleUpdateServiceTest {
 
         assertThat(result.isPlayed()).isTrue();
         verify(webSocketService).sendMessage("/topic/rounds", "update");
+        verify(eventPublisher).publishEvent(any(NextRoundChangedEvent.class));
     }
 
     @Test
@@ -155,6 +149,7 @@ class AdminScheduleUpdateServiceTest {
         service.updateRoundPlayed(2L, new RoundInputDTO(false));
 
         verify(webSocketService, never()).sendMessage("/topic/rounds", "update");
+        verify(eventPublisher, never()).publishEvent(any(NextRoundChangedEvent.class));
     }
 
     @Test
@@ -294,15 +289,6 @@ class AdminScheduleUpdateServiceTest {
         when(roundRepository.findByPlayedFalse()).thenReturn(new ArrayList<>(List.of(newRound, followingRound)));
         when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        Game game = new Game();
-        game.setId(70L);
-        game.setSwitchIndex(0);
-        Team team = buildTeam(9L, "Team Nine", "Yoshi");
-        Points points = buildPoints(team, game, 0, 0);
-        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4, null));
-        when(gameRepository.findByRoundId(2L)).thenReturn(List.of(game));
-        when(pointsRepository.findByGameId(70L)).thenReturn(List.of(points));
-        when(teamRepository.findAll()).thenReturn(List.of(team));
         when(scheduleReturnDTOService.breakToBreakDTO(any(Break.class)))
                 .thenReturn(new BreakReturnDTO(11L, LocalDateTime.now(), LocalDateTime.now().plusMinutes(45), true, null));
 
@@ -313,7 +299,7 @@ class AdminScheduleUpdateServiceTest {
         assertThat(newRound.getBreakTime()).isNotNull();
         verify(breakRepository).delete(aBreak);
         verify(webSocketService).sendMessage("/topic/rounds", "update");
-        verify(adminNotificationCreateService, atLeastOnce()).sendNotificationToTeam(anyLong(), any(), any());
+        verify(eventPublisher).publishEvent(any(NextRoundChangedEvent.class));
     }
 
     @Test
@@ -345,7 +331,7 @@ class AdminScheduleUpdateServiceTest {
         service.updateBreak(new BreakInputDTO(2L, 30, null));
 
         verify(webSocketService).sendMessage("/topic/rounds", "update");
-        verify(adminNotificationCreateService, never()).sendNotificationToAll(any(), any());
+        verify(eventPublisher, never()).publishEvent(any(NextRoundChangedEvent.class));
         verify(breakRepository, never()).delete(any(Break.class));
     }
 
@@ -474,81 +460,6 @@ class AdminScheduleUpdateServiceTest {
 
         assertThat(point.getFinalPoints()).isEqualTo(15);
         assertThat(point.getGroupPoints()).isEqualTo(2);
-    }
-
-    @Test
-    void sendNotificationForNextRoundReturnsWhenNoUnplayedRounds() throws NotificationNotSentException {
-        when(roundRepository.findByPlayedFalse()).thenReturn(new ArrayList<>());
-
-        service.sendNotificationForNextRound();
-
-        verify(adminNotificationCreateService, never()).sendNotificationToAll(any(), any());
-        verify(adminNotificationCreateService, never()).sendNotificationToTeam(any(), any(), any());
-    }
-
-    @Test
-    void sendNotificationForNextRoundSendsBreakNotificationWhenBreakIsActive() throws NotificationNotSentException {
-        Round round = buildRound(5L, 1, false, false);
-        Break aBreak = new Break();
-        aBreak.setBreakEnded(false);
-        round.setBreakTime(aBreak);
-
-        when(roundRepository.findByPlayedFalse()).thenReturn(new ArrayList<>(List.of(round)));
-        when(gameRepository.findByRoundId(5L)).thenReturn(List.of());
-
-        service.sendNotificationForNextRound();
-
-        verify(adminNotificationCreateService).sendNotificationToAll(
-                "It's pizza time! 🍕",
-                "Pizzapause!");
-        verify(adminNotificationCreateService, never()).sendNotificationToTeam(any(), any(), any());
-    }
-
-    @Test
-    void sendNotificationForNextRoundNamesTheSwitchAndFallsBackToItsNumber() throws NotificationNotSentException {
-        Round round = buildRound(7L, 1, false, false);
-
-        Team team1 = buildTeam(1L, "Team One", "Mario");
-        Team team2 = buildTeam(2L, "Team Two", "Luigi");
-        Team team3 = buildTeam(3L, "Team Three", "Peach");
-        Team team4 = buildTeam(4L, "Team Four", "Yoshi");
-
-        Game game1 = new Game();
-        game1.setId(100L);
-        game1.setSwitchIndex(0);
-
-        Game game2 = new Game();
-        game2.setId(101L);
-        game2.setSwitchIndex(1);
-
-        TournamentDTO settings = new TournamentDTO(true, false, 4, null);
-        settings.setSwitches(List.of(new SwitchDTO("Blau", "#9DAEDA")));
-        when(publicSettingsReadService.getSettings()).thenReturn(settings);
-        when(gameRepository.findByRoundId(7L)).thenReturn(List.of(game1, game2));
-        when(pointsRepository.findByGameId(100L))
-                .thenReturn(List.of(buildPoints(team1, game1, 0, 0), buildPoints(team2, game1, 0, 0)));
-        when(pointsRepository.findByGameId(101L))
-                .thenReturn(List.of(buildPoints(team3, game2, 0, 0)));
-        when(teamRepository.findAll()).thenReturn(List.of(team1, team2, team3, team4));
-
-        service.sendNotificationForNextRound(round);
-
-        verify(adminNotificationCreateService).sendNotificationToTeam(
-                team1.getId(),
-                "Du spielst jetzt an Switch Blau!",
-                "Du spielst jetzt an Switch Blau! Streng dich an!");
-        verify(adminNotificationCreateService).sendNotificationToTeam(
-                team2.getId(),
-                "Du spielst jetzt an Switch Blau!",
-                "Du spielst jetzt an Switch Blau! Streng dich an!");
-        verify(adminNotificationCreateService).sendNotificationToTeam(
-                team3.getId(),
-                "Du spielst jetzt an Switch 2!",
-                "Du spielst jetzt an Switch 2! Streng dich an!");
-        verify(adminNotificationCreateService).sendNotificationToTeam(
-                team4.getId(),
-                "Du spielst jetzt nicht!",
-                "Gönn dir eine Pause!");
     }
 
     private Round buildRound(Long id, int number, boolean finalGame, boolean played) {

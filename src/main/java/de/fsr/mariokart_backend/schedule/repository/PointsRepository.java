@@ -12,4 +12,6 @@ public interface PointsRepository extends JpaRepository<Points, Long> {
 
     List<Points> findByGameId(Long id);
 
+    List<Points> findByGameRoundId(Long roundId);
+
 }
