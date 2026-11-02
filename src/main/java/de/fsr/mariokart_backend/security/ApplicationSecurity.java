@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -58,6 +59,7 @@ public class ApplicationSecurity {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository())
                         .csrfTokenRequestHandler(new HeaderCsrfTokenRequestHandler())
+                        .sessionAuthenticationStrategy(new NullAuthenticatedSessionStrategy())
                         // SockJS fallback transports POST to /ws/**
                         .ignoringRequestMatchers("/ws/**")
                         .ignoringRequestMatchers(ApplicationSecurity::hasBearerToken))

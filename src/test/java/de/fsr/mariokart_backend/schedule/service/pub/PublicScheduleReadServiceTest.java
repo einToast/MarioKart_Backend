@@ -2,6 +2,8 @@ package de.fsr.mariokart_backend.schedule.service.pub;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -44,7 +46,6 @@ class PublicScheduleReadServiceTest {
         Round middle = buildRound(2L, now.plusMinutes(5));
 
         when(roundRepository.findByPlayedFalse()).thenReturn(new java.util.ArrayList<>(List.of(late, early, middle)));
-        when(roundRepository.findByFinalGameTrue()).thenReturn(List.of());
         when(scheduleReturnDTOService.roundToRoundDTO(any(Round.class))).thenAnswer(invocation -> {
             Round round = invocation.getArgument(0);
             TeamReturnDTO team = new TeamReturnDTO(1L, "Alpha", null, true, true, 12, 8, 2);
@@ -66,6 +67,7 @@ class PublicScheduleReadServiceTest {
                 assertThat(team.getFinalPoints()).isZero();
             });
         }));
+        verify(roundRepository, times(1)).existsByFinalGameTrue();
     }
 
     @Test
@@ -77,14 +79,14 @@ class PublicScheduleReadServiceTest {
 
     @Test
     void isScheduleCreatedReflectsWhetherRoundsExist() {
-        when(roundRepository.findAll()).thenReturn(List.of(new Round()));
+        when(roundRepository.count()).thenReturn(1L);
 
         assertThat(service.isScheduleCreated()).isTrue();
     }
 
     @Test
     void isFinalScheduleCreatedReflectsFinalRounds() {
-        when(roundRepository.findByFinalGameTrue()).thenReturn(List.of(new Round()));
+        when(roundRepository.existsByFinalGameTrue()).thenReturn(true);
 
         assertThat(service.isFinalScheduleCreated()).isTrue();
     }
@@ -94,7 +96,7 @@ class PublicScheduleReadServiceTest {
         TeamReturnDTO team = new TeamReturnDTO(1L, "Alpha", null, true, true, 9, 6, 2);
         Set<TeamReturnDTO> teams = new HashSet<>(Set.of(team));
 
-        when(roundRepository.findByFinalGameTrue()).thenReturn(List.of(new Round()));
+        when(roundRepository.existsByFinalGameTrue()).thenReturn(true);
 
         Set<TeamReturnDTO> sanitized = service.deleteUnnecessaryInformationFromTeams(teams);
 

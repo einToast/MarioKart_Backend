@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.settings.service.admin;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationDeleteService;
@@ -19,6 +20,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @CacheConfig(cacheNames = {"registration", "schedule", "settings", "survey"})
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class AdminSettingsDeleteService {
 
     private final TournamentRepository tournamentRepository;

@@ -1,5 +1,8 @@
 package de.fsr.mariokart_backend.survey.service.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import de.fsr.mariokart_backend.survey.model.Answer;
@@ -27,7 +30,7 @@ public class AnswerReturnDTOService {
                 answerReturnDTO.setAnswerType(QuestionType.MULTIPLE_CHOICE.toString());
             }
             case CheckboxAnswer checkboxAnswer -> {
-                answerReturnDTO.setCheckboxSelectedOptions(checkboxAnswer.getSelectedOptions());
+                answerReturnDTO.setCheckboxSelectedOptions(copyOf(checkboxAnswer.getSelectedOptions()));
                 answerReturnDTO.setAnswerType(QuestionType.CHECKBOX.toString());
             }
             case FreeTextAnswer freeTextAnswer -> {
@@ -54,5 +57,9 @@ public class AnswerReturnDTOService {
             default -> throw new IllegalArgumentException("Invalid answer type.");
         }
         return answerReturnDTO;
+    }
+
+    private static <T> List<T> copyOf(List<T> values) {
+        return values == null ? null : new ArrayList<>(values);
     }
 }

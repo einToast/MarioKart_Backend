@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Tag;
@@ -17,7 +18,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
+import de.fsr.mariokart_backend.schedule.model.dto.ScheduleOverviewDTO;
+import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleOverviewService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 import de.fsr.mariokart_backend.testsupport.ContractSchemaSupport;
@@ -36,6 +40,9 @@ class PublicScheduleReadControllerContractTest extends AbstractWebMvcSliceTest {
     @MockitoBean
     private PublicScheduleReadService publicScheduleReadService;
 
+    @MockitoBean
+    private PublicScheduleOverviewService publicScheduleOverviewService;
+
     @Test
     void getCurrentRoundsMatchesContract() throws Exception {
         when(publicScheduleReadService.getCurrentRounds())
@@ -46,6 +53,21 @@ class PublicScheduleReadControllerContractTest extends AbstractWebMvcSliceTest {
                 .andReturn();
 
         ContractSchemaSupport.assertJsonMatchesDefinition(SCHEMA, "get_rounds_current_success",
+                result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void getOverviewMatchesContract() throws Exception {
+        when(publicScheduleOverviewService.getOverview()).thenReturn(new ScheduleOverviewDTO(
+                List.of(new RoundReturnDTO(1L, 1, null, null, false, false, Set.of(), null)),
+                Map.of(1L, List.of(new TeamReturnDTO(9L, "Team Yoshi", null, true, true, 0, 0, 2))),
+                true, false, 3, true));
+
+        MvcResult result = mockMvc.perform(get("/public/schedule/overview"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        ContractSchemaSupport.assertJsonMatchesDefinition(SCHEMA, "get_overview_success",
                 result.getResponse().getContentAsString());
     }
 

@@ -15,7 +15,6 @@ import de.fsr.mariokart_backend.schedule.model.Points;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -54,7 +53,7 @@ public class Team {
 
     private boolean active;
 
-    @OneToMany(mappedBy = "team", orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "team", orphanRemoval = true)
     private Set<Points> points;
 
     @JsonIgnore

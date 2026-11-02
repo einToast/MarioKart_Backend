@@ -24,10 +24,11 @@ public class RegistrationReturnDTOService {
     public TeamReturnDTO teamToTeamReturnDTO(Team team) {
         if (team == null)
             return null;
+        int maxGamesCount = publicSettingsReadService.getSettings().getMaxGamesCount();
         return new TeamReturnDTO(team.getId(), team.getTeamName(),
                 characterToCharacterReturnDTO(team.getCharacter()), team.isFinalReady(), team.isActive(),
-                team.getGroupPoints(publicSettingsReadService.getSettings().getMaxGamesCount()), team.getFinalPoints(),
-                team.getNumberOfGamesPlayed((publicSettingsReadService.getSettings().getMaxGamesCount())));
+                team.getGroupPoints(maxGamesCount), team.getFinalPoints(),
+                team.getNumberOfGamesPlayed(maxGamesCount));
     }
 
 }

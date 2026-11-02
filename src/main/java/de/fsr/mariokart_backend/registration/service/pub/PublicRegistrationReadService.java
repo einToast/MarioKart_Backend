@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
@@ -22,6 +23,7 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = "registration")
+@Transactional(readOnly = true)
 public class PublicRegistrationReadService {
     private final TeamRepository teamRepository;
     private final CharacterRepository characterRepository;
@@ -61,11 +63,6 @@ public class PublicRegistrationReadService {
                 .toList();
 
         return deleteUnnecessaryInformationFromTeams(teamsNotInRound);
-    }
-
-    @Cacheable(key = "'teamsInRound_' + #roundId", sync = true)
-    public List<Team> getTeamsInRound(Long roundId) {
-        return findTeamsInRound(roundId);
     }
 
     private List<Team> findTeamsInRound(Long roundId) {

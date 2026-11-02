@@ -3,7 +3,6 @@ package de.fsr.mariokart_backend.survey.service.admin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -14,10 +13,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.Question;
@@ -33,7 +32,6 @@ import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
-import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -52,7 +50,7 @@ class AdminSurveyUpdateServiceTest {
     private WebSocketService webSocketService;
 
     @Mock
-    private AdminNotificationCreateService adminNotificationCreateService;
+    private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private AdminSurveyUpdateService service;
@@ -118,7 +116,7 @@ class AdminSurveyUpdateServiceTest {
         assertThat(existing.getLive()).isTrue();
         assertThat(existing.isOneAnswerPerKey()).isTrue();
         verify(webSocketService).sendMessage("/topic/questions", "update");
-        verifyNoInteractions(adminNotificationCreateService);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -144,9 +142,8 @@ class AdminSurveyUpdateServiceTest {
 
         service.updateQuestion(3L, new QuestionInputDTO());
 
-        InOrder inOrder = inOrder(adminNotificationCreateService, webSocketService);
-        inOrder.verify(adminNotificationCreateService).sendNotificationToAll("Neue Umfrage verfügbar!", "New Poll");
-        inOrder.verify(webSocketService).sendMessage("/topic/questions", "update");
+        verify(eventPublisher).publishEvent(new QuestionOpenedEvent(3L, "New Poll"));
+        verify(webSocketService).sendMessage("/topic/questions", "update");
     }
 
     @Test
@@ -166,7 +163,7 @@ class AdminSurveyUpdateServiceTest {
         service.updateQuestion(1L, new QuestionInputDTO());
 
         assertThat(existing.getOptions()).containsExactly("X", "Y", "Z");
-        verifyNoInteractions(adminNotificationCreateService);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -233,7 +230,7 @@ class AdminSurveyUpdateServiceTest {
         assertThat(existing.getQuestionText()).isEqualTo("New");
         assertThat(existing.getVisible()).isTrue();
         verify(webSocketService).sendMessage("/topic/questions", "update");
-        verifyNoInteractions(adminNotificationCreateService);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -251,7 +248,7 @@ class AdminSurveyUpdateServiceTest {
         service.updateQuestion(1L, new QuestionInputDTO());
 
         assertThat(existing.getVisible()).isTrue();
-        verifyNoInteractions(adminNotificationCreateService);
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test
@@ -270,7 +267,7 @@ class AdminSurveyUpdateServiceTest {
         assertThat(existing.getQuestionText()).isEqualTo("Old");
         assertThat(existing.getActive()).isFalse();
         assertThat(existing.getVisible()).isTrue();
-        verifyNoInteractions(adminNotificationCreateService);
+        verifyNoInteractions(eventPublisher);
     }
 
     private void stubUpdate(Question existing, Question updated) {

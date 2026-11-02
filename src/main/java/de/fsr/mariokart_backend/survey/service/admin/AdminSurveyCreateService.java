@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.survey.service.admin;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
@@ -16,6 +17,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @CacheConfig(cacheNames = "survey")
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class AdminSurveyCreateService {
 
     private final QuestionRepository questionRepository;

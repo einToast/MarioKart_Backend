@@ -10,6 +10,6 @@ public class JpaSliceCacheConfig {
 
     @Bean
     CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("registration", "schedule", "settings", "survey");
+        return new ConcurrentMapCacheManager("registration", "schedule", "settings", "survey", "users");
     }
 }

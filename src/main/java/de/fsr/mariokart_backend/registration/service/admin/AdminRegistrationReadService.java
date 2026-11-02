@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.model.dto.CharacterReturnDTO;
@@ -18,6 +19,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class AdminRegistrationReadService {
     private final TeamRepository teamRepository;
     private final CharacterRepository characterRepository;

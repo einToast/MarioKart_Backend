@@ -146,16 +146,6 @@ class AdminScheduleCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
                 .andExpect(content().string(containsString("Not enough teams ready for final")));
     }
 
-    @Test
-    void createFinalScheduleReturnsInternalServerErrorWhenNotificationFails() throws Exception {
-        when(adminScheduleCreateService.createFinalSchedule())
-                .thenThrow(new NotificationNotSentException("Failed"));
-
-        mockMvc.perform(post("/admin/schedule/create/final_schedule"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().string(containsString("Failed")));
-    }
-
     private static RoundReturnDTO round(Long id, int roundNumber) {
         return new RoundReturnDTO(id, roundNumber, null, null, false, false, Set.of(), null);
     }

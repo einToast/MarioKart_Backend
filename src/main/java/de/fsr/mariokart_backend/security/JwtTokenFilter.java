@@ -14,8 +14,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import de.fsr.mariokart_backend.config.AuthCookieConstants;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
-import de.fsr.mariokart_backend.user.repository.UserRepository;
 import de.fsr.mariokart_backend.user.service.JWTManagerService;
+import de.fsr.mariokart_backend.user.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -27,7 +27,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
     private final JWTManagerService jwtManagerService;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -35,18 +35,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = resolveToken(request);
-        if (token == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if (!jwtManagerService.validateJWT(token)) {
+        String username = token == null ? null : jwtManagerService.getSubjectFromToken(token);
+        if (username == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            setAuthenticationContext(token, request);
+            setAuthenticationContext(username, request);
         } catch (EntityNotFoundException _) {
             filterChain.doFilter(request, response);
             return;
@@ -72,8 +68,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 .orElse(null);
     }
 
-    private void setAuthenticationContext(String token, HttpServletRequest request) throws EntityNotFoundException {
-        UserDetails userDetails = getUserDetails(token);
+    private void setAuthenticationContext(String username, HttpServletRequest request) throws EntityNotFoundException {
+        UserDetails userDetails = userService.getUser(username);
 
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
                 userDetails.getAuthorities());
@@ -82,11 +78,5 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 new WebAuthenticationDetailsSource().buildDetails(request));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
-    private UserDetails getUserDetails(String token) throws EntityNotFoundException {
-
-        String jwtSubject = jwtManagerService.getSubjectFromToken(token);
-        return userRepository.findByUsername(jwtSubject).orElseThrow(() -> new EntityNotFoundException());
     }
 }

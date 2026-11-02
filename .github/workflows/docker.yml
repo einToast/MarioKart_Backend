@@ -20,7 +20,10 @@ jobs:
       - docker-test
       - maven-build
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
+    concurrency:
+      group: docker-push-${{ github.repository }}-${{ github.ref }}
+      cancel-in-progress: false
 
     env:
       SECRET_KEY: ${{ vars.SECRET_KEY }}

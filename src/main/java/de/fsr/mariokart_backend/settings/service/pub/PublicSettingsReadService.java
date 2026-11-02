@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.settings.service.pub;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
@@ -11,15 +12,15 @@ import lombok.AllArgsConstructor;
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = "settings")
+@Transactional(readOnly = true)
 public class PublicSettingsReadService {
 
     private final TournamentRepository tournamentRepository;
 
     @Cacheable(key = "'tournamentSettings'", sync = true)
     public TournamentDTO getSettings() {
-        if (tournamentRepository.findAll().isEmpty()) {
-            throw new IllegalStateException("Settings do not exist.");
-        }
-        return new TournamentDTO(tournamentRepository.findAll().getFirst());
+        return tournamentRepository.findFirstByOrderByIdAsc()
+                .map(TournamentDTO::new)
+                .orElseThrow(() -> new IllegalStateException("Settings do not exist."));
     }
 }

@@ -93,7 +93,7 @@ class AdminScheduleReadServiceTest {
         BreakReturnDTO dto = new BreakReturnDTO();
         dto.setId(1L);
 
-        when(breakRepository.findAll()).thenReturn(List.of(aBreak));
+        when(breakRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(aBreak));
         when(scheduleReturnDTOService.breakToBreakDTO(aBreak)).thenReturn(dto);
 
         BreakReturnDTO result = service.getBreak();
@@ -106,7 +106,7 @@ class AdminScheduleReadServiceTest {
         Break aBreak = new Break();
         aBreak.setBreakEnded(true);
 
-        when(breakRepository.findAll()).thenReturn(List.of(aBreak));
+        when(breakRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(aBreak));
 
         assertThat(service.isBreakFinished()).isTrue();
     }

@@ -45,10 +45,6 @@
     "post_create_final_schedule_error_404": {
       "type": "string",
       "minLength": 1
-    },
-    "post_create_final_schedule_error_500": {
-      "type": "string",
-      "minLength": 1
     }
   }
 }

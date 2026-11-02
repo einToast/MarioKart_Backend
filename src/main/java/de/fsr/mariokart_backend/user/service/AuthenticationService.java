@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -60,6 +61,7 @@ public class AuthenticationService {
         return new AuthenticationResponseDTO(user);
     }
 
+    @CacheEvict(cacheNames = "users", allEntries = true)
     public User registerUser(UserPasswordsDTO userPasswords, String token)
             throws TokenNotFoundException, TokenExpiredException, PasswordMismatchException {
         try {
@@ -83,6 +85,7 @@ public class AuthenticationService {
         }
     }
 
+    @CacheEvict(cacheNames = "users", allEntries = true)
     public List<UserToken> createUsers(List<UserCreationDTO> userCreations) throws EntityNotFoundException {
         List<User> users = new LinkedList<>();
         List<UserToken> userTokens = new LinkedList<>();

@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
+import de.fsr.mariokart_backend.notification.model.dto.NotificationRequestDTO;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
 import tools.jackson.databind.ObjectMapper;
@@ -79,6 +82,7 @@ class AdminNotificationCreateServiceTest {
         doThrow(new IllegalArgumentException("Invalid point encoding"))
                 .when(notificationSendService)
                 .sendNotification(eq(broken), anyString());
+        when(notificationSendService.sendNotification(working, "payload")).thenReturn(201);
 
         service.sendNotificationToAll("Title", "Body");
 
@@ -128,6 +132,38 @@ class AdminNotificationCreateServiceTest {
         assertThatThrownBy(() -> service.sendNotificationToTeam(7L, "T", "M"))
                 .isInstanceOf(NotificationNotSentException.class)
                 .hasMessageContaining("Could not send notification");
+    }
+
+    @Test
+    void sendNotificationsToTeamsSendsEveryTeamItsOwnNotification() throws Exception {
+        PushSubscription playing = subscription(1L, 5L);
+        PushSubscription pausing = subscription(2L, 6L);
+
+        when(subscriptionRepository.findByTeamIdIn(Set.of(5L, 6L))).thenReturn(List.of(playing, pausing));
+        when(objectMapper.writeValueAsString(Map.of("title", "Switch 1", "body", "Go"))).thenReturn("play");
+        when(objectMapper.writeValueAsString(Map.of("title", "Pause", "body", "Rest"))).thenReturn("pause");
+
+        service.sendNotificationsToTeams(Map.of(
+                5L, new NotificationRequestDTO("Switch 1", "Go"),
+                6L, new NotificationRequestDTO("Pause", "Rest")));
+
+        verify(notificationSendService).sendNotification(playing, "play");
+        verify(notificationSendService).sendNotification(pausing, "pause");
+    }
+
+    @Test
+    void sendNotificationsToTeamsWrapsErrorsWhenNothingArrives() throws Exception {
+        PushSubscription subscription = subscription(1L, 5L);
+
+        when(subscriptionRepository.findByTeamIdIn(Set.of(5L))).thenReturn(List.of(subscription));
+        when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
+        doThrow(new RuntimeException("downstream"))
+                .when(notificationSendService)
+                .sendNotification(eq(subscription), anyString());
+
+        assertThatThrownBy(() -> service.sendNotificationsToTeams(Map.of(5L, new NotificationRequestDTO("T", "M"))))
+                .isInstanceOf(NotificationNotSentException.class)
+                .hasMessageContaining("downstream");
     }
 
     private static PushSubscription subscription(Long id, Long teamId) {

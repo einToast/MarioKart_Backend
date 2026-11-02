@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.service.dto;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -22,10 +24,10 @@ public class QuestionReturnDTOService {
         QuestionReturnDTO questionReturnDTO = new QuestionReturnDTO();
         questionReturnDTO.setId(question.getId());
         if (question instanceof MultipleChoiceQuestion choiceQuestion) {
-            questionReturnDTO.setOptions(choiceQuestion.getOptions());
+            questionReturnDTO.setOptions(copyOf(choiceQuestion.getOptions()));
             questionReturnDTO.setQuestionType(QuestionType.MULTIPLE_CHOICE.toString());
         } else if (question instanceof CheckboxQuestion checkboxQuestion) {
-            questionReturnDTO.setOptions(checkboxQuestion.getOptions());
+            questionReturnDTO.setOptions(copyOf(checkboxQuestion.getOptions()));
             questionReturnDTO.setQuestionType(QuestionType.CHECKBOX.toString());
         } else if (question instanceof FreeTextQuestion) {
             questionReturnDTO.setQuestionType(QuestionType.FREE_TEXT.toString());
@@ -46,5 +48,9 @@ public class QuestionReturnDTOService {
         questionReturnDTO.setLive(question.getLive());
         questionReturnDTO.setOneAnswerPerKey(question.isOneAnswerPerKey());
         return questionReturnDTO;
+    }
+
+    private static <T> List<T> copyOf(List<T> values) {
+        return values == null ? null : new ArrayList<>(values);
     }
 }

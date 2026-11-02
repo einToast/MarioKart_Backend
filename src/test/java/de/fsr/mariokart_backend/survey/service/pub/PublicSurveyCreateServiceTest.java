@@ -199,7 +199,7 @@ class PublicSurveyCreateServiceTest {
 
         AnswerReturnDTO expected = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "lets go", null, null, null);
 
-        when(tournamentRepository.findAll()).thenReturn(List.of());
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.empty());
         when(answerInputDTOService.answerInputDTOToAnswer(input, 7L)).thenReturn(mapped);
         when(answerRepository.save(mapped)).thenReturn(mapped);
         when(answerReturnDTOService.answerToAnswerReturnDTO(mapped)).thenReturn(expected);
@@ -271,7 +271,7 @@ class PublicSurveyCreateServiceTest {
     @Test
     void submitAnswerThrowsWhenSurveyKeyMissingAndRequired() throws Exception {
         stubTeamAndQuestion();
-        when(tournamentRepository.findAll()).thenReturn(List.of(tournament(SurveyKeyMode.REQUIRED)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(tournament(SurveyKeyMode.REQUIRED)));
 
         assertThatThrownBy(() -> service.submitAnswer(freeTextInput(), USER_JSON, null))
                 .isInstanceOf(SurveyKeyRequiredException.class)
@@ -282,7 +282,7 @@ class PublicSurveyCreateServiceTest {
     @Test
     void submitAnswerThrowsWhenSurveyKeyUnknownAndRequired() throws Exception {
         stubTeamAndQuestion();
-        when(tournamentRepository.findAll()).thenReturn(List.of(tournament(SurveyKeyMode.REQUIRED)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(tournament(SurveyKeyMode.REQUIRED)));
         when(surveyKeyRepository.findByToken("forged-key")).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.submitAnswer(freeTextInput(), USER_JSON, "forged-key"))
@@ -293,7 +293,7 @@ class PublicSurveyCreateServiceTest {
     @Test
     void submitAnswerThrowsWhenSurveyKeyAlreadyAnsweredAndQuestionAllowsOneAnswerPerKey() throws Exception {
         stubTeamAndQuestion(true);
-        when(tournamentRepository.findAll()).thenReturn(List.of(tournament(SurveyKeyMode.REQUIRED)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(tournament(SurveyKeyMode.REQUIRED)));
         when(surveyKeyRepository.findByToken("known-key")).thenReturn(Optional.of(new SurveyKey(5L, "known-key")));
         when(answerRepository.existsByQuestionIdAndSurveyKeyId(1L, 5L)).thenReturn(true);
 
@@ -370,7 +370,7 @@ class PublicSurveyCreateServiceTest {
         FreeTextAnswer mapped = new FreeTextAnswer();
         mapped.setTextAnswer("lets go");
 
-        when(tournamentRepository.findAll()).thenReturn(List.of(tournament(mode)));
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(tournament(mode)));
         when(answerInputDTOService.answerInputDTOToAnswer(any(AnswerInputDTO.class), eq(7L))).thenReturn(mapped);
         when(answerRepository.save(mapped)).thenReturn(mapped);
         when(answerReturnDTOService.answerToAnswerReturnDTO(mapped))

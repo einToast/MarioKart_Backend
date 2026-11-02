@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
+import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -17,6 +18,9 @@ class AdminScheduleDeleteServiceTest {
 
     @Mock
     private RoundRepository roundRepository;
+
+    @Mock
+    private WebSocketService webSocketService;
 
     @InjectMocks
     private AdminScheduleDeleteService service;
@@ -26,6 +30,7 @@ class AdminScheduleDeleteServiceTest {
         service.deleteSchedule();
 
         verify(roundRepository).deleteAll();
+        verify(webSocketService).sendMessage("/topic/rounds", "delete");
     }
 
     @Test
@@ -33,5 +38,6 @@ class AdminScheduleDeleteServiceTest {
         service.deleteFinalSchedule();
 
         verify(roundRepository).deleteAllByFinalGameTrue();
+        verify(webSocketService).sendMessage("/topic/rounds", "delete");
     }
 }

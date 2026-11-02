@@ -2,11 +2,12 @@ package de.fsr.mariokart_backend.survey.service.admin;
 
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
-import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 import de.fsr.mariokart_backend.survey.model.Question;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
@@ -20,19 +21,18 @@ import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @AllArgsConstructor
 @CacheConfig(cacheNames = "survey")
 @CacheEvict(allEntries = true)
+@Transactional(rollbackFor = Exception.class)
 public class AdminSurveyUpdateService {
     private final QuestionRepository questionRepository;
     private final QuestionInputDTOService questionInputDTOService;
     private final QuestionReturnDTOService questionReturnDTOService;
     private final WebSocketService webSocketService;
-    private final AdminNotificationCreateService adminNotificationCreateService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public QuestionReturnDTO updateQuestion(Long id, QuestionInputDTO question)
             throws EntityNotFoundException, NotificationNotSentException {
@@ -51,12 +51,7 @@ public class AdminSurveyUpdateService {
         Question savedQuestion = questionRepository.save(questionToUpdate);
 
         if (questionCanBeAnswered) {
-            try {
-                adminNotificationCreateService.sendNotificationToAll("Neue Umfrage verfügbar!",
-                        questionToUpdate.getQuestionText());
-            } catch (NotificationNotSentException e) {
-                log.warn("Could not announce question {}: {}", id, e.getMessage());
-            }
+            eventPublisher.publishEvent(new QuestionOpenedEvent(id, questionToUpdate.getQuestionText()));
         }
         webSocketService.sendMessage("/topic/questions", "update");
         return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);

@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.Answer;
@@ -29,6 +30,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(readOnly = true)
 public class AdminSurveyReadService {
 
     private final QuestionRepository questionRepository;
