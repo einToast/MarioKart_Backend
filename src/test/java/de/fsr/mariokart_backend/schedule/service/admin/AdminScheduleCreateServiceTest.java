@@ -39,7 +39,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotEnoughTeamsException;
-import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.registration.model.Character;
 import de.fsr.mariokart_backend.registration.model.Team;
@@ -637,7 +636,7 @@ class AdminScheduleCreateServiceTest {
     }
 
     @Test
-    void createFinalScheduleDoesNotSendMessagesOnValidationFailure() throws NotificationNotSentException {
+    void createFinalScheduleDoesNotSendMessagesOnValidationFailure() {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
 
         assertThatThrownBy(() -> service.createFinalSchedule())

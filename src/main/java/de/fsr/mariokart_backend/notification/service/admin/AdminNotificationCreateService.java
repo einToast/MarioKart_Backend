@@ -97,7 +97,7 @@ public class AdminNotificationCreateService {
                 log.warn("Could not send notification to subscription {}: {}", subscription.getId(),
                         e.getCause().getMessage());
                 lastError = e.getCause();
-            } catch (InterruptedException e) {
+            } catch (InterruptedException _) {
                 Thread.currentThread().interrupt();
                 throw new NotificationNotSentException("Could not send notification: interrupted");
             }

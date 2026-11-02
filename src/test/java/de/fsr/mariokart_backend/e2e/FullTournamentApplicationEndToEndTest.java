@@ -389,7 +389,7 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                 assertThat(teamNames(getPublicGroupStandings()).get(0)).isEqualTo("FSR");
                 JsonNode standings = getFinalStandings(adminCookie);
                 List<String> expectedOrder = teamStrength.entrySet().stream()
-                                .sorted((first, second) -> second.getValue() - first.getValue())
+                                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                                 .map(Map.Entry::getKey)
                                 .toList();
                 assertThat(teamNames(standings)).containsExactlyElementsOf(expectedOrder);

@@ -152,19 +152,6 @@ class AdminScheduleCreateControllerContractTest extends AbstractWebMvcSliceTest 
                 result.getResponse().getContentAsString());
     }
 
-    @Test
-    void createFinalScheduleInternalServerErrorMatchesContract() throws Exception {
-        when(adminScheduleCreateService.createFinalSchedule())
-                .thenThrow(new NotificationNotSentException("Failed"));
-
-        MvcResult result = mockMvc.perform(post("/admin/schedule/create/final_schedule"))
-                .andExpect(status().isInternalServerError())
-                .andReturn();
-
-        ContractSchemaSupport.assertStringMatchesDefinition(SCHEMA, "post_create_final_schedule_error_500",
-                result.getResponse().getContentAsString());
-    }
-
     private static RoundReturnDTO round(Long id, int roundNumber) {
         return new RoundReturnDTO(id, roundNumber, null, null, false, false, Set.of(), null);
     }

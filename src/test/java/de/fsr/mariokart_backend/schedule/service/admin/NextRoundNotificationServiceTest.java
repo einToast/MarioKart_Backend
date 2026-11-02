@@ -63,7 +63,7 @@ class NextRoundNotificationServiceTest {
     private NextRoundNotificationService service;
 
     @Test
-    void onNextRoundChangedNotifiesTheTeamsOfTheFirstUnplayedRound() throws NotificationNotSentException {
+    void onNextRoundChangedNotifiesTheTeamsOfTheFirstUnplayedRound() {
         Round later = buildRound(8L, 3);
         Round next = buildRound(7L, 2);
         when(roundRepository.findByPlayedFalse()).thenReturn(new ArrayList<>(List.of(later, next)));
@@ -71,7 +71,7 @@ class NextRoundNotificationServiceTest {
         when(pointsRepository.findByGameRoundId(7L)).thenReturn(List.of());
         when(teamRepository.findAll()).thenReturn(List.of());
 
-        service.onNextRoundChanged(new NextRoundChangedEvent());
+        service.onNextRoundChanged(new NextRoundChangedEvent(this));
 
         verify(pointsRepository).findByGameRoundId(7L);
         verify(pointsRepository, never()).findByGameRoundId(8L);

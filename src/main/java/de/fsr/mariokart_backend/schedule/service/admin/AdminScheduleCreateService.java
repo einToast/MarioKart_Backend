@@ -117,7 +117,7 @@ public class AdminScheduleCreateService {
     }
 
     public List<RoundReturnDTO> createFinalSchedule()
-            throws RoundsAlreadyExistsException, NotEnoughTeamsException, NotificationNotSentException {
+            throws RoundsAlreadyExistsException, NotEnoughTeamsException {
         if (!publicScheduleReadService.isScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Schedule not created");
         } else if (publicScheduleReadService.isFinalScheduleCreated()) {

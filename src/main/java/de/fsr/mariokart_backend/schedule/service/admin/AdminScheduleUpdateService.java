@@ -345,6 +345,6 @@ public class AdminScheduleUpdateService {
     }
 
     public void sendNotificationForNextRound() {
-        eventPublisher.publishEvent(new NextRoundChangedEvent());
+        eventPublisher.publishEvent(new NextRoundChangedEvent(this));
     }
 }
