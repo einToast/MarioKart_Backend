@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.user.controller.pub;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -99,22 +100,22 @@ class PublicUserAuthControllerTest extends AbstractWebMvcSliceTest {
     }
 
     @Test
-    void checkLoginReturnsUnauthorizedWhenCookieMissing() throws Exception {
+    void checkLoginReturnsNoUserWhenCookieMissing() throws Exception {
         mockMvc.perform(get("/public/user/login/check"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("Not authenticated")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user").value(nullValue()));
     }
 
     @Test
-    void checkLoginReturnsUnauthorizedForInvalidSession() throws Exception {
+    void checkLoginReturnsNoUserForInvalidSession() throws Exception {
         when(authenticationService.authenticateUserByToken("bad-token"))
                 .thenThrow(new BadCredentialsException("invalid"));
 
         mockMvc.perform(get("/public/user/login/check")
                         .cookie(new org.springframework.mock.web.MockCookie(
                                 AuthCookieConstants.AUTH_COOKIE_NAME, "bad-token")))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("Invalid session")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user").value(nullValue()));
     }
 
     @Test

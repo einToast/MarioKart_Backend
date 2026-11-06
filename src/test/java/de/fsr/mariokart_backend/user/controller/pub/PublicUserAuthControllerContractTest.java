@@ -91,27 +91,27 @@ class PublicUserAuthControllerContractTest extends AbstractWebMvcSliceTest {
     }
 
     @Test
-    void checkLoginUnauthorizedWhenCookieMissingMatchesContract() throws Exception {
+    void checkLoginAnonymousWhenCookieMissingMatchesContract() throws Exception {
         MvcResult response = mockMvc.perform(get("/public/user/login/check"))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isOk())
                 .andReturn();
 
-        ContractSchemaSupport.assertStringMatchesDefinition(SCHEMA, "get_login_check_error_401",
+        ContractSchemaSupport.assertJsonMatchesDefinition(SCHEMA, "get_login_check_anonymous",
                 response.getResponse().getContentAsString());
     }
 
     @Test
-    void checkLoginUnauthorizedForInvalidSessionMatchesContract() throws Exception {
+    void checkLoginAnonymousForInvalidSessionMatchesContract() throws Exception {
         when(authenticationService.authenticateUserByToken("bad-token"))
                 .thenThrow(new BadCredentialsException("invalid"));
 
         MvcResult response = mockMvc.perform(get("/public/user/login/check")
                         .cookie(new org.springframework.mock.web.MockCookie(
                                 AuthCookieConstants.AUTH_COOKIE_NAME, "bad-token")))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isOk())
                 .andReturn();
 
-        ContractSchemaSupport.assertStringMatchesDefinition(SCHEMA, "get_login_check_error_401",
+        ContractSchemaSupport.assertJsonMatchesDefinition(SCHEMA, "get_login_check_anonymous",
                 response.getResponse().getContentAsString());
     }
 

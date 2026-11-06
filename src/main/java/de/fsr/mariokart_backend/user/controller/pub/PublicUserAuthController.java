@@ -55,14 +55,14 @@ public class PublicUserAuthController {
     public ResponseEntity<AuthenticationResponseDTO> checkLogin(
             @CookieValue(name = AuthCookieConstants.AUTH_COOKIE_NAME, required = false) String authCookie) {
         if (authCookie == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+            return ResponseEntity.ok(new AuthenticationResponseDTO());
         }
 
         try {
             AuthenticationResponseDTO response = authenticationService.authenticateUserByToken(authCookie);
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid session", ex);
+            return ResponseEntity.ok(new AuthenticationResponseDTO());
         }
     }
 
