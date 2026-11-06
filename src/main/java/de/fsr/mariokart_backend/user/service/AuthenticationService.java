@@ -49,16 +49,14 @@ public class AuthenticationService {
         return new AuthenticationResult(accessToken, new AuthenticationResponseDTO(user));
     }
 
-    public AuthenticationResponseDTO authenticateUserByToken(String token) {
-        if (!jwtManagerService.validateJWT(token)) {
-            throw new BadCredentialsException("Invalid token");
+    public AuthenticationResponseDTO checkAuthentication(String token) {
+        if (token == null || !jwtManagerService.validateJWT(token)) {
+            return new AuthenticationResponseDTO();
         }
 
-        String username = jwtManagerService.getSubjectFromToken(token);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BadCredentialsException("User not found"));
-
-        return new AuthenticationResponseDTO(user);
+        return userRepository.findByUsername(jwtManagerService.getSubjectFromToken(token))
+                .map(AuthenticationResponseDTO::new)
+                .orElseGet(AuthenticationResponseDTO::new);
     }
 
     @CacheEvict(cacheNames = "users", allEntries = true)

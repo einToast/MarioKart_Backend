@@ -28,6 +28,7 @@ import de.fsr.mariokart_backend.testsupport.ContractSchemaSupport;
 import de.fsr.mariokart_backend.testsupport.TestDataFactory;
 import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
+import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationResult;
 import de.fsr.mariokart_backend.user.service.AuthenticationService;
 
@@ -92,6 +93,8 @@ class PublicUserAuthControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginAnonymousWhenCookieMissingMatchesContract() throws Exception {
+        when(authenticationService.checkAuthentication(null)).thenReturn(new AuthenticationResponseDTO());
+
         MvcResult response = mockMvc.perform(get("/public/user/login/check"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -102,8 +105,8 @@ class PublicUserAuthControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginAnonymousForInvalidSessionMatchesContract() throws Exception {
-        when(authenticationService.authenticateUserByToken("bad-token"))
-                .thenThrow(new BadCredentialsException("invalid"));
+        when(authenticationService.checkAuthentication("bad-token"))
+                .thenReturn(new AuthenticationResponseDTO());
 
         MvcResult response = mockMvc.perform(get("/public/user/login/check")
                         .cookie(new org.springframework.mock.web.MockCookie(
@@ -117,7 +120,7 @@ class PublicUserAuthControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginSuccessMatchesContract() throws Exception {
-        when(authenticationService.authenticateUserByToken("good-token"))
+        when(authenticationService.checkAuthentication("good-token"))
                 .thenReturn(TestDataFactory.authResult("good-token", TestDataFactory.user("admin", true)).getResponse());
 
         MvcResult response = mockMvc.perform(get("/public/user/login/check")

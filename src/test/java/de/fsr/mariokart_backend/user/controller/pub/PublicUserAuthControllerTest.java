@@ -27,6 +27,7 @@ import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 import de.fsr.mariokart_backend.testsupport.TestDataFactory;
 import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
+import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationResult;
 import de.fsr.mariokart_backend.user.service.AuthenticationService;
 
@@ -101,6 +102,8 @@ class PublicUserAuthControllerTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginReturnsNoUserWhenCookieMissing() throws Exception {
+        when(authenticationService.checkAuthentication(null)).thenReturn(new AuthenticationResponseDTO());
+
         mockMvc.perform(get("/public/user/login/check"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user").value(nullValue()));
@@ -108,8 +111,8 @@ class PublicUserAuthControllerTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginReturnsNoUserForInvalidSession() throws Exception {
-        when(authenticationService.authenticateUserByToken("bad-token"))
-                .thenThrow(new BadCredentialsException("invalid"));
+        when(authenticationService.checkAuthentication("bad-token"))
+                .thenReturn(new AuthenticationResponseDTO());
 
         mockMvc.perform(get("/public/user/login/check")
                         .cookie(new org.springframework.mock.web.MockCookie(
@@ -120,7 +123,7 @@ class PublicUserAuthControllerTest extends AbstractWebMvcSliceTest {
 
     @Test
     void checkLoginReturnsUserForValidCookie() throws Exception {
-        when(authenticationService.authenticateUserByToken("good-token"))
+        when(authenticationService.checkAuthentication("good-token"))
                 .thenReturn(TestDataFactory.authResult("good-token", TestDataFactory.user("admin", true)).getResponse());
 
         mockMvc.perform(get("/public/user/login/check")

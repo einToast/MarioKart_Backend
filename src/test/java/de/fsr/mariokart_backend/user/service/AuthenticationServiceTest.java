@@ -17,7 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 
@@ -72,12 +71,24 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void authenticateUserByTokenThrowsForInvalidToken() {
+    void checkAuthenticationReturnsNoUserForMissingToken() {
+        assertThat(service.checkAuthentication(null).getUser()).isNull();
+    }
+
+    @Test
+    void checkAuthenticationReturnsNoUserForInvalidToken() {
         when(jwtManagerService.validateJWT("bad")).thenReturn(false);
 
-        assertThatThrownBy(() -> service.authenticateUserByToken("bad"))
-                .isInstanceOf(BadCredentialsException.class)
-                .hasMessageContaining("Invalid token");
+        assertThat(service.checkAuthentication("bad").getUser()).isNull();
+    }
+
+    @Test
+    void checkAuthenticationReturnsNoUserForUnknownUser() {
+        when(jwtManagerService.validateJWT("ok")).thenReturn(true);
+        when(jwtManagerService.getSubjectFromToken("ok")).thenReturn("ghost");
+        when(userRepository.findByUsername("ghost")).thenReturn(Optional.empty());
+
+        assertThat(service.checkAuthentication("ok").getUser()).isNull();
     }
 
     @Test
@@ -125,13 +136,13 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void authenticateUserByTokenReturnsResponseForKnownUser() {
+    void checkAuthenticationReturnsResponseForKnownUser() {
         User user = new User("admin", true);
         user.setId(1);
         when(jwtManagerService.validateJWT("ok")).thenReturn(true);
         when(jwtManagerService.getSubjectFromToken("ok")).thenReturn("admin");
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(user));
 
-        assertThat(service.authenticateUserByToken("ok").getUser().getUsername()).isEqualTo("admin");
+        assertThat(service.checkAuthentication("ok").getUser().getUsername()).isEqualTo("admin");
     }
 }

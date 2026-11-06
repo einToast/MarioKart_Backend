@@ -54,16 +54,7 @@ public class PublicUserAuthController {
     @GetMapping("/login/check")
     public ResponseEntity<AuthenticationResponseDTO> checkLogin(
             @CookieValue(name = AuthCookieConstants.AUTH_COOKIE_NAME, required = false) String authCookie) {
-        if (authCookie == null) {
-            return ResponseEntity.ok(new AuthenticationResponseDTO());
-        }
-
-        try {
-            AuthenticationResponseDTO response = authenticationService.authenticateUserByToken(authCookie);
-            return ResponseEntity.ok(response);
-        } catch (BadCredentialsException ex) {
-            return ResponseEntity.ok(new AuthenticationResponseDTO());
-        }
+        return ResponseEntity.ok(authenticationService.checkAuthentication(authCookie));
     }
 
     @PostMapping("/logout")
