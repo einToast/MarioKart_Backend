@@ -54,16 +54,7 @@ public class PublicUserAuthController {
     @GetMapping("/login/check")
     public ResponseEntity<AuthenticationResponseDTO> checkLogin(
             @CookieValue(name = AuthCookieConstants.AUTH_COOKIE_NAME, required = false) String authCookie) {
-        if (authCookie == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
-        }
-
-        try {
-            AuthenticationResponseDTO response = authenticationService.authenticateUserByToken(authCookie);
-            return ResponseEntity.ok(response);
-        } catch (BadCredentialsException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid session", ex);
-        }
+        return ResponseEntity.ok(authenticationService.checkAuthentication(authCookie));
     }
 
     @PostMapping("/logout")

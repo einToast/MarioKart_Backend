@@ -31,9 +31,13 @@
     "get_login_check_success": {
       "$ref": "#/$defs/authentication_response"
     },
-    "get_login_check_error_401": {
-      "type": "string",
-      "minLength": 1
+    "get_login_check_anonymous": {
+      "type": "object",
+      "required": ["user"],
+      "properties": {
+        "user": { "type": "null" }
+      },
+      "additionalProperties": true
     },
     "post_logout_success": {
       "type": "string",

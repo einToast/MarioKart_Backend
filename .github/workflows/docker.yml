@@ -1,4 +1,4 @@
-name: Maven Build + Docker build und DockerHub push
+name: Docker Build and DockerHub Push
 on:
   push:
     branches: [ "master" ]

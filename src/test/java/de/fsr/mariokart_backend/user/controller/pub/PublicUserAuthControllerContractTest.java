@@ -28,6 +28,7 @@ import de.fsr.mariokart_backend.testsupport.ContractSchemaSupport;
 import de.fsr.mariokart_backend.testsupport.TestDataFactory;
 import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
+import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationResult;
 import de.fsr.mariokart_backend.user.service.AuthenticationService;
 
@@ -91,33 +92,35 @@ class PublicUserAuthControllerContractTest extends AbstractWebMvcSliceTest {
     }
 
     @Test
-    void checkLoginUnauthorizedWhenCookieMissingMatchesContract() throws Exception {
+    void checkLoginAnonymousWhenCookieMissingMatchesContract() throws Exception {
+        when(authenticationService.checkAuthentication(null)).thenReturn(new AuthenticationResponseDTO());
+
         MvcResult response = mockMvc.perform(get("/public/user/login/check"))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isOk())
                 .andReturn();
 
-        ContractSchemaSupport.assertStringMatchesDefinition(SCHEMA, "get_login_check_error_401",
+        ContractSchemaSupport.assertJsonMatchesDefinition(SCHEMA, "get_login_check_anonymous",
                 response.getResponse().getContentAsString());
     }
 
     @Test
-    void checkLoginUnauthorizedForInvalidSessionMatchesContract() throws Exception {
-        when(authenticationService.authenticateUserByToken("bad-token"))
-                .thenThrow(new BadCredentialsException("invalid"));
+    void checkLoginAnonymousForInvalidSessionMatchesContract() throws Exception {
+        when(authenticationService.checkAuthentication("bad-token"))
+                .thenReturn(new AuthenticationResponseDTO());
 
         MvcResult response = mockMvc.perform(get("/public/user/login/check")
                         .cookie(new org.springframework.mock.web.MockCookie(
                                 AuthCookieConstants.AUTH_COOKIE_NAME, "bad-token")))
-                .andExpect(status().isUnauthorized())
+                .andExpect(status().isOk())
                 .andReturn();
 
-        ContractSchemaSupport.assertStringMatchesDefinition(SCHEMA, "get_login_check_error_401",
+        ContractSchemaSupport.assertJsonMatchesDefinition(SCHEMA, "get_login_check_anonymous",
                 response.getResponse().getContentAsString());
     }
 
     @Test
     void checkLoginSuccessMatchesContract() throws Exception {
-        when(authenticationService.authenticateUserByToken("good-token"))
+        when(authenticationService.checkAuthentication("good-token"))
                 .thenReturn(TestDataFactory.authResult("good-token", TestDataFactory.user("admin", true)).getResponse());
 
         MvcResult response = mockMvc.perform(get("/public/user/login/check")

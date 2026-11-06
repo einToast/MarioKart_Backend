@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.user.controller.pub;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -26,6 +27,7 @@ import de.fsr.mariokart_backend.testsupport.AbstractWebMvcSliceTest;
 import de.fsr.mariokart_backend.testsupport.TestDataFactory;
 import de.fsr.mariokart_backend.user.UserProperties;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationRequestDTO;
+import de.fsr.mariokart_backend.user.model.dto.AuthenticationResponseDTO;
 import de.fsr.mariokart_backend.user.model.dto.AuthenticationResult;
 import de.fsr.mariokart_backend.user.service.AuthenticationService;
 
@@ -99,27 +101,29 @@ class PublicUserAuthControllerTest extends AbstractWebMvcSliceTest {
     }
 
     @Test
-    void checkLoginReturnsUnauthorizedWhenCookieMissing() throws Exception {
+    void checkLoginReturnsNoUserWhenCookieMissing() throws Exception {
+        when(authenticationService.checkAuthentication(null)).thenReturn(new AuthenticationResponseDTO());
+
         mockMvc.perform(get("/public/user/login/check"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("Not authenticated")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user").value(nullValue()));
     }
 
     @Test
-    void checkLoginReturnsUnauthorizedForInvalidSession() throws Exception {
-        when(authenticationService.authenticateUserByToken("bad-token"))
-                .thenThrow(new BadCredentialsException("invalid"));
+    void checkLoginReturnsNoUserForInvalidSession() throws Exception {
+        when(authenticationService.checkAuthentication("bad-token"))
+                .thenReturn(new AuthenticationResponseDTO());
 
         mockMvc.perform(get("/public/user/login/check")
                         .cookie(new org.springframework.mock.web.MockCookie(
                                 AuthCookieConstants.AUTH_COOKIE_NAME, "bad-token")))
-                .andExpect(status().isUnauthorized())
-                .andExpect(content().string(containsString("Invalid session")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user").value(nullValue()));
     }
 
     @Test
     void checkLoginReturnsUserForValidCookie() throws Exception {
-        when(authenticationService.authenticateUserByToken("good-token"))
+        when(authenticationService.checkAuthentication("good-token"))
                 .thenReturn(TestDataFactory.authResult("good-token", TestDataFactory.user("admin", true)).getResponse());
 
         mockMvc.perform(get("/public/user/login/check")
