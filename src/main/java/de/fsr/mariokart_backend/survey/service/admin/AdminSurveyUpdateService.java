@@ -71,6 +71,9 @@ public class AdminSurveyUpdateService {
             questionToUpdate.setLive(updatedQuestion.getLive());
         }
         questionToUpdate.setOneAnswerPerKey(updatedQuestion.isOneAnswerPerKey());
+        if (updatedQuestion.getTranslations() != null) {
+            questionToUpdate.setTranslations(updatedQuestion.getTranslations());
+        }
     }
 
     private void updateTypeSpecificFields(Question questionToUpdate, Question updatedQuestion) {

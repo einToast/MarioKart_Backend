@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
 import de.fsr.mariokart_backend.registration.service.admin.AdminRegistrationReadService;
 import de.fsr.mariokart_backend.survey.model.Question;
+import de.fsr.mariokart_backend.survey.model.QuestionTranslation;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
@@ -141,5 +143,49 @@ class QuestionInputDTOServiceTest {
         team.setId(id);
         team.setTeamName(name);
         return team;
+    }
+
+    @Test
+    void mapsTrimmedTranslationsFittedToTheOptions() {
+        QuestionInputDTO input = new QuestionInputDTO("Wer gewinnt?", "MULTIPLE_CHOICE", List.of("Rot", "Blau"),
+                false, false, false, false, false, Map.of(
+                        "en", new QuestionTranslation(" Who wins? ", List.of(" ", "Blue", "Green")),
+                        "fr", new QuestionTranslation(" ", List.of("", " "))));
+
+        Question question = service.questionInputDTOToQuestion(input);
+
+        assertThat(question.getTranslations())
+                .containsOnlyKeys("en")
+                .containsEntry("en", new QuestionTranslation("Who wins?", List.of("", "Blue")));
+    }
+
+    @Test
+    void dropsOptionTranslationsOfQuestionsWithoutOptions() {
+        QuestionInputDTO input = new QuestionInputDTO("Feedback?", "FREE_TEXT", List.of(), false, false, false,
+                false, false, Map.of("en", new QuestionTranslation("Feedback?", List.of("A"))));
+
+        Question question = service.questionInputDTOToQuestion(input);
+
+        assertThat(question.getTranslations()).containsEntry("en", new QuestionTranslation("Feedback?", null));
+    }
+
+    @Test
+    void leavesTranslationsUnsetWhenNoneAreSent() {
+        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", null, false, false, false, false, false);
+
+        assertThat(service.questionInputDTOToQuestion(input).getTranslations()).isNull();
+    }
+
+    @Test
+    void rejectsInvalidTranslations() {
+        QuestionInputDTO invalidLanguage = new QuestionInputDTO("Q?", "FREE_TEXT", null, false, false, false, false,
+                false, Map.of("English", new QuestionTranslation("Q?", null)));
+        QuestionInputDTO tooLong = new QuestionInputDTO("Q?", "FREE_TEXT", null, false, false, false, false,
+                false, Map.of("en", new QuestionTranslation("x".repeat(256), null)));
+
+        assertThatThrownBy(() -> service.questionInputDTOToQuestion(invalidLanguage))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.questionInputDTOToQuestion(tooLong))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }
