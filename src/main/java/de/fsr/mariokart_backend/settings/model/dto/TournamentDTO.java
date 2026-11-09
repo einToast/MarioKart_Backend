@@ -1,6 +1,7 @@
 package de.fsr.mariokart_backend.settings.model.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
 import de.fsr.mariokart_backend.settings.model.Tournament;
@@ -39,7 +40,8 @@ public class TournamentDTO {
         this.finalTeamsCount = tournament.getFinalTeamsCount();
         this.switches = tournament.getSwitches() == null ? List.of()
                 : tournament.getSwitches().stream()
-                        .map(switchConfig -> new SwitchDTO(switchConfig.getName(), switchConfig.getColor()))
+                        .map(switchConfig -> new SwitchDTO(switchConfig.getName(), switchConfig.getColor(),
+                                switchConfig.getTranslations() == null ? Map.of() : Map.copyOf(switchConfig.getTranslations())))
                         .toList();
         this.floorPlan = tournament.getFloorPlan();
         this.program = tournament.getProgram();

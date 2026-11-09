@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Tag;
@@ -19,6 +20,7 @@ import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.ocr.service.admin.AdminOcrReadService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
+import de.fsr.mariokart_backend.settings.model.SwitchTranslation;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
@@ -293,5 +295,37 @@ class AdminSettingsUpdateServiceTest {
 
         assertThatThrownBy(() -> service.updateSettings(new TournamentDTO(true, true, 3, null)))
                 .isInstanceOf(java.util.NoSuchElementException.class);
+    }
+
+    @Test
+    void updateSettingsStoresTrimmedSwitchTranslations() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setSwitches(List.of(new SwitchDTO("Blau", "#9DAEDA",
+                Map.of("en", new SwitchTranslation(" Blue "), "fr", new SwitchTranslation(" ")))));
+
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        TournamentDTO result = service.updateSettings(update);
+
+        assertThat(result.getSwitches())
+                .containsExactly(new SwitchDTO("Blau", "#9DAEDA", Map.of("en", new SwitchTranslation("Blue"))));
+    }
+
+    @Test
+    void updateSettingsRejectsInvalidSwitchTranslations() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO invalidLanguage = new TournamentDTO();
+        invalidLanguage.setSwitches(List.of(new SwitchDTO("Blau", "#9DAEDA",
+                Map.of("EN!", new SwitchTranslation("Blue")))));
+        TournamentDTO tooLong = new TournamentDTO();
+        tooLong.setSwitches(List.of(new SwitchDTO("Blau", "#9DAEDA",
+                Map.of("en", new SwitchTranslation("x".repeat(31))))));
+
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> service.updateSettings(invalidLanguage)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.updateSettings(tooLong)).isInstanceOf(IllegalArgumentException.class);
     }
 }
