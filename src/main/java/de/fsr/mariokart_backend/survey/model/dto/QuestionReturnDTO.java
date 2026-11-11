@@ -1,6 +1,9 @@
 package de.fsr.mariokart_backend.survey.model.dto;
 
 import java.util.List;
+import java.util.Map;
+
+import de.fsr.mariokart_backend.survey.model.QuestionTranslation;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,4 +22,5 @@ public class QuestionReturnDTO {
     private boolean live;
     private boolean finalTeamsOnly;
     private boolean oneAnswerPerKey;
+    private Map<String, QuestionTranslation> translations;
 }

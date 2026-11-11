@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.service.admin;
 
+import java.util.Map;
+
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.ApplicationEventPublisher;
@@ -51,7 +53,8 @@ public class AdminSurveyUpdateService {
         Question savedQuestion = questionRepository.save(questionToUpdate);
 
         if (questionCanBeAnswered) {
-            eventPublisher.publishEvent(new QuestionOpenedEvent(id, questionToUpdate.getQuestionText()));
+            eventPublisher.publishEvent(new QuestionOpenedEvent(id, questionToUpdate.getQuestionText(),
+                    questionToUpdate.getTranslations() == null ? Map.of() : Map.copyOf(questionToUpdate.getTranslations())));
         }
         webSocketService.sendMessage("/topic/questions", "update");
         return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);
@@ -71,6 +74,9 @@ public class AdminSurveyUpdateService {
             questionToUpdate.setLive(updatedQuestion.getLive());
         }
         questionToUpdate.setOneAnswerPerKey(updatedQuestion.isOneAnswerPerKey());
+        if (updatedQuestion.getTranslations() != null) {
+            questionToUpdate.setTranslations(updatedQuestion.getTranslations());
+        }
     }
 
     private void updateTypeSpecificFields(Question questionToUpdate, Question updatedQuestion) {

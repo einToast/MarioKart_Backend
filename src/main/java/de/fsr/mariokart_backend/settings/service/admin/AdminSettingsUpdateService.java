@@ -1,7 +1,9 @@
 package de.fsr.mariokart_backend.settings.service.admin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.springframework.cache.annotation.CacheConfig;
@@ -13,10 +15,12 @@ import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.ocr.service.admin.AdminOcrReadService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.SwitchConfig;
+import de.fsr.mariokart_backend.settings.model.SwitchTranslation;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
+import de.fsr.mariokart_backend.translation.Translations;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 
@@ -112,9 +116,16 @@ public class AdminSettingsUpdateService {
             if (switchDTO.getColor() == null || !HEX_COLOR.matcher(switchDTO.getColor()).matches()) {
                 throw new IllegalArgumentException("Switch colors have to be hex colors like #9DAEDA.");
             }
-            switchConfigs.add(new SwitchConfig(name, switchDTO.getColor()));
+            switchConfigs.add(new SwitchConfig(name, switchDTO.getColor(), toSwitchTranslations(switchDTO.getTranslations())));
         }
         return switchConfigs;
+    }
+
+    private Map<String, SwitchTranslation> toSwitchTranslations(Map<String, SwitchTranslation> translations) {
+        return new HashMap<>(Translations.sanitize(translations, translation -> {
+            String name = Translations.text(translation.name(), MAX_SWITCH_NAME_LENGTH, "switch names");
+            return name == null ? null : new SwitchTranslation(name);
+        }));
     }
 
     private void updateFloorPlan(Tournament tournament, String floorPlan) {

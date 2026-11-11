@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -40,8 +41,8 @@ class AdminSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void createQuestionMatchesContract() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", List.of(), true, true, false, false, false);
-        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q?", List.of(), true, true, false, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", List.of(), true, true, false, false, false, null);
+        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q?", List.of(), true, true, false, false, false, Map.of());
         when(publicSurveyCreateService.createQuestion(any(QuestionInputDTO.class))).thenReturn(response);
 
         MvcResult result = mockMvc.perform(post("/admin/survey")

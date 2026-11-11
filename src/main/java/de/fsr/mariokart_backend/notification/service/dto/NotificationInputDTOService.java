@@ -2,6 +2,8 @@ package de.fsr.mariokart_backend.notification.service.dto;
 
 import org.springframework.stereotype.Service;
 
+import de.fsr.mariokart_backend.translation.Translations;
+
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
 import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
 
@@ -14,6 +16,7 @@ public class NotificationInputDTOService {
         subscription.setP256dh(subscriptionInput.getP256dh());
         subscription.setAuth(subscriptionInput.getAuth());
         subscription.setTeamId(subscriptionInput.getTeamId());
+        subscription.setLanguage(Translations.languageOrDefault(subscriptionInput.getLanguage()));
         return subscription;
     }
 }

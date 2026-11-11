@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -44,7 +45,7 @@ class PublicSurveyReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
     @Test
     void getVisibleQuestionsReturnsList() throws Exception {
         when(publicSurveyReadService.getVisibleQuestions())
-                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false)));
+                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false, Map.of())));
 
         mockMvc.perform(get("/public/survey/visible"))
                 .andExpect(status().isOk())

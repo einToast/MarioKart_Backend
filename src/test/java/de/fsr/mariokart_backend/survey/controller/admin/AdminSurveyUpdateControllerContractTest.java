@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -43,8 +44,8 @@ class AdminSurveyUpdateControllerContractTest extends AbstractWebMvcSliceTest {
 
     @Test
     void updateQuestionSuccessMatchesContract() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
-        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false, null);
+        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false, Map.of());
         when(adminSurveyUpdateService.updateQuestion(anyLong(), any(QuestionInputDTO.class))).thenReturn(response);
 
         MvcResult result = mockMvc.perform(put("/admin/survey/1")
@@ -64,7 +65,7 @@ class AdminSurveyUpdateControllerContractTest extends AbstractWebMvcSliceTest {
 
         MvcResult result = mockMvc.perform(put("/admin/survey/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false))))
+                        .content(objectMapper.writeValueAsString(new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false, null))))
                 .andExpect(status().isNotFound())
                 .andReturn();
 
@@ -79,7 +80,7 @@ class AdminSurveyUpdateControllerContractTest extends AbstractWebMvcSliceTest {
 
         MvcResult result = mockMvc.perform(put("/admin/survey/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false))))
+                        .content(objectMapper.writeValueAsString(new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false, null))))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -94,7 +95,7 @@ class AdminSurveyUpdateControllerContractTest extends AbstractWebMvcSliceTest {
 
         MvcResult result = mockMvc.perform(put("/admin/survey/1")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false))))
+                        .content(objectMapper.writeValueAsString(new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false, null))))
                 .andExpect(status().isInternalServerError())
                 .andReturn();
 

@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.survey.service.dto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -47,6 +48,7 @@ public class QuestionReturnDTOService {
         questionReturnDTO.setVisible(question.getVisible());
         questionReturnDTO.setLive(question.getLive());
         questionReturnDTO.setOneAnswerPerKey(question.isOneAnswerPerKey());
+        questionReturnDTO.setTranslations(question.getTranslations() == null ? Map.of() : Map.copyOf(question.getTranslations()));
         return questionReturnDTO;
     }
 

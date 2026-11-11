@@ -18,11 +18,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
 import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
+import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionLanguageDTO;
+import de.fsr.mariokart_backend.notification.service.NotificationTextService;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
 import de.fsr.mariokart_backend.notification.service.dto.NotificationInputDTOService;
@@ -44,12 +47,15 @@ class PublicNotificationCreateServiceTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Spy
+    private NotificationTextService notificationTextService = new NotificationTextService();
+
     @InjectMocks
     private PublicNotificationCreateService service;
 
     @Test
     void saveSubscriptionPersistsAndSendsTestNotification() throws Exception {
-        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "p256dh", "auth", 4L);
+        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "p256dh", "auth", 4L, null);
         PushSubscription incoming = subscription(null, 4L);
 
         when(notificationInputDTOService.pushSubscriptionInputDTOToPushSubscription(input)).thenReturn(incoming);
@@ -63,7 +69,7 @@ class PublicNotificationCreateServiceTest {
 
     @Test
     void saveSubscriptionDoesNotStoreUnreachableSubscriptions() throws Exception {
-        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "AQAB", "AQAB", 4L);
+        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "AQAB", "AQAB", 4L, null);
         PushSubscription incoming = subscription(null, 4L);
 
         when(notificationInputDTOService.pushSubscriptionInputDTOToPushSubscription(input)).thenReturn(incoming);
@@ -79,7 +85,7 @@ class PublicNotificationCreateServiceTest {
 
     @Test
     void saveSubscriptionUpdatesTheSubscriptionOfAKnownEndpoint() throws Exception {
-        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "new", "new", 9L);
+        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/1", "new", "new", 9L, null);
         PushSubscription incoming = subscription(null, 9L);
         incoming.setEndpoint("https://example.test/1");
         incoming.setP256dh("new");
@@ -111,6 +117,45 @@ class PublicNotificationCreateServiceTest {
         verify(objectMapper).writeValueAsString(mapCaptor.capture());
         assertThat(mapCaptor.getValue()).containsEntry("title", "Mario Kart Turnier");
         assertThat(mapCaptor.getValue().get("body")).contains("Testbenachrichtigung");
+    }
+
+    @Test
+    void sendTestNotificationUsesTheLanguageOfTheSubscription() throws Exception {
+        PushSubscription subscription = subscription(1L, 1L);
+        subscription.setLanguage("en");
+        when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
+
+        service.sendTestNotification(subscription);
+
+        ArgumentCaptor<Map<String, Object>> mapCaptor = ArgumentCaptor.captor();
+        verify(objectMapper).writeValueAsString(mapCaptor.capture());
+        assertThat(mapCaptor.getValue()).containsEntry("title", "Mario Kart Tournament")
+                .containsEntry("body", "This is a test notification!")
+                .containsEntry("lang", "en")
+                .containsEntry("actions", Map.of("open", "Open", "close", "Close"));
+    }
+
+    @Test
+    void updateLanguageChangesEverySubscriptionOfTheEndpoint() {
+        PushSubscription first = subscription(1L, 1L);
+        PushSubscription second = subscription(2L, 1L);
+        when(subscriptionRepository.findByEndpoint("https://example.test/1")).thenReturn(List.of(first, second));
+
+        service.updateLanguage(new PushSubscriptionLanguageDTO("https://example.test/1", "en"));
+
+        assertThat(first.getLanguage()).isEqualTo("en");
+        assertThat(second.getLanguage()).isEqualTo("en");
+        verify(subscriptionRepository).saveAll(List.of(first, second));
+    }
+
+    @Test
+    void updateLanguageFallsBackToGermanForUnknownLanguages() {
+        PushSubscription subscription = subscription(1L, 1L);
+        when(subscriptionRepository.findByEndpoint("https://example.test/1")).thenReturn(List.of(subscription));
+
+        service.updateLanguage(new PushSubscriptionLanguageDTO("https://example.test/1", "<script>"));
+
+        assertThat(subscription.getLanguage()).isEqualTo("de");
     }
 
     @Test

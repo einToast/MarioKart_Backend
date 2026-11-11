@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Tag;
@@ -20,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.survey.model.Question;
+import de.fsr.mariokart_backend.survey.model.QuestionTranslation;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.registration.model.Team;
@@ -101,7 +103,7 @@ class AdminSurveyUpdateServiceTest {
         updated.setOptions(List.of("X", "Y"));
 
         QuestionReturnDTO dto = new QuestionReturnDTO(1L, "MULTIPLE_CHOICE", "New", List.of("X", "Y"), true, true, true,
-                false, false);
+                false, false, Map.of());
 
         when(questionRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
@@ -133,7 +135,7 @@ class AdminSurveyUpdateServiceTest {
         updated.setVisible(true);
 
         QuestionReturnDTO dto = new QuestionReturnDTO(3L, "FREE_TEXT", "New Poll", List.of(), true, true, false, false,
-                false);
+                false, Map.of());
 
         when(questionRepository.findById(3L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
@@ -142,7 +144,7 @@ class AdminSurveyUpdateServiceTest {
 
         service.updateQuestion(3L, new QuestionInputDTO());
 
-        verify(eventPublisher).publishEvent(new QuestionOpenedEvent(3L, "New Poll"));
+        verify(eventPublisher).publishEvent(new QuestionOpenedEvent(3L, "New Poll", Map.of()));
         verify(webSocketService).sendMessage("/topic/questions", "update");
     }
 
@@ -274,5 +276,31 @@ class AdminSurveyUpdateServiceTest {
         when(questionRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
         when(questionRepository.save(existing)).thenReturn(existing);
+    }
+
+    @Test
+    void updateQuestionReplacesTranslationsWhenSent() throws Exception {
+        FreeTextQuestion existing = new FreeTextQuestion();
+        existing.setTranslations(Map.of("en", new QuestionTranslation("Old?", null)));
+        FreeTextQuestion updated = new FreeTextQuestion();
+        updated.setTranslations(Map.of("en", new QuestionTranslation("New?", null)));
+
+        stubUpdate(existing, updated);
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getTranslations()).containsEntry("en", new QuestionTranslation("New?", null));
+    }
+
+    @Test
+    void updateQuestionKeepsTranslationsWhenNoneAreSent() throws Exception {
+        FreeTextQuestion existing = new FreeTextQuestion();
+        existing.setTranslations(Map.of("en", new QuestionTranslation("Old?", null)));
+
+        stubUpdate(existing, new FreeTextQuestion());
+
+        service.updateQuestion(1L, new QuestionInputDTO());
+
+        assertThat(existing.getTranslations()).containsEntry("en", new QuestionTranslation("Old?", null));
     }
 }

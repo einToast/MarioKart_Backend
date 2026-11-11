@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.survey.model;
 
+import java.util.Map;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -9,6 +10,8 @@ import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.FreeTextQuestion;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -57,5 +60,9 @@ public abstract class Question {
         private Boolean live;
 
         private boolean oneAnswerPerKey;
+
+        @Convert(converter = QuestionTranslationsConverter.class)
+        @Column(columnDefinition = "TEXT")
+        private Map<String, QuestionTranslation> translations;
 
 }

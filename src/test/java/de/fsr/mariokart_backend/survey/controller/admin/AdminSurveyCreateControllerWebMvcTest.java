@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -43,8 +44,8 @@ class AdminSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @Test
     void createQuestionReturnsCreatedQuestion() throws Exception {
-        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", List.of(), true, true, false, false, false);
-        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q?", List.of(), true, true, false, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", List.of(), true, true, false, false, false, null);
+        QuestionReturnDTO response = new QuestionReturnDTO(1L, "FREE_TEXT", "Q?", List.of(), true, true, false, false, false, Map.of());
         when(publicSurveyCreateService.createQuestion(any(QuestionInputDTO.class))).thenReturn(response);
 
         mockMvc.perform(post("/admin/survey")

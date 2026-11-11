@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -59,7 +60,7 @@ class AdminSettingsUpdateControllerContractTest extends AbstractWebMvcSliceTest 
     @Test
     void updateSettingsLayoutMatchesContract() throws Exception {
         TournamentDTO input = new TournamentDTO(true, false, 8, SurveyKeyMode.DISABLED, 8,
-                List.of(new SwitchDTO("Blau", "#9DAEDA")), "{\"elements\":[]}", "{\"entries\":[]}", "openai", true);
+                List.of(new SwitchDTO("Blau", "#9DAEDA", Map.of())), "{\"elements\":[]}", "{\"entries\":[]}", "openai", true);
         when(adminSettingsUpdateService.updateSettings(input)).thenReturn(input);
 
         MvcResult result = mockMvc.perform(put("/admin/settings")
