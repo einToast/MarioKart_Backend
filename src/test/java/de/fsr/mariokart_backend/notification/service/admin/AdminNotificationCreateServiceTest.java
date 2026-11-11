@@ -1,11 +1,14 @@
 package de.fsr.mariokart_backend.notification.service.admin;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,13 +19,18 @@ import java.util.Set;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
 import de.fsr.mariokart_backend.notification.model.dto.NotificationRequestDTO;
+import de.fsr.mariokart_backend.notification.model.dto.NotificationTranslation;
+import de.fsr.mariokart_backend.notification.service.NotificationTextService;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
 import tools.jackson.databind.ObjectMapper;
@@ -40,6 +48,12 @@ class AdminNotificationCreateServiceTest {
     @Mock
     private NotificationSendService notificationSendService;
 
+    @Spy
+    private NotificationTextService notificationTextService = new NotificationTextService();
+
+    @Captor
+    private ArgumentCaptor<Map<String, Object>> payloadCaptor;
+
     @InjectMocks
     private AdminNotificationCreateService service;
 
@@ -51,7 +65,7 @@ class AdminNotificationCreateServiceTest {
         when(subscriptionRepository.findAll()).thenReturn(List.of(first, second));
         when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
 
-        service.sendNotificationToAll("Title", "Body");
+        service.sendNotificationToAll(new NotificationRequestDTO("Title", "Body"));
 
         verify(notificationSendService).sendNotification(first, "payload");
         verify(notificationSendService).sendNotification(second, "payload");
@@ -67,7 +81,7 @@ class AdminNotificationCreateServiceTest {
                 .when(notificationSendService)
                 .sendNotification(eq(subscription), anyString());
 
-        assertThatThrownBy(() -> service.sendNotificationToAll("Title", "Body"))
+        assertThatThrownBy(() -> service.sendNotificationToAll(new NotificationRequestDTO("Title", "Body")))
                 .isInstanceOf(NotificationNotSentException.class)
                 .hasMessageContaining("Could not send notification");
     }
@@ -84,7 +98,7 @@ class AdminNotificationCreateServiceTest {
                 .sendNotification(eq(broken), anyString());
         when(notificationSendService.sendNotification(working, "payload")).thenReturn(201);
 
-        service.sendNotificationToAll("Title", "Body");
+        service.sendNotificationToAll(new NotificationRequestDTO("Title", "Body"));
 
         verify(notificationSendService).sendNotification(working, "payload");
     }
@@ -99,7 +113,7 @@ class AdminNotificationCreateServiceTest {
         when(notificationSendService.sendNotification(gone, "payload")).thenReturn(410);
         when(notificationSendService.sendNotification(working, "payload")).thenReturn(201);
 
-        service.sendNotificationToAll("Title", "Body");
+        service.sendNotificationToAll(new NotificationRequestDTO("Title", "Body"));
 
         verify(subscriptionRepository).delete(gone);
         verify(subscriptionRepository, never()).delete(working);
@@ -113,7 +127,7 @@ class AdminNotificationCreateServiceTest {
         when(subscriptionRepository.findByTeamId(5L)).thenReturn(List.of(first, second));
         when(objectMapper.writeValueAsString(anyMap())).thenReturn("payload");
 
-        service.sendNotificationToTeam(5L, "Round", "Starts now");
+        service.sendNotificationToTeam(5L, new NotificationRequestDTO("Round", "Starts now"));
 
         verify(notificationSendService).sendNotification(first, "payload");
         verify(notificationSendService).sendNotification(second, "payload");
@@ -129,7 +143,7 @@ class AdminNotificationCreateServiceTest {
                 .when(notificationSendService)
                 .sendNotification(eq(subscription), anyString());
 
-        assertThatThrownBy(() -> service.sendNotificationToTeam(7L, "T", "M"))
+        assertThatThrownBy(() -> service.sendNotificationToTeam(7L, new NotificationRequestDTO("T", "M")))
                 .isInstanceOf(NotificationNotSentException.class)
                 .hasMessageContaining("Could not send notification");
     }
@@ -140,12 +154,14 @@ class AdminNotificationCreateServiceTest {
         PushSubscription pausing = subscription(2L, 6L);
 
         when(subscriptionRepository.findByTeamIdIn(Set.of(5L, 6L))).thenReturn(List.of(playing, pausing));
-        when(objectMapper.writeValueAsString(Map.of("title", "Switch 1", "body", "Go"))).thenReturn("play");
-        when(objectMapper.writeValueAsString(Map.of("title", "Pause", "body", "Rest"))).thenReturn("pause");
+        when(objectMapper.writeValueAsString(argThat(payload -> payload != null && "Switch 1".equals(((Map<?, ?>) payload).get("title")))))
+                .thenReturn("play");
+        when(objectMapper.writeValueAsString(argThat(payload -> payload != null && "Pause".equals(((Map<?, ?>) payload).get("title")))))
+                .thenReturn("pause");
 
         service.sendNotificationsToTeams(Map.of(
-                5L, new NotificationRequestDTO("Switch 1", "Go"),
-                6L, new NotificationRequestDTO("Pause", "Rest")));
+                5L, new NotificationRequestDTO("Switch 1", "Go")::in,
+                6L, new NotificationRequestDTO("Pause", "Rest")::in));
 
         verify(notificationSendService).sendNotification(playing, "play");
         verify(notificationSendService).sendNotification(pausing, "pause");
@@ -161,9 +177,47 @@ class AdminNotificationCreateServiceTest {
                 .when(notificationSendService)
                 .sendNotification(eq(subscription), anyString());
 
-        assertThatThrownBy(() -> service.sendNotificationsToTeams(Map.of(5L, new NotificationRequestDTO("T", "M"))))
+        assertThatThrownBy(() -> service.sendNotificationsToTeams(Map.of(5L, new NotificationRequestDTO("T", "M")::in)))
                 .isInstanceOf(NotificationNotSentException.class)
                 .hasMessageContaining("downstream");
+    }
+
+    @Test
+    void sendNotificationToAllSendsEverySubscriptionTheTextsOfItsLanguage() throws Exception {
+        PushSubscription german = subscription(1L, 1L);
+        PushSubscription english = subscription(2L, 2L);
+        english.setLanguage("en");
+        PushSubscription unknown = subscription(3L, 3L);
+        unknown.setLanguage("xx");
+
+        when(subscriptionRepository.findAll()).thenReturn(List.of(german, english, unknown));
+        when(objectMapper.writeValueAsString(anyMap())).thenReturn("de-payload", "en-payload", "xx-payload");
+
+        service.sendNotificationToAll(new NotificationRequestDTO("Hallo", "Text",
+                Map.of("en", new NotificationTranslation("Hello", " "))));
+
+        verify(objectMapper, times(3)).writeValueAsString(payloadCaptor.capture());
+        assertThat(payloadCaptor.getAllValues()).containsExactly(
+                Map.of("title", "Hallo", "body", "Text", "lang", "de",
+                        "actions", Map.of("open", "Öffnen", "close", "Schließen")),
+                Map.of("title", "Hello", "body", "Text", "lang", "en",
+                        "actions", Map.of("open", "Open", "close", "Close")),
+                Map.of("title", "Hallo", "body", "Text", "lang", "xx",
+                        "actions", Map.of("open", "Öffnen", "close", "Schließen")));
+        verify(notificationSendService).sendNotification(german, "de-payload");
+        verify(notificationSendService).sendNotification(english, "en-payload");
+        verify(notificationSendService).sendNotification(unknown, "xx-payload");
+    }
+
+    @Test
+    void sendNotificationToAllRejectsInvalidTranslations() {
+        NotificationRequestDTO invalidLanguage = new NotificationRequestDTO("T", "M",
+                Map.of("English", new NotificationTranslation("T", "M")));
+        NotificationRequestDTO tooLong = new NotificationRequestDTO("T", "M",
+                Map.of("en", new NotificationTranslation("x".repeat(256), "M")));
+
+        assertThatThrownBy(() -> service.sendNotificationToAll(invalidLanguage)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.sendNotificationToAll(tooLong)).isInstanceOf(IllegalArgumentException.class);
     }
 
     private static PushSubscription subscription(Long id, Long teamId) {

@@ -15,7 +15,7 @@ class NotificationInputDTOServiceTest {
 
     @Test
     void pushSubscriptionInputDTOToPushSubscriptionCopiesFieldsWithoutId() {
-        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/sub", "p256dh", "auth", 4L);
+        PushSubscriptionInputDTO input = new PushSubscriptionInputDTO("https://example.test/sub", "p256dh", "auth", 4L, null);
 
         PushSubscription subscription = service.pushSubscriptionInputDTOToPushSubscription(input);
 

@@ -11,7 +11,21 @@ public final class Translations {
 
     private static final Pattern LANGUAGE_CODE = Pattern.compile("[a-z]{2,3}(-[A-Za-z0-9]{2,8})?");
 
+    public static final String DEFAULT_LANGUAGE = "de";
+
     private Translations() {
+    }
+
+    public static boolean isLanguageCode(String language) {
+        return language != null && LANGUAGE_CODE.matcher(language).matches();
+    }
+
+    public static String languageOrDefault(String language) {
+        return isLanguageCode(language) ? language : DEFAULT_LANGUAGE;
+    }
+
+    public static String translatedOrDefault(String translated, String fallback) {
+        return translated == null || translated.isBlank() ? fallback : translated;
     }
 
     public static <T> Map<String, T> sanitize(Map<String, T> translations, UnaryOperator<T> sanitizer) {
@@ -23,7 +37,7 @@ public final class Translations {
             throw new IllegalArgumentException("There can be translations for at most %d languages.".formatted(MAX_LANGUAGES));
         }
         translations.forEach((language, translation) -> {
-            if (language == null || !LANGUAGE_CODE.matcher(language).matches()) {
+            if (!isLanguageCode(language)) {
                 throw new IllegalArgumentException("Translations need a language code like \"en\".");
             }
             T kept = translation == null ? null : sanitizer.apply(translation);

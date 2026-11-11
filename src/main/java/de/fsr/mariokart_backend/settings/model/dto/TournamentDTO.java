@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
+import de.fsr.mariokart_backend.settings.model.SwitchTranslation;
 import de.fsr.mariokart_backend.settings.model.Tournament;
+import de.fsr.mariokart_backend.translation.Translations;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -54,6 +56,16 @@ public class TournamentDTO {
     }
 
     // Falls back to the one-based switch number while the switch has no name
+    public String switchName(int switchIndex, String language) {
+        String name = switchName(switchIndex);
+        if (switches == null || switchIndex < 0 || switchIndex >= switches.size()
+                || switches.get(switchIndex).getTranslations() == null) {
+            return name;
+        }
+        SwitchTranslation translation = switches.get(switchIndex).getTranslations().get(language);
+        return translation == null ? name : Translations.translatedOrDefault(translation.name(), name);
+    }
+
     public String switchName(int switchIndex) {
         if (switches != null && switchIndex >= 0 && switchIndex < switches.size()) {
             String name = switches.get(switchIndex).getName();

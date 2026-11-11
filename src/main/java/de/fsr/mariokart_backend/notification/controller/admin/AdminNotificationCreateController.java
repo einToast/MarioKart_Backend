@@ -26,20 +26,24 @@ public class AdminNotificationCreateController {
     @PostMapping("/send")
     public ResponseEntity<Void> sendNotificationToAll(@RequestBody NotificationRequestDTO notification) {
         try {
-            adminNotificationCreateService.sendNotificationToAll(notification.getTitle(), notification.getMessage());
+            adminNotificationCreateService.sendNotificationToAll(notification);
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
     @PostMapping("/send/{teamId}")
     public ResponseEntity<Void> sendNotificationToTeam(@PathVariable Long teamId, @RequestBody NotificationRequestDTO notification) {
         try {
-            adminNotificationCreateService.sendNotificationToTeam(teamId, notification.getTitle(), notification.getMessage());
+            adminNotificationCreateService.sendNotificationToTeam(teamId, notification);
             return ResponseEntity.ok().build();
         } catch (NotificationNotSentException e) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

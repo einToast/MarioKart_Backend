@@ -103,7 +103,7 @@ class AdminSurveyUpdateServiceTest {
         updated.setOptions(List.of("X", "Y"));
 
         QuestionReturnDTO dto = new QuestionReturnDTO(1L, "MULTIPLE_CHOICE", "New", List.of("X", "Y"), true, true, true,
-                false, false);
+                false, false, Map.of());
 
         when(questionRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
@@ -135,7 +135,7 @@ class AdminSurveyUpdateServiceTest {
         updated.setVisible(true);
 
         QuestionReturnDTO dto = new QuestionReturnDTO(3L, "FREE_TEXT", "New Poll", List.of(), true, true, false, false,
-                false);
+                false, Map.of());
 
         when(questionRepository.findById(3L)).thenReturn(Optional.of(existing));
         when(questionInputDTOService.questionInputDTOToQuestion(any(QuestionInputDTO.class))).thenReturn(updated);
@@ -144,7 +144,7 @@ class AdminSurveyUpdateServiceTest {
 
         service.updateQuestion(3L, new QuestionInputDTO());
 
-        verify(eventPublisher).publishEvent(new QuestionOpenedEvent(3L, "New Poll"));
+        verify(eventPublisher).publishEvent(new QuestionOpenedEvent(3L, "New Poll", Map.of()));
         verify(webSocketService).sendMessage("/topic/questions", "update");
     }
 

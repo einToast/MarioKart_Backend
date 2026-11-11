@@ -2,8 +2,8 @@ package de.fsr.mariokart_backend.notification.controller.admin;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -56,7 +56,7 @@ class AdminNotificationCreateControllerWebMvcTest extends AbstractWebMvcSliceTes
         NotificationRequestDTO body = new NotificationRequestDTO("Round", "Starts");
         doThrow(new NotificationNotSentException("Failed to send"))
                 .when(adminNotificationCreateService)
-                .sendNotificationToAll(anyString(), anyString());
+                .sendNotificationToAll(any(NotificationRequestDTO.class));
 
         mockMvc.perform(post("/admin/notification/send")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -80,7 +80,7 @@ class AdminNotificationCreateControllerWebMvcTest extends AbstractWebMvcSliceTes
         NotificationRequestDTO body = new NotificationRequestDTO("Round", "Starts");
         doThrow(new NotificationNotSentException("Downstream unavailable"))
                 .when(adminNotificationCreateService)
-                .sendNotificationToTeam(anyLong(), anyString(), anyString());
+                .sendNotificationToTeam(anyLong(), any(NotificationRequestDTO.class));
 
         mockMvc.perform(post("/admin/notification/send/7")
                         .contentType(MediaType.APPLICATION_JSON)

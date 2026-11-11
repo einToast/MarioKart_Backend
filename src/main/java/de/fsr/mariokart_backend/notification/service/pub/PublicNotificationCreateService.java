@@ -10,9 +10,12 @@ import tools.jackson.databind.ObjectMapper;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
 import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
+import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionLanguageDTO;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
+import de.fsr.mariokart_backend.notification.service.NotificationTextService;
 import de.fsr.mariokart_backend.notification.service.dto.NotificationInputDTOService;
+import de.fsr.mariokart_backend.translation.Translations;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -24,6 +27,7 @@ public class PublicNotificationCreateService {
     private final NotificationInputDTOService notificationInputDTOService;
 
     private final ObjectMapper objectMapper;
+    private final NotificationTextService notificationTextService;
 
     public void saveSubscription(PushSubscriptionInputDTO subscriptionInput) throws NotificationNotSentException {
         PushSubscription incoming = notificationInputDTOService
@@ -38,16 +42,32 @@ public class PublicNotificationCreateService {
         subscription.setP256dh(incoming.getP256dh());
         subscription.setAuth(incoming.getAuth());
         subscription.setTeamId(incoming.getTeamId());
+        subscription.setLanguage(incoming.getLanguage());
         subscriptionRepository.save(subscription);
+    }
+
+    public void updateLanguage(PushSubscriptionLanguageDTO update) {
+        if (update == null || update.endpoint() == null) {
+            return;
+        }
+        String language = Translations.languageOrDefault(update.language());
+        List<PushSubscription> subscriptions = subscriptionRepository.findByEndpoint(update.endpoint());
+        subscriptions.forEach(subscription -> subscription.setLanguage(language));
+        subscriptionRepository.saveAll(subscriptions);
     }
 
     public void sendTestNotification(PushSubscription subscription) throws NotificationNotSentException {
         int statusCode;
         try {
+            String language = Translations.languageOrDefault(subscription.getLanguage());
             String payload = objectMapper
                     .writeValueAsString(Map.of(
-                        "title", "Mario Kart Turnier",
-                        "body", "Das ist eine Testbenachrichtigung!"));
+                        "title", notificationTextService.text("notification.test.title", language),
+                        "body", notificationTextService.text("notification.test.body", language),
+                        "lang", language,
+                        "actions", Map.of(
+                                "open", notificationTextService.text("notification.action.open", language),
+                                "close", notificationTextService.text("notification.action.close", language))));
             statusCode = notificationSendService.sendNotification(subscription, payload);
         } catch (Exception e) {
             throw new NotificationNotSentException("Could not send notification: " + e.getMessage());

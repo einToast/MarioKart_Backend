@@ -12,4 +12,5 @@ public class PushSubscriptionInputDTO {
     private String p256dh;
     private String auth;
     private Long teamId;
+    private String language;
 }

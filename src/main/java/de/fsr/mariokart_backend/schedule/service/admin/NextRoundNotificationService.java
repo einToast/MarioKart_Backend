@@ -10,7 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
+import de.fsr.mariokart_backend.notification.model.LocalizedNotification;
 import de.fsr.mariokart_backend.notification.model.dto.NotificationRequestDTO;
+import de.fsr.mariokart_backend.notification.service.NotificationTextService;
 import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
@@ -33,6 +35,7 @@ public class NextRoundNotificationService {
     private final TeamRepository teamRepository;
     private final PublicSettingsReadService publicSettingsReadService;
     private final AdminNotificationCreateService adminNotificationCreateService;
+    private final NotificationTextService notificationTextService;
 
     @Async
     @TransactionalEventListener(fallbackExecution = true)
@@ -51,22 +54,28 @@ public class NextRoundNotificationService {
 
     public void sendNotificationForNextRound(Round round) {
         if (round.getBreakTime() != null && !round.getBreakTime().isBreakEnded()) {
-            notifyAll("It's pizza time! 🍕", "Pizzapause!");
+            notifyAll(language -> new NotificationRequestDTO(
+                    notificationTextService.text("notification.break.title", language),
+                    notificationTextService.text("notification.break.body", language)));
             return;
         }
 
         TournamentDTO settings = publicSettingsReadService.getSettings();
-        Map<Long, NotificationRequestDTO> notificationsByTeam = new HashMap<>();
-
+        Map<Long, LocalizedNotification> notificationsByTeam = new HashMap<>();
         for (Points point : pointsRepository.findByGameRoundId(round.getId())) {
-            String title = "Du spielst jetzt an Switch " + settings.switchName(point.getGame().getSwitchIndex()) + "!";
-            notificationsByTeam.put(point.getTeam().getId(),
-                    new NotificationRequestDTO(title, title + " Streng dich an!"));
+            int switchIndex = point.getGame().getSwitchIndex();
+            notificationsByTeam.put(point.getTeam().getId(), language -> {
+                String title = notificationTextService.text("notification.round.play.title", language,
+                        settings.switchName(switchIndex, language));
+                return new NotificationRequestDTO(title,
+                        notificationTextService.text("notification.round.play.body", language, title));
+            });
         }
-
+        LocalizedNotification pause = language -> new NotificationRequestDTO(
+                notificationTextService.text("notification.round.pause.title", language),
+                notificationTextService.text("notification.round.pause.body", language));
         for (Team team : teamRepository.findAll()) {
-            notificationsByTeam.putIfAbsent(team.getId(),
-                    new NotificationRequestDTO("Du spielst jetzt nicht!", "Gönn dir eine Pause!"));
+            notificationsByTeam.putIfAbsent(team.getId(), pause);
         }
 
         try {
@@ -76,9 +85,9 @@ public class NextRoundNotificationService {
         }
     }
 
-    private void notifyAll(String title, String message) {
+    private void notifyAll(LocalizedNotification notification) {
         try {
-            adminNotificationCreateService.sendNotificationToAll(title, message);
+            adminNotificationCreateService.sendNotificationToAll(notification);
         } catch (NotificationNotSentException e) {
             log.warn("Could not notify all teams: {}", e.getMessage());
         }

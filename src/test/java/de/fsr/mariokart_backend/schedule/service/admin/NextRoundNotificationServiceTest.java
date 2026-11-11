@@ -20,10 +20,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
+import de.fsr.mariokart_backend.notification.model.LocalizedNotification;
 import de.fsr.mariokart_backend.notification.model.dto.NotificationRequestDTO;
+import de.fsr.mariokart_backend.notification.service.NotificationTextService;
 import de.fsr.mariokart_backend.notification.service.admin.AdminNotificationCreateService;
 import de.fsr.mariokart_backend.registration.model.Team;
 import de.fsr.mariokart_backend.registration.repository.TeamRepository;
@@ -33,6 +36,7 @@ import de.fsr.mariokart_backend.schedule.model.Points;
 import de.fsr.mariokart_backend.schedule.model.Round;
 import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
+import de.fsr.mariokart_backend.settings.model.SwitchTranslation;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
@@ -56,8 +60,14 @@ class NextRoundNotificationServiceTest {
     @Mock
     private AdminNotificationCreateService adminNotificationCreateService;
 
+    @Spy
+    private NotificationTextService notificationTextService = new NotificationTextService();
+
     @Captor
-    private ArgumentCaptor<Map<Long, NotificationRequestDTO>> notificationsCaptor;
+    private ArgumentCaptor<Map<Long, LocalizedNotification>> notificationsCaptor;
+
+    @Captor
+    private ArgumentCaptor<LocalizedNotification> notificationCaptor;
 
     @InjectMocks
     private NextRoundNotificationService service;
@@ -83,7 +93,7 @@ class NextRoundNotificationServiceTest {
 
         service.sendNotificationForNextRound();
 
-        verify(adminNotificationCreateService, never()).sendNotificationToAll(any(), any());
+        verify(adminNotificationCreateService, never()).sendNotificationToAll(any(LocalizedNotification.class));
         verify(adminNotificationCreateService, never()).sendNotificationsToTeams(anyMap());
     }
 
@@ -98,9 +108,9 @@ class NextRoundNotificationServiceTest {
 
         service.sendNotificationForNextRound();
 
-        verify(adminNotificationCreateService).sendNotificationToAll(
-                "It's pizza time! 🍕",
-                "Pizzapause!");
+        verify(adminNotificationCreateService).sendNotificationToAll(notificationCaptor.capture());
+        assertThat(notificationCaptor.getValue().in("de")).isEqualTo(new NotificationRequestDTO("It's pizza time! 🍕", "Pizzapause!"));
+        assertThat(notificationCaptor.getValue().in("en")).isEqualTo(new NotificationRequestDTO("It's pizza time! 🍕", "Pizza break!"));
         verify(adminNotificationCreateService, never()).sendNotificationsToTeams(anyMap());
     }
 
@@ -116,7 +126,7 @@ class NextRoundNotificationServiceTest {
         Game game2 = buildGame(101L, 1);
 
         TournamentDTO settings = new TournamentDTO(true, false, 4, null);
-        settings.setSwitches(List.of(new SwitchDTO("Blau", "#9DAEDA")));
+        settings.setSwitches(List.of(new SwitchDTO("Blau", "#9DAEDA", Map.of("en", new SwitchTranslation("Blue")))));
         when(publicSettingsReadService.getSettings()).thenReturn(settings);
         when(pointsRepository.findByGameRoundId(7L)).thenReturn(List.of(
                 buildPoints(team1, game1), buildPoints(team2, game1), buildPoints(team3, game2)));
@@ -125,14 +135,19 @@ class NextRoundNotificationServiceTest {
         service.sendNotificationForNextRound(round);
 
         verify(adminNotificationCreateService).sendNotificationsToTeams(notificationsCaptor.capture());
-        assertThat(notificationsCaptor.getValue()).containsOnly(
-                Map.entry(1L, new NotificationRequestDTO("Du spielst jetzt an Switch Blau!",
-                        "Du spielst jetzt an Switch Blau! Streng dich an!")),
-                Map.entry(2L, new NotificationRequestDTO("Du spielst jetzt an Switch Blau!",
-                        "Du spielst jetzt an Switch Blau! Streng dich an!")),
-                Map.entry(3L, new NotificationRequestDTO("Du spielst jetzt an Switch 2!",
-                        "Du spielst jetzt an Switch 2! Streng dich an!")),
-                Map.entry(4L, new NotificationRequestDTO("Du spielst jetzt nicht!", "Gönn dir eine Pause!")));
+        Map<Long, LocalizedNotification> notifications = notificationsCaptor.getValue();
+        assertThat(notifications).containsOnlyKeys(1L, 2L, 3L, 4L);
+        assertThat(notifications.get(1L).in("de")).isEqualTo(new NotificationRequestDTO("Du spielst jetzt an Switch Blau!",
+                "Du spielst jetzt an Switch Blau! Streng dich an!"));
+        assertThat(notifications.get(2L).in("de")).isEqualTo(notifications.get(1L).in("de"));
+        assertThat(notifications.get(3L).in("de")).isEqualTo(new NotificationRequestDTO("Du spielst jetzt an Switch 2!",
+                "Du spielst jetzt an Switch 2! Streng dich an!"));
+        assertThat(notifications.get(4L).in("de")).isEqualTo(new NotificationRequestDTO("Du spielst jetzt nicht!", "Gönn dir eine Pause!"));
+        assertThat(notifications.get(1L).in("en")).isEqualTo(new NotificationRequestDTO("You are now playing at switch Blue!",
+                "You are now playing at switch Blue! Give it your all!"));
+        assertThat(notifications.get(3L).in("en")).isEqualTo(new NotificationRequestDTO("You are now playing at switch 2!",
+                "You are now playing at switch 2! Give it your all!"));
+        assertThat(notifications.get(4L).in("en")).isEqualTo(new NotificationRequestDTO("You are not playing right now!", "Enjoy your break!"));
     }
 
     @Test

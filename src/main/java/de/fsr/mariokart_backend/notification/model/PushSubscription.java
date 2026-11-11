@@ -16,4 +16,6 @@ public class PushSubscription {
     private String p256dh;
     private String auth;
     private Long teamId;
+
+    private String language;
 }
