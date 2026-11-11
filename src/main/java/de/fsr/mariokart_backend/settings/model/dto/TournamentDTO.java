@@ -43,12 +43,16 @@ public class TournamentDTO {
         this.switches = tournament.getSwitches() == null ? List.of()
                 : tournament.getSwitches().stream()
                         .map(switchConfig -> new SwitchDTO(switchConfig.getName(), switchConfig.getColor(),
-                                switchConfig.getTranslations() == null ? Map.of() : Map.copyOf(switchConfig.getTranslations())))
+                                copyTranslations(switchConfig.getTranslations())))
                         .toList();
         this.floorPlan = tournament.getFloorPlan();
         this.program = tournament.getProgram();
         this.ocrProvider = tournament.getOcrProvider();
         this.relativePoints = tournament.isRelativePoints();
+    }
+
+    private static Map<String, SwitchTranslation> copyTranslations(Map<String, SwitchTranslation> translations) {
+        return translations == null ? Map.of() : Map.copyOf(translations);
     }
 
     public int finalTeamsCountOrDefault() {
