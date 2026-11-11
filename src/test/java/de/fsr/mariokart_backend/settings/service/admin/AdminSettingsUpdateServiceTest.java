@@ -126,7 +126,7 @@ class AdminSettingsUpdateServiceTest {
         Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
         TournamentDTO update = new TournamentDTO();
         update.setFinalTeamsCount(8);
-        update.setSwitches(List.of(new SwitchDTO(" Blau ", "#9DAEDA"), new SwitchDTO("Rot", "#da9dc9")));
+        update.setSwitches(List.of(new SwitchDTO(" Blau ", "#9DAEDA", Map.of()), new SwitchDTO("Rot", "#da9dc9", Map.of())));
         update.setFloorPlan("{\"elements\":[]}");
 
         when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
@@ -137,7 +137,7 @@ class AdminSettingsUpdateServiceTest {
 
         assertThat(result.getFinalTeamsCount()).isEqualTo(8);
         assertThat(result.getSwitches())
-                .containsExactly(new SwitchDTO("Blau", "#9DAEDA"), new SwitchDTO("Rot", "#da9dc9"));
+                .containsExactly(new SwitchDTO("Blau", "#9DAEDA", Map.of()), new SwitchDTO("Rot", "#da9dc9", Map.of()));
         assertThat(result.getFloorPlan()).isEqualTo("{\"elements\":[]}");
         assertThat(result.getTournamentOpen()).isTrue();
     }
@@ -146,14 +146,14 @@ class AdminSettingsUpdateServiceTest {
     void updateSettingsKeepsLayoutWhenNotProvided() throws RoundsAlreadyExistsException {
         Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
         existing.setFloorPlan("{}");
-        existing.getSwitches().add(new de.fsr.mariokart_backend.settings.model.SwitchConfig("Blau", "#9DAEDA"));
+        existing.getSwitches().add(new de.fsr.mariokart_backend.settings.model.SwitchConfig("Blau", "#9DAEDA", Map.of()));
 
         when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
         when(tournamentRepository.save(existing)).thenReturn(existing);
 
         TournamentDTO result = service.updateSettings(new TournamentDTO(false, null, null, null));
 
-        assertThat(result.getSwitches()).containsExactly(new SwitchDTO("Blau", "#9DAEDA"));
+        assertThat(result.getSwitches()).containsExactly(new SwitchDTO("Blau", "#9DAEDA", Map.of()));
         assertThat(result.getFloorPlan()).isEqualTo("{}");
     }
 
@@ -250,11 +250,11 @@ class AdminSettingsUpdateServiceTest {
         when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
 
         TournamentDTO blankName = new TournamentDTO();
-        blankName.setSwitches(List.of(new SwitchDTO("  ", "#9DAEDA")));
+        blankName.setSwitches(List.of(new SwitchDTO("  ", "#9DAEDA", Map.of())));
         TournamentDTO invalidColor = new TournamentDTO();
-        invalidColor.setSwitches(List.of(new SwitchDTO("Blau", "blue")));
+        invalidColor.setSwitches(List.of(new SwitchDTO("Blau", "blue", Map.of())));
         TournamentDTO tooMany = new TournamentDTO();
-        tooMany.setSwitches(java.util.Collections.nCopies(17, new SwitchDTO("Blau", "#9DAEDA")));
+        tooMany.setSwitches(java.util.Collections.nCopies(17, new SwitchDTO("Blau", "#9DAEDA", Map.of())));
 
         assertThatThrownBy(() -> service.updateSettings(blankName)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> service.updateSettings(invalidColor)).isInstanceOf(IllegalArgumentException.class);

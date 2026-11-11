@@ -25,8 +25,4 @@ public class SwitchConfig {
     @Convert(converter = SwitchTranslationsConverter.class)
     @Column(columnDefinition = "TEXT")
     private Map<String, SwitchTranslation> translations = new HashMap<>();
-
-    public SwitchConfig(String name, String color) {
-        this(name, color, new HashMap<>());
-    }
 }

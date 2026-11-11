@@ -46,7 +46,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 false,
                 false,
-                false);
+                false, null);
 
         Question question = service.questionInputDTOToQuestion(input);
 
@@ -69,7 +69,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 false,
                 false,
-                true);
+                true, null);
 
         Question question = service.questionInputDTOToQuestion(input);
 
@@ -87,7 +87,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 false,
                 true,
-                false);
+                false, null);
         when(adminRegistrationReadService.getFinalTeams()).thenReturn(List.of(alpha));
 
         Question question = service.questionInputDTOToQuestion(input);
@@ -110,7 +110,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 false,
                 false,
-                false);
+                false, null);
         when(teamRepository.findAll()).thenReturn(List.of(alpha, beta));
 
         Question question = service.questionInputDTOToQuestion(input);
@@ -131,7 +131,7 @@ class QuestionInputDTOServiceTest {
                 true,
                 true,
                 false,
-                false);
+                false, null);
 
         assertThatThrownBy(() -> service.questionInputDTOToQuestion(input))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -171,7 +171,7 @@ class QuestionInputDTOServiceTest {
 
     @Test
     void leavesTranslationsUnsetWhenNoneAreSent() {
-        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", null, false, false, false, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q?", "FREE_TEXT", null, false, false, false, false, false, null);
 
         assertThat(service.questionInputDTOToQuestion(input).getTranslations()).isNull();
     }

@@ -4,6 +4,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.Map;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -39,7 +40,7 @@ class PublicSurveyReadControllerContractTest extends AbstractWebMvcSliceTest {
     @Test
     void getVisibleQuestionsMatchesContract() throws Exception {
         when(publicSurveyReadService.getVisibleQuestions())
-                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false)));
+                .thenReturn(List.of(new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false, Map.of())));
 
         MvcResult result = mockMvc.perform(get("/public/survey/visible"))
                 .andExpect(status().isOk())

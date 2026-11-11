@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ class PublicSurveyReadServiceTest {
         question.setId(1L);
         question.setVisible(true);
 
-        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false, Map.of());
 
         when(questionRepository.findAllByVisible(true)).thenReturn(List.of(question));
         when(questionReturnDTOService.questionToQuestionReturnDTO(question)).thenReturn(dto);

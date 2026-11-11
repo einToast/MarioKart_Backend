@@ -22,9 +22,4 @@ public class QuestionInputDTO {
     private boolean finalTeamsOnly;
     private boolean oneAnswerPerKey;
     private Map<String, QuestionTranslation> translations;
-
-    public QuestionInputDTO(String questionText, String questionType, List<String> options, boolean active,
-            boolean visible, boolean live, boolean finalTeamsOnly, boolean oneAnswerPerKey) {
-        this(questionText, questionType, options, active, visible, live, finalTeamsOnly, oneAnswerPerKey, null);
-    }
 }

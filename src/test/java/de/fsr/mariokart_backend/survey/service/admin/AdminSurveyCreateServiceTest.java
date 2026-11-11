@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.List;
 
 import org.junit.jupiter.api.Tag;
@@ -43,9 +44,9 @@ class AdminSurveyCreateServiceTest {
 
     @Test
     void createQuestionMapsSavesAndReturnsDto() {
-        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false);
+        QuestionInputDTO input = new QuestionInputDTO("Q", "FREE_TEXT", List.of(), true, true, false, false, false, null);
         Question question = mock(Question.class);
-        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false);
+        QuestionReturnDTO dto = new QuestionReturnDTO(1L, "FREE_TEXT", "Q", List.of(), true, true, false, false, false, Map.of());
 
         when(questionInputDTOService.questionInputDTOToQuestion(input)).thenReturn(question);
         when(questionRepository.save(question)).thenReturn(question);

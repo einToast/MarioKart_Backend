@@ -14,8 +14,4 @@ public class SwitchDTO {
     private String name;
     private String color;
     private Map<String, SwitchTranslation> translations;
-
-    public SwitchDTO(String name, String color) {
-        this(name, color, Map.of());
-    }
 }
