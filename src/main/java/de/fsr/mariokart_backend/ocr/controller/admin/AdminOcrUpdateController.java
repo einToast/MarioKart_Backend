@@ -21,7 +21,7 @@ public class AdminOcrUpdateController {
     private final AdminOcrUpdateService adminOcrUpdateService;
 
     @PutMapping("/{providerName}/config")
-    public ProviderReturnDTO putMethodName(@PathVariable String providerName,
+    public ProviderReturnDTO updateProviderConfig(@PathVariable String providerName,
             @RequestBody ProviderInputDTO providerInputDTO) {
         return adminOcrUpdateService.updateProviderConfig(providerName, providerInputDTO);
     }
