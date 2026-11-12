@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/public/notification/public-notification-update-controller.schema.json",
+  "$defs": {
+    "put_subscription_language_success": {
+      "type": "string",
+      "maxLength": 0
+    }
+  }
+}
