@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.registration.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -39,11 +38,6 @@ class AdminRegistrationUpdateControllerWebMvcTest extends AbstractWebMvcSliceTes
 
     @MockitoBean
     private AdminRegistrationUpdateService adminRegistrationUpdateService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void updateTeamReturnsUpdatedTeam() throws Exception {

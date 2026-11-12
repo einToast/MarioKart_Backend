@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.registration.controller.pub;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -33,11 +32,6 @@ class PublicRegistrationReadControllerWebMvcTest extends AbstractWebMvcSliceTest
 
     @MockitoBean
     private PublicRegistrationReadService publicRegistrationReadService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void getTeamsReturnsList() throws Exception {

@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.notification.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -29,11 +28,6 @@ class AdminNotificationReadControllerWebMvcTest extends AbstractWebMvcSliceTest 
 
     @MockitoBean
     private AdminNotificationReadService adminNotificationReadService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void getSubscriptionCountReturnsCount() throws Exception {

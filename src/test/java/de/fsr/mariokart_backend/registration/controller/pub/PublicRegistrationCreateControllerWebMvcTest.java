@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.registration.controller.pub;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -38,11 +37,6 @@ class PublicRegistrationCreateControllerWebMvcTest extends AbstractWebMvcSliceTe
 
     @MockitoBean
     private PublicRegistrationCreateService publicRegistrationCreateService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void registerTeamReturnsCreatedTeam() throws Exception {

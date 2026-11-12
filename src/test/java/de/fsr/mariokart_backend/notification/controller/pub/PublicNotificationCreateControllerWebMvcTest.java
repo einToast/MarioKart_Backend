@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.notification.controller.pub;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -34,11 +33,6 @@ class PublicNotificationCreateControllerWebMvcTest extends AbstractWebMvcSliceTe
 
     @MockitoBean
     private PublicNotificationCreateService publicNotificationCreateService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void subscribeReturnsOk() throws Exception {

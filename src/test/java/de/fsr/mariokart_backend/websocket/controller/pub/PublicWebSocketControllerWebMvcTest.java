@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.websocket.controller.pub;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,11 +26,6 @@ class PublicWebSocketControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private SimpMessagingTemplate messagingTemplate;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void httpGetIsNotMappedForWebSocketController() throws Exception {

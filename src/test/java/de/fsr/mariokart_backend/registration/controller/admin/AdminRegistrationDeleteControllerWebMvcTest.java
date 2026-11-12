@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.registration.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -32,11 +31,6 @@ class AdminRegistrationDeleteControllerWebMvcTest extends AbstractWebMvcSliceTes
 
     @MockitoBean
     private AdminRegistrationDeleteService adminRegistrationDeleteService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void deleteTeamReturnsOk() throws Exception {

@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.schedule.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -27,11 +26,6 @@ class AdminScheduleDeleteControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private AdminScheduleDeleteService adminScheduleDeleteService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void deleteScheduleReturnsOk() throws Exception {

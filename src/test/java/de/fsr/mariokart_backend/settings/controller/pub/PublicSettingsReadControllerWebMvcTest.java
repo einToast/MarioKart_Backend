@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.settings.controller.pub;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -31,11 +30,6 @@ class PublicSettingsReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private PublicSettingsReadService publicSettingsReadService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void getSettingsReturnsTournamentDto() throws Exception {

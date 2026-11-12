@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.notification.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -35,11 +34,6 @@ class AdminNotificationCreateControllerWebMvcTest extends AbstractWebMvcSliceTes
 
     @MockitoBean
     private AdminNotificationCreateService adminNotificationCreateService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void sendNotificationToAllReturnsOk() throws Exception {
