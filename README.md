@@ -57,7 +57,7 @@ VAPID_PRIVATE_KEY=YOUR_VAPID_PRIVATE_KEY_FOR_PWA
 ```
 ### Run
 - `mvn spring-boot:run`
-- `SEED_EVENT=demo mvn spring-boot:run` fills the database with an event from `src/main/resources/seed/` (`demo`: teams, survey, schedule, floor plan, programme; `registration`: teams with open registration)
+- `SEED_EVENT=demo mvn spring-boot:run` fills the database with an event from `src/main/resources/seed/` (`demo`: teams, survey, schedule, floor plan, program; `registration`: teams with open registration)
 
 ### Build
 - `mvn clean package` (outputs `target/*.jar`)

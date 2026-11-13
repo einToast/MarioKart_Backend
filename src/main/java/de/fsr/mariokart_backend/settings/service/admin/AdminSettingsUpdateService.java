@@ -137,7 +137,7 @@ public class AdminSettingsUpdateService {
 
     private void updateProgram(Tournament tournament, String program) {
         if (program.length() > MAX_PROGRAM_LENGTH) {
-            throw new IllegalArgumentException("The programme is too large.");
+            throw new IllegalArgumentException("The program is too large.");
         }
         tournament.setProgram(program.isBlank() ? null : program);
     }
