@@ -9,7 +9,23 @@
       "mainClass": "de.fsr.mariokart_backend.MarioKartBackendApplication",
       "projectName": "MarioKart_Backend",
       "args": "",
-      "envFile": "${workspaceFolder}/.env"
+      "envFile": "${workspaceFolder}/.env",
+      "env": {
+        "SEED_EVENT": "${input:seedEvent}"
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "seedEvent",
+      "type": "pickString",
+      "description": "Event from src/main/resources/seed",
+      "options": [
+        { "label": "none", "value": "" },
+        "demo",
+        "registration"
+      ],
+      "default": ""
     }
   ]
 }

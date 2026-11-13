@@ -1,0 +1,93 @@
+{
+  "settings": {
+    "tournamentOpen": true,
+    "registrationOpen": true,
+    "maxGamesCount": 6
+  },
+  "teams": [
+    {
+      "teamName": "GreatTeamName",
+      "characterName": "Mario"
+    },
+    {
+      "teamName": "BlitzBoys",
+      "characterName": "Luigi"
+    },
+    {
+      "teamName": "ToadstoolTerrors",
+      "characterName": "Peach"
+    },
+    {
+      "teamName": "KoopaKings",
+      "characterName": "Bowser"
+    },
+    {
+      "teamName": "MushroomMasters",
+      "characterName": "Toad"
+    },
+    {
+      "teamName": "BulletBillBrigade",
+      "characterName": "Yoshi"
+    },
+    {
+      "teamName": "ChompChampions",
+      "characterName": "Donkey-Kong"
+    },
+    {
+      "teamName": "RainbowRiders",
+      "characterName": "Wario"
+    },
+    {
+      "teamName": "ShellShockers",
+      "characterName": "Waluigi"
+    },
+    {
+      "teamName": "BananaBandits",
+      "characterName": "Daisy"
+    },
+    {
+      "teamName": "PiranhaPals",
+      "characterName": "Rosalina"
+    },
+    {
+      "teamName": "ThwompThumpers",
+      "characterName": "Metall-Mario"
+    },
+    {
+      "teamName": "ShyGuySquad",
+      "characterName": "Shy-Guy"
+    },
+    {
+      "teamName": "DryBoneDynasty",
+      "characterName": "Knochentrocken"
+    },
+    {
+      "teamName": "LakituLegends",
+      "characterName": "Lakitu"
+    },
+    {
+      "teamName": "BooBusters",
+      "characterName": "König-Buu-Huu"
+    },
+    {
+      "teamName": "KoopaTroop",
+      "characterName": "Koopa"
+    },
+    {
+      "teamName": "InklingInvaders",
+      "characterName": "Inkling-Mädchen"
+    },
+    {
+      "teamName": "VillagerVictory",
+      "characterName": "Bewohner"
+    },
+    {
+      "teamName": "BabyBruisers",
+      "characterName": "Baby-Daisy"
+    },
+    {
+      "teamName": "Isabelle'sIsle",
+      "characterName": "Melinda"
+    }
+  ]
+}
