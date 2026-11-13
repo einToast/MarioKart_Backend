@@ -1,0 +1,561 @@
+{
+  "settings": {
+    "tournamentOpen": true,
+    "registrationOpen": false,
+    "surveyKeyMode": "DISABLED",
+    "finalTeamsCount": 4,
+    "switches": [
+      {
+        "name": "Blau",
+        "color": "#9DAEDA",
+        "translations": {
+          "en": {
+            "name": "Blue"
+          }
+        }
+      },
+      {
+        "name": "Rot",
+        "color": "#DA9DC9",
+        "translations": {
+          "en": {
+            "name": "Red"
+          }
+        }
+      },
+      {
+        "name": "Grün",
+        "color": "#9DDAAA",
+        "translations": {
+          "en": {
+            "name": "Green"
+          }
+        }
+      },
+      {
+        "name": "Weiß",
+        "color": "#ECECEC",
+        "translations": {
+          "en": {
+            "name": "White"
+          }
+        }
+      }
+    ]
+  },
+  "floorPlan": {
+    "version": 1,
+    "elements": [
+      {
+        "id": "table-front",
+        "type": "table",
+        "x": 530,
+        "y": 299,
+        "width": 372,
+        "height": 16,
+        "rotation": 0
+      },
+      {
+        "id": "row-front-1",
+        "type": "row",
+        "x": 530,
+        "y": 428,
+        "width": 349,
+        "rotation": 0
+      },
+      {
+        "id": "row-front-2",
+        "type": "row",
+        "x": 530,
+        "y": 482,
+        "width": 349,
+        "rotation": 0
+      },
+      {
+        "id": "row-front-3",
+        "type": "row",
+        "x": 530,
+        "y": 538,
+        "width": 349,
+        "rotation": 0
+      },
+      {
+        "id": "row-front-4",
+        "type": "row",
+        "x": 530,
+        "y": 599,
+        "width": 349,
+        "rotation": 0
+      },
+      {
+        "id": "table-back-right",
+        "type": "table",
+        "x": 858,
+        "y": 80,
+        "width": 176,
+        "height": 16,
+        "rotation": 15
+      },
+      {
+        "id": "row-back-right-1",
+        "type": "row",
+        "x": 836,
+        "y": 190,
+        "width": 169,
+        "rotation": 15
+      },
+      {
+        "id": "row-back-right-2",
+        "type": "row",
+        "x": 824,
+        "y": 233,
+        "width": 169,
+        "rotation": 15
+      },
+      {
+        "id": "table-back-middle",
+        "type": "table",
+        "x": 507,
+        "y": 29,
+        "width": 276,
+        "height": 16,
+        "rotation": 0
+      },
+      {
+        "id": "row-back-middle-1",
+        "type": "row",
+        "x": 508,
+        "y": 167,
+        "width": 220,
+        "rotation": 0
+      },
+      {
+        "id": "row-back-middle-2",
+        "type": "row",
+        "x": 508,
+        "y": 212,
+        "width": 220,
+        "rotation": 0
+      },
+      {
+        "id": "table-back-left",
+        "type": "table",
+        "x": 148,
+        "y": 75,
+        "width": 176,
+        "height": 16,
+        "rotation": -15
+      },
+      {
+        "id": "row-back-left-1",
+        "type": "row",
+        "x": 181,
+        "y": 190,
+        "width": 169,
+        "rotation": -15
+      },
+      {
+        "id": "row-back-left-2",
+        "type": "row",
+        "x": 193,
+        "y": 233,
+        "width": 169,
+        "rotation": -15
+      },
+      {
+        "id": "table-drinks",
+        "type": "table",
+        "x": 57,
+        "y": 406,
+        "width": 51,
+        "height": 212,
+        "rotation": 0
+      },
+      {
+        "id": "text-drinks",
+        "type": "text",
+        "x": 57,
+        "y": 406,
+        "width": 190,
+        "height": 48,
+        "rotation": -90,
+        "text": "getränke",
+        "translations": {
+          "en": {
+            "text": "drinks"
+          }
+        }
+      },
+      {
+        "id": "text-food-left",
+        "type": "text",
+        "x": 168,
+        "y": 440,
+        "width": 100,
+        "height": 48,
+        "rotation": -90,
+        "text": "essen",
+        "translations": {
+          "en": {
+            "text": "food"
+          }
+        }
+      },
+      {
+        "id": "text-toilet-left",
+        "type": "text",
+        "x": 207,
+        "y": 425,
+        "width": 140,
+        "height": 48,
+        "rotation": -90,
+        "text": "toilette",
+        "translations": {
+          "en": {
+            "text": "toilet"
+          }
+        }
+      },
+      {
+        "id": "text-exit-left",
+        "type": "text",
+        "x": 195,
+        "y": 540,
+        "width": 40,
+        "height": 70,
+        "rotation": 0,
+        "text": "↓"
+      },
+      {
+        "id": "text-food-right",
+        "type": "text",
+        "x": 830,
+        "y": 440,
+        "width": 100,
+        "height": 48,
+        "rotation": -90,
+        "text": "essen",
+        "translations": {
+          "en": {
+            "text": "food"
+          }
+        }
+      },
+      {
+        "id": "text-toilet-right",
+        "type": "text",
+        "x": 869,
+        "y": 425,
+        "width": 140,
+        "height": 48,
+        "rotation": -90,
+        "text": "toilette",
+        "translations": {
+          "en": {
+            "text": "toilet"
+          }
+        }
+      },
+      {
+        "id": "text-exit-right",
+        "type": "text",
+        "x": 857,
+        "y": 540,
+        "width": 40,
+        "height": 70,
+        "rotation": 0,
+        "text": "↓"
+      },
+      {
+        "id": "switch-1",
+        "type": "switch",
+        "x": 528,
+        "y": 320,
+        "width": 60,
+        "height": 60,
+        "rotation": 0,
+        "switchIndex": 0
+      },
+      {
+        "id": "switch-2",
+        "type": "switch",
+        "x": 858,
+        "y": 102,
+        "width": 60,
+        "height": 60,
+        "rotation": 15,
+        "switchIndex": 1
+      },
+      {
+        "id": "switch-3",
+        "type": "switch",
+        "x": 517,
+        "y": 45,
+        "width": 60,
+        "height": 60,
+        "rotation": 0,
+        "switchIndex": 2
+      },
+      {
+        "id": "switch-4",
+        "type": "switch",
+        "x": 142,
+        "y": 102,
+        "width": 60,
+        "height": 60,
+        "rotation": -15,
+        "switchIndex": 3
+      }
+    ],
+    "outline": [
+      {
+        "x": 2,
+        "y": 2
+      },
+      {
+        "x": 998,
+        "y": 2
+      },
+      {
+        "x": 998,
+        "y": 533
+      },
+      {
+        "x": 712,
+        "y": 636
+      },
+      {
+        "x": 348,
+        "y": 636
+      },
+      {
+        "x": 2,
+        "y": 533
+      }
+    ]
+  },
+  "program": [
+    {
+      "icon": "megaphone",
+      "time": "16:00 - 16:45",
+      "text": "Arne labert",
+      "translations": {
+        "en": {
+          "text": "Arne talks"
+        }
+      }
+    },
+    {
+      "icon": "play",
+      "time": "16:45 - 18:30",
+      "text": "Runde 1 - 5",
+      "translations": {
+        "en": {
+          "text": "Rounds 1 - 5"
+        }
+      }
+    },
+    {
+      "icon": "pizza",
+      "time": "18:30 - 19:00",
+      "text": "Pause",
+      "translations": {
+        "en": {
+          "text": "Break"
+        }
+      }
+    },
+    {
+      "icon": "play",
+      "time": "19:00 - 20:00",
+      "text": "Runde 6 - 8",
+      "translations": {
+        "en": {
+          "text": "Rounds 6 - 8"
+        }
+      }
+    },
+    {
+      "icon": "final",
+      "time": "20:00 - 20:45",
+      "text": "Finale",
+      "translations": {
+        "en": {
+          "text": "Final"
+        }
+      }
+    },
+    {
+      "icon": "medal",
+      "time": "21:00",
+      "text": "Siegerehrung",
+      "translations": {
+        "en": {
+          "text": "Award ceremony"
+        }
+      }
+    }
+  ],
+  "teams": [
+    {
+      "teamName": "GreatTeamName",
+      "characterName": "Mario"
+    },
+    {
+      "teamName": "BlitzBoys",
+      "characterName": "Luigi"
+    },
+    {
+      "teamName": "ToadstoolTerrors",
+      "characterName": "Peach"
+    },
+    {
+      "teamName": "KoopaKings",
+      "characterName": "Bowser"
+    },
+    {
+      "teamName": "MushroomMasters",
+      "characterName": "Toad"
+    },
+    {
+      "teamName": "BulletBillBrigade",
+      "characterName": "Yoshi"
+    },
+    {
+      "teamName": "ChompChampions",
+      "characterName": "Donkey-Kong"
+    },
+    {
+      "teamName": "RainbowRiders",
+      "characterName": "Wario"
+    },
+    {
+      "teamName": "ShellShockers",
+      "characterName": "Waluigi"
+    },
+    {
+      "teamName": "BananaBandits",
+      "characterName": "Daisy"
+    },
+    {
+      "teamName": "PiranhaPals",
+      "characterName": "Rosalina"
+    },
+    {
+      "teamName": "ThwompThumpers",
+      "characterName": "Metall-Mario"
+    },
+    {
+      "teamName": "ShyGuySquad",
+      "characterName": "Shy-Guy"
+    },
+    {
+      "teamName": "DryBoneDynasty",
+      "characterName": "Knochentrocken"
+    },
+    {
+      "teamName": "LakituLegends",
+      "characterName": "Lakitu"
+    },
+    {
+      "teamName": "BooBusters",
+      "characterName": "König-Buu-Huu"
+    },
+    {
+      "teamName": "KoopaTroop",
+      "characterName": "Koopa"
+    },
+    {
+      "teamName": "InklingInvaders",
+      "characterName": "Inkling-Mädchen"
+    },
+    {
+      "teamName": "VillagerVictory",
+      "characterName": "Bewohner"
+    },
+    {
+      "teamName": "BabyBruisers",
+      "characterName": "Baby-Daisy"
+    },
+    {
+      "teamName": "Isabelle'sIsle",
+      "characterName": "Melinda"
+    }
+  ],
+  "survey": [
+    {
+      "questionText": "How satisfied are you with the tournament?",
+      "questionType": "MULTIPLE_CHOICE",
+      "options": [
+        "Very satisfied",
+        "Satisfied",
+        "Neutral",
+        "Dissatisfied",
+        "Very dissatisfied"
+      ],
+      "active": true,
+      "visible": true,
+      "live": false,
+      "finalTeamsOnly": false,
+      "oneAnswerPerKey": false
+    },
+    {
+      "questionText": "What would you improve?",
+      "questionType": "FREE_TEXT",
+      "options": null,
+      "active": true,
+      "visible": true,
+      "live": false,
+      "finalTeamsOnly": false,
+      "oneAnswerPerKey": false
+    },
+    {
+      "questionText": "What are your favorite characters?",
+      "questionType": "CHECKBOX",
+      "options": [
+        "Mario",
+        "Luigi",
+        "Peach",
+        "Bowser",
+        "Toad",
+        "Yoshi",
+        "Donkey-Kong",
+        "Wario",
+        "Waluigi",
+        "Daisy",
+        "Rosalina"
+      ],
+      "active": true,
+      "visible": true,
+      "live": false,
+      "finalTeamsOnly": false,
+      "oneAnswerPerKey": false
+    },
+    {
+      "questionText": "Choose your favorite team",
+      "questionType": "TEAM",
+      "options": null,
+      "active": false,
+      "visible": false,
+      "live": false,
+      "finalTeamsOnly": false,
+      "oneAnswerPerKey": false
+    },
+    {
+      "questionText": "Which team will win the finals?",
+      "questionType": "TEAM",
+      "options": null,
+      "active": false,
+      "visible": false,
+      "live": false,
+      "finalTeamsOnly": true,
+      "oneAnswerPerKey": false
+    }
+  ],
+  "schedule": {
+    "version": 2,
+    "numFields": 4,
+    "numRounds": 8,
+    "teamsPerGame": 4
+  }
+}

@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.e2e;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -67,5 +68,27 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                                 {"title":"Team Title","message":"Team Body"}
                                 """))
                 .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/public/notification/subscription").with(csrf().asHeader())
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"endpoint":"https://example.com/push"}
+                                """))
+                .andExpect(status().isOk());
+
+        assertThat(pushSubscriptionRepository.count()).isZero();
+
+        mockMvc.perform(post("/public/notification/subscribe").with(csrf().asHeader())
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"endpoint":"https://example.com/push","p256dh":"p256dh-key","auth":"auth-key","teamId":%d}
+                                """.formatted(team.getId())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/admin/notification/subscriptions").with(csrf().asHeader())
+                        .cookie(adminCookie))
+                .andExpect(status().isOk());
+
+        assertThat(pushSubscriptionRepository.count()).isZero();
     }
 }

@@ -60,7 +60,7 @@ public class Tournament {
     @Column(columnDefinition = "TEXT")
     private String floorPlan;
 
-    // Programme of the event as JSON
+    // Program of the event as JSON
     @Column(columnDefinition = "TEXT")
     private String program;
 
