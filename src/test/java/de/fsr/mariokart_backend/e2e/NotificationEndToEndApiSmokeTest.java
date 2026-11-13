@@ -77,5 +77,18 @@ class NotificationEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(status().isOk());
 
         assertThat(pushSubscriptionRepository.count()).isZero();
+
+        mockMvc.perform(post("/public/notification/subscribe").with(csrf().asHeader())
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"endpoint":"https://example.com/push","p256dh":"p256dh-key","auth":"auth-key","teamId":%d}
+                                """.formatted(team.getId())))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/admin/notification/subscriptions").with(csrf().asHeader())
+                        .cookie(adminCookie))
+                .andExpect(status().isOk());
+
+        assertThat(pushSubscriptionRepository.count()).isZero();
     }
 }

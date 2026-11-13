@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/admin/notification/admin-notification-delete-controller.schema.json",
+  "$defs": {
+    "delete_subscriptions_success": {
+      "type": "string",
+      "maxLength": 0
+    }
+  }
+}
