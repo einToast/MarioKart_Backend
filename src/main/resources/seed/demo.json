@@ -484,33 +484,50 @@
   ],
   "survey": [
     {
-      "questionText": "How satisfied are you with the tournament?",
+      "questionText": "Wie zufrieden bist du mit dem Turnier?",
       "questionType": "MULTIPLE_CHOICE",
       "options": [
-        "Very satisfied",
-        "Satisfied",
+        "Sehr zufrieden",
+        "Zufrieden",
         "Neutral",
-        "Dissatisfied",
-        "Very dissatisfied"
+        "Unzufrieden",
+        "Sehr unzufrieden"
       ],
       "active": true,
       "visible": true,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "How satisfied are you with the tournament?",
+          "options": [
+            "Very satisfied",
+            "Satisfied",
+            "Neutral",
+            "Dissatisfied",
+            "Very dissatisfied"
+          ]
+        }
+      }
     },
     {
-      "questionText": "What would you improve?",
+      "questionText": "Was würdest du verbessern?",
       "questionType": "FREE_TEXT",
       "options": null,
       "active": true,
       "visible": true,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "What would you improve?"
+        }
+      }
     },
     {
-      "questionText": "What are your favorite characters?",
+      "questionText": "Was sind deine Lieblingscharaktere?",
       "questionType": "CHECKBOX",
       "options": [
         "Mario",
@@ -529,27 +546,42 @@
       "visible": true,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "What are your favorite characters?"
+        }
+      }
     },
     {
-      "questionText": "Choose your favorite team",
+      "questionText": "Wähle dein Lieblingsteam",
       "questionType": "TEAM",
       "options": null,
       "active": false,
       "visible": false,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "Choose your favorite team"
+        }
+      }
     },
     {
-      "questionText": "Which team will win the finals?",
+      "questionText": "Welches Team gewinnt das Finale?",
       "questionType": "TEAM",
       "options": null,
       "active": false,
       "visible": false,
       "live": false,
       "finalTeamsOnly": true,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "Which team will win the finals?"
+        }
+      }
     }
   ],
   "schedule": {
