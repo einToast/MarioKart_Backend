@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.settings.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -30,11 +29,6 @@ class AdminSettingsDeleteControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private AdminSettingsDeleteService adminSettingsDeleteService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void resetReturnsOk() throws Exception {

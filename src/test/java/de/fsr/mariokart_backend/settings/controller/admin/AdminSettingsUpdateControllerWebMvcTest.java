@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.settings.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -33,11 +32,6 @@ class AdminSettingsUpdateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private AdminSettingsUpdateService adminSettingsUpdateService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void updateSettingsReturnsUpdatedTournament() throws Exception {

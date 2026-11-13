@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.schedule.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -42,11 +41,6 @@ class AdminScheduleCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private AdminScheduleCreateService adminScheduleCreateService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void createScheduleReturnsRounds() throws Exception {

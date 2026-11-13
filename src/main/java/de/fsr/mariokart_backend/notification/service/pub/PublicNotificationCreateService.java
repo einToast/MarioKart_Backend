@@ -10,7 +10,6 @@ import tools.jackson.databind.ObjectMapper;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
 import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
-import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionLanguageDTO;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
 import de.fsr.mariokart_backend.notification.service.NotificationTextService;
@@ -44,16 +43,6 @@ public class PublicNotificationCreateService {
         subscription.setTeamId(incoming.getTeamId());
         subscription.setLanguage(incoming.getLanguage());
         subscriptionRepository.save(subscription);
-    }
-
-    public void updateLanguage(PushSubscriptionLanguageDTO update) {
-        if (update == null || update.endpoint() == null) {
-            return;
-        }
-        String language = Translations.languageOrDefault(update.language());
-        List<PushSubscription> subscriptions = subscriptionRepository.findByEndpoint(update.endpoint());
-        subscriptions.forEach(subscription -> subscription.setLanguage(language));
-        subscriptionRepository.saveAll(subscriptions);
     }
 
     public void sendTestNotification(PushSubscription subscription) throws NotificationNotSentException {

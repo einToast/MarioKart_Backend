@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.survey.controller.pub;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -36,11 +35,6 @@ class PublicSurveyReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private PublicSurveyReadService publicSurveyReadService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void getVisibleQuestionsReturnsList() throws Exception {

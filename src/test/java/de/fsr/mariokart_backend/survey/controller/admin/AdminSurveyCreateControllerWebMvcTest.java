@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.survey.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -36,11 +35,6 @@ class AdminSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private AdminSurveyCreateService publicSurveyCreateService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void createQuestionReturnsCreatedQuestion() throws Exception {

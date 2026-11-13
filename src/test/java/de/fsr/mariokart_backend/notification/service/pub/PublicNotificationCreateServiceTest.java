@@ -24,7 +24,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.notification.model.PushSubscription;
 import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionInputDTO;
-import de.fsr.mariokart_backend.notification.model.dto.PushSubscriptionLanguageDTO;
 import de.fsr.mariokart_backend.notification.service.NotificationTextService;
 import de.fsr.mariokart_backend.notification.repository.PushSubscriptionRepository;
 import de.fsr.mariokart_backend.notification.service.NotificationSendService;
@@ -133,29 +132,6 @@ class PublicNotificationCreateServiceTest {
                 .containsEntry("body", "This is a test notification!")
                 .containsEntry("lang", "en")
                 .containsEntry("actions", Map.of("open", "Open", "close", "Close"));
-    }
-
-    @Test
-    void updateLanguageChangesEverySubscriptionOfTheEndpoint() {
-        PushSubscription first = subscription(1L, 1L);
-        PushSubscription second = subscription(2L, 1L);
-        when(subscriptionRepository.findByEndpoint("https://example.test/1")).thenReturn(List.of(first, second));
-
-        service.updateLanguage(new PushSubscriptionLanguageDTO("https://example.test/1", "en"));
-
-        assertThat(first.getLanguage()).isEqualTo("en");
-        assertThat(second.getLanguage()).isEqualTo("en");
-        verify(subscriptionRepository).saveAll(List.of(first, second));
-    }
-
-    @Test
-    void updateLanguageFallsBackToGermanForUnknownLanguages() {
-        PushSubscription subscription = subscription(1L, 1L);
-        when(subscriptionRepository.findByEndpoint("https://example.test/1")).thenReturn(List.of(subscription));
-
-        service.updateLanguage(new PushSubscriptionLanguageDTO("https://example.test/1", "<script>"));
-
-        assertThat(subscription.getLanguage()).isEqualTo("de");
     }
 
     @Test

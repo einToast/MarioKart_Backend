@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.survey.controller.pub;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -52,11 +51,6 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private CookieProperties cookieProperties;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void submitAnswerReturnsAnswer() throws Exception {

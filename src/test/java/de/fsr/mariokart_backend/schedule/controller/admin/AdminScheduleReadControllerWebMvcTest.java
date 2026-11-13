@@ -1,6 +1,5 @@
 package de.fsr.mariokart_backend.schedule.controller.admin;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,11 +36,6 @@ class AdminScheduleReadControllerWebMvcTest extends AbstractWebMvcSliceTest {
 
     @MockitoBean
     private AdminScheduleReadService adminScheduleReadService;
-
-    @Test
-    void contextLoads() {
-        assertThat(mockMvc).isNotNull();
-    }
 
     @Test
     void getRoundsReturnsList() throws Exception {
