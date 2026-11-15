@@ -37,6 +37,8 @@ public class AdminSettingsUpdateService {
     public static final int MAX_SWITCH_NAME_LENGTH = 30;
     public static final int MAX_FLOOR_PLAN_LENGTH = 50_000;
     public static final int MAX_PROGRAM_LENGTH = 10_000;
+    public static final int MAX_HOW_TO_PLAY_LENGTH = 10_000;
+    public static final int MAX_SURVEY_KEY_DAYS = 400;
 
     private static final Pattern HEX_COLOR = Pattern.compile("#[0-9a-fA-F]{6}");
 
@@ -68,6 +70,24 @@ public class AdminSettingsUpdateService {
                 && tournamentDTO.getFinalTeamsCount() != tournament.getFinalTeamsCount()) {
             updateFinalTeamsCount(tournament, tournamentDTO.getFinalTeamsCount());
         }
+        if (tournamentDTO.getFinalGamesCount() != null
+                && tournamentDTO.getFinalGamesCount() != tournament.getFinalGamesCount()) {
+            requireFinalNotCreated("final games");
+            tournament.setFinalGamesCount(requireAtLeast(tournamentDTO.getFinalGamesCount(), 1, "final games"));
+        }
+        if (tournamentDTO.getRoundMinutes() != null) {
+            tournament.setRoundMinutes(requireAtLeast(tournamentDTO.getRoundMinutes(), 1, "minutes per round"));
+        }
+        if (tournamentDTO.getRankingHiddenRounds() != null) {
+            tournament.setRankingHiddenRounds(requireAtLeast(tournamentDTO.getRankingHiddenRounds(), 0,
+                    "rounds with a hidden ranking"));
+        }
+        if (tournamentDTO.getMaxAnswersPerTeam() != null) {
+            tournament.setMaxAnswersPerTeam(requireAtLeast(tournamentDTO.getMaxAnswersPerTeam(), 1, "answers per team"));
+        }
+        if (tournamentDTO.getSurveyKeyDays() != null) {
+            updateSurveyKeyDays(tournament, tournamentDTO.getSurveyKeyDays());
+        }
         if (tournamentDTO.getSwitches() != null) {
             tournament.setSwitches(toSwitchConfigs(tournamentDTO.getSwitches()));
         }
@@ -76,6 +96,9 @@ public class AdminSettingsUpdateService {
         }
         if (tournamentDTO.getProgram() != null) {
             updateProgram(tournament, tournamentDTO.getProgram());
+        }
+        if (tournamentDTO.getHowToPlay() != null) {
+            updateHowToPlay(tournament, tournamentDTO.getHowToPlay());
         }
         if (tournamentDTO.getOcrProvider() != null) {
             updateOcrProvider(tournament, tournamentDTO.getOcrProvider());
@@ -87,6 +110,27 @@ public class AdminSettingsUpdateService {
         TournamentDTO savedSettings = new TournamentDTO(tournamentRepository.save(tournament));
         webSocketService.sendMessage("/topic/settings", "update");
         return savedSettings;
+    }
+
+    private static int requireAtLeast(int value, int min, String name) {
+        if (value < min) {
+            throw new IllegalArgumentException("The %s have to be at least %d.".formatted(name, min));
+        }
+        return value;
+    }
+
+    private void updateSurveyKeyDays(Tournament tournament, int surveyKeyDays) {
+        if (surveyKeyDays < 1 || surveyKeyDays > MAX_SURVEY_KEY_DAYS) {
+            throw new IllegalArgumentException(
+                    "Survey keys are valid for 1 to %d days, browsers drop longer cookies.".formatted(MAX_SURVEY_KEY_DAYS));
+        }
+        tournament.setSurveyKeyDays(surveyKeyDays);
+    }
+
+    private void requireFinalNotCreated(String name) throws RoundsAlreadyExistsException {
+        if (publicScheduleReadService.isFinalScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Final schedule already created. Can't change the %s.".formatted(name));
+        }
     }
 
     private void updateFinalTeamsCount(Tournament tournament, int finalTeamsCount)
@@ -140,6 +184,13 @@ public class AdminSettingsUpdateService {
             throw new IllegalArgumentException("The program is too large.");
         }
         tournament.setProgram(program.isBlank() ? null : program);
+    }
+
+    private void updateHowToPlay(Tournament tournament, String howToPlay) {
+        if (howToPlay.length() > MAX_HOW_TO_PLAY_LENGTH) {
+            throw new IllegalArgumentException("The how-to-play page is too large.");
+        }
+        tournament.setHowToPlay(howToPlay.isBlank() ? null : howToPlay);
     }
 
     private void updateOcrProvider(Tournament tournament, String ocrProvider) {

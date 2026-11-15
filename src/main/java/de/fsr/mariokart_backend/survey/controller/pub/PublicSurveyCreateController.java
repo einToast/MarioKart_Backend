@@ -1,7 +1,5 @@
 package de.fsr.mariokart_backend.survey.controller.pub;
 
-import java.time.Duration;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -32,7 +30,6 @@ import lombok.AllArgsConstructor;
 public class PublicSurveyCreateController {
 
     public static final String SURVEY_KEY_COOKIE_NAME = "surveyKey";
-    private static final Duration SURVEY_KEY_COOKIE_MAX_AGE = Duration.ofDays(2);
 
     private final PublicSurveyCreateService publicSurveyCreateService;
     private final CookieProperties cookieProperties;
@@ -46,7 +43,7 @@ public class PublicSurveyCreateController {
             AnswerSubmissionResult result = publicSurveyCreateService.submitAnswer(answer, userJson, surveyKey);
             ResponseEntity.BodyBuilder response = ResponseEntity.ok();
             if (result.issuedSurveyKey() != null) {
-                response.header(HttpHeaders.SET_COOKIE, buildSurveyKeyCookie(result.issuedSurveyKey()).toString());
+                response.header(HttpHeaders.SET_COOKIE, buildSurveyKeyCookie(result).toString());
             }
             return response.body(result.answer());
         } catch (IllegalStateException e) {
@@ -64,13 +61,13 @@ public class PublicSurveyCreateController {
         }
     }
 
-    private ResponseCookie buildSurveyKeyCookie(String surveyKey) {
-        return ResponseCookie.from(SURVEY_KEY_COOKIE_NAME, surveyKey)
+    private ResponseCookie buildSurveyKeyCookie(AnswerSubmissionResult result) {
+        return ResponseCookie.from(SURVEY_KEY_COOKIE_NAME, result.issuedSurveyKey())
                 .path(cookieProperties.getPath())
                 .secure(cookieProperties.isSecure())
                 .httpOnly(true)
                 .sameSite(cookieProperties.getSameSite())
-                .maxAge(SURVEY_KEY_COOKIE_MAX_AGE)
+                .maxAge(result.surveyKeyMaxAge())
                 .build();
     }
 }

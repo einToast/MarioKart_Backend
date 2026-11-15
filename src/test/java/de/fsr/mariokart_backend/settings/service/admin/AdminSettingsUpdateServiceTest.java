@@ -8,10 +8,14 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -119,6 +123,18 @@ class AdminSettingsUpdateServiceTest {
         assertThat(dto.getProgram()).isNull();
         assertThat(dto.getOcrProvider()).isNull();
         assertThat(dto.getRelativePoints()).isFalse();
+        assertThat(dto.getHowToPlay()).isNull();
+    }
+
+    @Test
+    void newTournamentKeepsTheFormerFixedTimesFinalAndSurveyLimits() {
+        TournamentDTO dto = new TournamentDTO(new Tournament());
+
+        assertThat(dto.getRoundMinutes()).isEqualTo(20);
+        assertThat(dto.getFinalGamesCount()).isEqualTo(6);
+        assertThat(dto.getRankingHiddenRounds()).isEqualTo(1);
+        assertThat(dto.getMaxAnswersPerTeam()).isEqualTo(4);
+        assertThat(dto.getSurveyKeyDays()).isEqualTo(2);
     }
 
     @Test
@@ -185,6 +201,77 @@ class AdminSettingsUpdateServiceTest {
         assertThat(service.updateSettings(new TournamentDTO(true, null, null, null)).getProgram())
                 .isEqualTo("{\"entries\":[]}");
         assertThat(service.updateSettings(removal).getProgram()).isNull();
+    }
+
+    @Test
+    void updateSettingsStoresTheRoundLengthFinalFormatRankingAndSurveyLimits() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setRoundMinutes(25);
+        update.setFinalGamesCount(7);
+        update.setRankingHiddenRounds(0);
+        update.setMaxAnswersPerTeam(6);
+        update.setSurveyKeyDays(400);
+
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        TournamentDTO saved = service.updateSettings(update);
+
+        assertThat(saved.getRoundMinutes()).isEqualTo(25);
+        assertThat(saved.getFinalGamesCount()).isEqualTo(7);
+        assertThat(saved.getRankingHiddenRounds()).isZero();
+        assertThat(saved.getMaxAnswersPerTeam()).isEqualTo(6);
+        assertThat(saved.getSurveyKeyDays()).isEqualTo(400);
+    }
+
+    static Stream<Consumer<TournamentDTO>> invalidNumbers() {
+        return Stream.of(
+                update -> update.setRoundMinutes(0),
+                update -> update.setFinalGamesCount(0),
+                update -> update.setRankingHiddenRounds(-1),
+                update -> update.setMaxAnswersPerTeam(0),
+                update -> update.setSurveyKeyDays(0),
+                update -> update.setSurveyKeyDays(AdminSettingsUpdateService.MAX_SURVEY_KEY_DAYS + 1));
+    }
+
+    @ParameterizedTest
+    @MethodSource("invalidNumbers")
+    void updateSettingsRejectsNumbersTheTournamentCannotWorkWith(Consumer<TournamentDTO> invalid) {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        invalid.accept(update);
+
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+
+        assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void updateSettingsThrowsConflictWhenChangingTheFinalGamesAfterFinalCreation() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO moreGames = new TournamentDTO();
+        moreGames.setFinalGamesCount(8);
+
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+        when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(true);
+
+        assertThatThrownBy(() -> service.updateSettings(moreGames)).isInstanceOf(RoundsAlreadyExistsException.class);
+    }
+
+    @Test
+    void updateSettingsStoresAndRemovesTheHowToPlayPage() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        TournamentDTO update = new TournamentDTO();
+        update.setHowToPlay("{\"rules\":[]}");
+        TournamentDTO removal = new TournamentDTO();
+        removal.setHowToPlay("");
+
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+
+        assertThat(service.updateSettings(update).getHowToPlay()).isEqualTo("{\"rules\":[]}");
+        assertThat(service.updateSettings(removal).getHowToPlay()).isNull();
     }
 
     @Test

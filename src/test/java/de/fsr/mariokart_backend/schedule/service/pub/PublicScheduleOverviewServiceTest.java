@@ -49,7 +49,9 @@ class PublicScheduleOverviewServiceTest {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
         when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
         when(publicScheduleReadService.getNumberOfRoundsUnplayed()).thenReturn(4);
-        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 4, null));
+        TournamentDTO settings = new TournamentDTO(true, false, 4, null);
+        settings.setRankingHiddenRounds(3);
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
 
         ScheduleOverviewDTO overview = service.getOverview();
 
@@ -61,6 +63,7 @@ class PublicScheduleOverviewServiceTest {
         assertThat(overview.isFinalScheduleCreated()).isFalse();
         assertThat(overview.getNumberOfRoundsUnplayed()).isEqualTo(4);
         assertThat(overview.isTournamentOpen()).isTrue();
+        assertThat(overview.getRankingHiddenRounds()).isEqualTo(3);
     }
 
     @Test
@@ -74,5 +77,6 @@ class PublicScheduleOverviewServiceTest {
         assertThat(overview.getCurrentRounds()).isEmpty();
         assertThat(overview.getTeamsNotInRound()).isEmpty();
         assertThat(overview.isTournamentOpen()).isFalse();
+        assertThat(overview.getRankingHiddenRounds()).isEqualTo(1);
     }
 }

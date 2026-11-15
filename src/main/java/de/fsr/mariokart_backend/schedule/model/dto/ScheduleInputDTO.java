@@ -15,8 +15,10 @@ public class ScheduleInputDTO {
     private int numRounds;
     private int teamsPerGame;
     private List<Integer> teamsPerField;
+    private Integer breakRound;
+    private Integer breakMinutes;
 
     public ScheduleInputDTO(int version, int numFields, int numRounds, int teamsPerGame) {
-        this(version, numFields, numRounds, teamsPerGame, null);
+        this(version, numFields, numRounds, teamsPerGame, null, null, null);
     }
 }

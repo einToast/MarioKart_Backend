@@ -20,7 +20,7 @@
     },
     "get_overview_success": {
       "type": "object",
-      "required": ["currentRounds", "teamsNotInRound", "scheduleCreated", "finalScheduleCreated", "numberOfRoundsUnplayed", "tournamentOpen"],
+      "required": ["currentRounds", "teamsNotInRound", "scheduleCreated", "finalScheduleCreated", "numberOfRoundsUnplayed", "tournamentOpen", "rankingHiddenRounds"],
       "properties": {
         "currentRounds": {
           "type": "array",
@@ -44,7 +44,8 @@
         "scheduleCreated": { "type": "boolean" },
         "finalScheduleCreated": { "type": "boolean" },
         "numberOfRoundsUnplayed": { "type": "integer" },
-        "tournamentOpen": { "type": "boolean" }
+        "tournamentOpen": { "type": "boolean" },
+        "rankingHiddenRounds": { "type": "integer", "minimum": 0 }
       },
       "additionalProperties": false
     },

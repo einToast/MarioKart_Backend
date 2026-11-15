@@ -32,6 +32,11 @@ import lombok.Setter;
 public class Tournament {
 
     public static final int DEFAULT_FINAL_TEAMS_COUNT = 4;
+    public static final int DEFAULT_FINAL_GAMES_COUNT = 6;
+    public static final int DEFAULT_ROUND_MINUTES = 20;
+    public static final int DEFAULT_RANKING_HIDDEN_ROUNDS = 1;
+    public static final int DEFAULT_MAX_ANSWERS_PER_TEAM = 4;
+    public static final int DEFAULT_SURVEY_KEY_DAYS = 2;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,6 +56,21 @@ public class Tournament {
     @Column(nullable = false)
     private int finalTeamsCount = DEFAULT_FINAL_TEAMS_COUNT;
 
+    @Column(nullable = false)
+    private int finalGamesCount = DEFAULT_FINAL_GAMES_COUNT;
+
+    @Column(nullable = false)
+    private int roundMinutes = DEFAULT_ROUND_MINUTES;
+
+    @Column(nullable = false)
+    private int rankingHiddenRounds = DEFAULT_RANKING_HIDDEN_ROUNDS;
+
+    @Column(nullable = false)
+    private int maxAnswersPerTeam = DEFAULT_MAX_ANSWERS_PER_TEAM;
+
+    @Column(nullable = false)
+    private int surveyKeyDays = DEFAULT_SURVEY_KEY_DAYS;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "tournament_switch", joinColumns = @JoinColumn(name = "tournament_ID"))
     @OrderColumn(name = "switch_index")
@@ -63,6 +83,9 @@ public class Tournament {
     // Program of the event as JSON
     @Column(columnDefinition = "TEXT")
     private String program;
+
+    @Column(columnDefinition = "TEXT")
+    private String howToPlay;
 
     private String ocrProvider;
 

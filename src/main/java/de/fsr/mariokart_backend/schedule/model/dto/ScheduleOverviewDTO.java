@@ -18,4 +18,5 @@ public class ScheduleOverviewDTO {
     private boolean finalScheduleCreated;
     private int numberOfRoundsUnplayed;
     private boolean tournamentOpen;
+    private int rankingHiddenRounds;
 }

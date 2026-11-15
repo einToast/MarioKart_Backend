@@ -4,17 +4,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +53,8 @@ import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
+import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 
 @ExtendWith(MockitoExtension.class)
@@ -86,8 +91,16 @@ class AdminScheduleUpdateServiceTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private PublicSettingsReadService publicSettingsReadService;
+
     @InjectMocks
     private AdminScheduleUpdateService service;
+
+    @BeforeEach
+    void useDefaultSettings() {
+        lenient().when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO());
+    }
 
     @Test
     void updateRoundPlayedThrowsWhenRoundMissing() {
@@ -110,6 +123,27 @@ class AdminScheduleUpdateServiceTest {
         assertThatThrownBy(() -> service.updateRoundPlayed(1L, new RoundInputDTO(true)))
                 .isInstanceOf(RoundsAlreadyExistsException.class)
                 .hasMessageContaining("Break not finished");
+    }
+
+    @Test
+    void updateRoundPlayedSchedulesTheOpenRoundsWithTheConfiguredRoundLength()
+            throws EntityNotFoundException, RoundsAlreadyExistsException, NotificationNotSentException {
+        TournamentDTO settings = new TournamentDTO();
+        settings.setRoundMinutes(35);
+        Round played = buildRound(1L, 1, false, false);
+        Round second = buildRound(2L, 2, false, false);
+        Round third = buildRound(3L, 3, false, false);
+
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
+        when(roundRepository.findById(1L)).thenReturn(Optional.of(played));
+        when(roundRepository.findByPlayedFalse()).thenReturn(new ArrayList<>(List.of(played, second, third)));
+        when(adminScheduleReadService.isBreakFinished()).thenReturn(true);
+        when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        service.updateRoundPlayed(1L, new RoundInputDTO(true));
+
+        assertThat(Duration.between(second.getStartTime(), second.getEndTime())).isEqualTo(Duration.ofMinutes(35));
+        assertThat(Duration.between(second.getStartTime(), third.getStartTime())).isEqualTo(Duration.ofMinutes(35));
     }
 
     @Test
