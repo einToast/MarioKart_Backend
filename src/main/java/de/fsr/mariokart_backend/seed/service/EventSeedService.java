@@ -3,7 +3,9 @@ package de.fsr.mariokart_backend.seed.service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -49,6 +51,7 @@ public class EventSeedService {
     private final AdminSettingsUpdateService adminSettingsUpdateService;
     private final AdminSurveyCreateService adminSurveyCreateService;
     private final AdminScheduleCreateService adminScheduleCreateService;
+    private final SeedGroupPhaseService seedGroupPhaseService;
 
     public void seed(String event) {
         if (!StringUtils.hasText(event)) {
@@ -60,10 +63,40 @@ public class EventSeedService {
         seedSettings(seed);
         seedTeams(seed.getTeams());
         seedSurvey(seed.getSurvey());
-        seedSchedule(seed.getSchedule());
+        if (seedSchedule(seed.getSchedule()) && Boolean.TRUE.equals(seed.getGroupPhasePlayed())) {
+            seedGroupPhaseService.playGroupPhase();
+        }
     }
 
     public EventSeedDTO load(String event) {
+        return load(event, new HashSet<>());
+    }
+
+    private EventSeedDTO load(String event, Set<String> loading) {
+        if (!loading.add(event)) {
+            throw new IllegalArgumentException("The event seed " + event + " extends itself");
+        }
+        EventSeedDTO seed = read(event);
+        return seed.getExtendsEvent() == null ? seed : extend(load(seed.getExtendsEvent().strip(), loading), seed);
+    }
+
+    private static EventSeedDTO extend(EventSeedDTO base, EventSeedDTO seed) {
+        return new EventSeedDTO(null,
+                or(seed.getSettings(), base.getSettings()),
+                or(seed.getFloorPlan(), base.getFloorPlan()),
+                or(seed.getProgram(), base.getProgram()),
+                or(seed.getHowToPlay(), base.getHowToPlay()),
+                or(seed.getTeams(), base.getTeams()),
+                or(seed.getSurvey(), base.getSurvey()),
+                or(seed.getSchedule(), base.getSchedule()),
+                or(seed.getGroupPhasePlayed(), base.getGroupPhasePlayed()));
+    }
+
+    private static <T> T or(T value, T fallback) {
+        return value != null ? value : fallback;
+    }
+
+    private EventSeedDTO read(String event) {
         String location = event.contains(":") ? event : SEED_LOCATION.formatted(event);
         Resource resource = resourceLoader.getResource(location);
         if (!resource.exists()) {
@@ -83,6 +116,9 @@ public class EventSeedService {
         }
         if (seed.getProgram() != null) {
             settings.setProgram(toJson(seed.getProgram()));
+        }
+        if (seed.getHowToPlay() != null) {
+            settings.setHowToPlay(toJson(seed.getHowToPlay()));
         }
         updateSettings(settings);
     }
@@ -130,22 +166,24 @@ public class EventSeedService {
         }
     }
 
-    private void seedSchedule(ScheduleInputDTO schedule) {
+    private boolean seedSchedule(ScheduleInputDTO schedule) {
         if (schedule == null) {
-            return;
+            return false;
         }
         if (publicScheduleReadService.isScheduleCreated()) {
             log.info("A schedule already exists, the seeded schedule is skipped.");
-            return;
+            return false;
         }
         try {
             adminScheduleCreateService.createSchedule(schedule);
+            return true;
         } catch (RoundsAlreadyExistsException | NotEnoughTeamsException | EntityNotFoundException
                 | NotificationNotSentException e) {
             log.warn("Seeded schedule not created: {}", e.getMessage());
         } catch (RuntimeException e) {
             log.warn("Seeded schedule not created, is the schedule service running? {}", e.getMessage());
         }
+        return false;
     }
 
     private void updateSettings(TournamentDTO settings) {
