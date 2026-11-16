@@ -1,5 +1,7 @@
 package de.fsr.mariokart_backend.survey.service.admin;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.cache.annotation.CacheConfig;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import de.fsr.mariokart_backend.exception.EntityNotFoundException;
 import de.fsr.mariokart_backend.exception.NotificationNotSentException;
 import de.fsr.mariokart_backend.survey.model.Question;
+import de.fsr.mariokart_backend.survey.model.QuestionTranslation;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionInputDTO;
 import de.fsr.mariokart_backend.survey.model.dto.QuestionReturnDTO;
 import de.fsr.mariokart_backend.survey.model.subclasses.CheckboxQuestion;
@@ -21,8 +24,11 @@ import de.fsr.mariokart_backend.survey.model.subclasses.TeamQuestion;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
+import de.fsr.mariokart_backend.translation.TranslationRebase;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.node.ObjectNode;
 
 @Service
 @AllArgsConstructor
@@ -35,6 +41,7 @@ public class AdminSurveyUpdateService {
     private final QuestionReturnDTOService questionReturnDTOService;
     private final WebSocketService webSocketService;
     private final ApplicationEventPublisher eventPublisher;
+    private final TranslationRebase translationRebase;
 
     public QuestionReturnDTO updateQuestion(Long id, QuestionInputDTO question)
             throws EntityNotFoundException, NotificationNotSentException {
@@ -58,6 +65,50 @@ public class AdminSurveyUpdateService {
         }
         webSocketService.sendMessage("/topic/questions", "update");
         return questionReturnDTOService.questionToQuestionReturnDTO(savedQuestion);
+    }
+
+    public void rebaseTranslations(String from, String to) {
+        List<Question> questions = questionRepository.findAll();
+        if (questions.isEmpty()) {
+            return;
+        }
+        questions.forEach(question -> rebaseTranslations(question, from, to));
+        questionRepository.saveAll(questions);
+        webSocketService.sendMessage("/topic/questions", "update");
+    }
+
+    private void rebaseTranslations(Question question, String from, String to) {
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("questionText", question.getQuestionText());
+        List<String> options = optionsOf(question);
+        if (options != null) {
+            fields.put("options", options);
+        }
+        ObjectNode node = translationRebase.toNode(fields, question.getTranslations());
+        translationRebase.rebaseTree(node, from, to);
+
+        question.setQuestionText(translationRebase.text(node, "questionText"));
+        if (options != null) {
+            setOptions(question, translationRebase.texts(node, "options"));
+        }
+        question.setTranslations(translationRebase.translationsOf(node, new TypeReference<Map<String, QuestionTranslation>>() {
+        }));
+    }
+
+    private static List<String> optionsOf(Question question) {
+        return switch (question) {
+            case MultipleChoiceQuestion choiceQuestion -> choiceQuestion.getOptions();
+            case CheckboxQuestion checkboxQuestion -> checkboxQuestion.getOptions();
+            default -> null;
+        };
+    }
+
+    private static void setOptions(Question question, List<String> options) {
+        switch (question) {
+            case MultipleChoiceQuestion choiceQuestion -> choiceQuestion.setOptions(options);
+            case CheckboxQuestion checkboxQuestion -> checkboxQuestion.setOptions(options);
+            default -> throw new IllegalArgumentException("Question type has no options.");
+        }
     }
 
     private void updateCommonFields(Question questionToUpdate, Question updatedQuestion) {

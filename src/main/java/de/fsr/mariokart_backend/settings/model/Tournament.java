@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.hibernate.annotations.ColumnDefault;
 
+import de.fsr.mariokart_backend.translation.Translations;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -90,6 +92,10 @@ public class Tournament {
     private String ocrProvider;
 
     private boolean relativePoints;
+
+    @ColumnDefault("'de'")
+    @Column(nullable = false)
+    private String defaultLanguage = Translations.DEFAULT_LANGUAGE;
 
     public Tournament(Long id, boolean tournamentOpen, boolean registrationOpen, int maxGamesCount,
             SurveyKeyMode surveyKeyMode) {

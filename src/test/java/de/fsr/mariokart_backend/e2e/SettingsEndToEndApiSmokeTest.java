@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.mock.web.MockCookie;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import de.fsr.mariokart_backend.survey.model.QuestionTranslation;
 import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
 import de.fsr.mariokart_backend.e2e.testsupport.AbstractEndToEndApiSmokeTest;
 
@@ -98,5 +100,64 @@ class SettingsEndToEndApiSmokeTest extends AbstractEndToEndApiSmokeTest {
                 .andExpect(jsonPath("$.switches").isEmpty())
                 .andExpect(jsonPath("$.floorPlan").isEmpty())
                 .andExpect(jsonPath("$.program").isEmpty());
+    }
+    @Test
+    void defaultLanguageMovesTheStoredTextsIntoTheNewLanguage() throws Exception {
+        MockCookie adminCookie = loginAsAdmin();
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"switches":[{"name":"Blau","color":"#9DAEDA","translations":{"en":{"name":"Blue"}}}],
+                                 "program":"{\\"entries\\":[{\\"time\\":\\"18:30\\",\\"text\\":\\"Pause\\",\\"translations\\":{\\"en\\":{\\"text\\":\\"Break\\"}}}]}"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.defaultLanguage").value("de"));
+        MultipleChoiceQuestion question = new MultipleChoiceQuestion();
+        question.setQuestionText("Wer gewinnt?");
+        question.setActive(true);
+        question.setVisible(true);
+        question.setLive(false);
+        question.setOptions(List.of("Rot", "Blau"));
+        question.setTranslations(Map.of("en", new QuestionTranslation("Who wins?", List.of("Red", ""))));
+        questionRepository.save(question);
+
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"defaultLanguage":"en"}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.defaultLanguage").value("en"));
+
+        mockMvc.perform(get("/public/settings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.defaultLanguage").value("en"))
+                .andExpect(jsonPath("$.switches[0].name").value("Blue"))
+                .andExpect(jsonPath("$.switches[0].translations.de.name").value("Blau"))
+                .andExpect(jsonPath("$.program").value(
+                        "{\"entries\":[{\"time\":\"18:30\",\"text\":\"Break\",\"translations\":{\"de\":{\"text\":\"Pause\"}}}]}"));
+        mockMvc.perform(get("/admin/survey").cookie(adminCookie))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].questionText").value("Who wins?"))
+                .andExpect(jsonPath("$[0].options[0]").value("Red"))
+                .andExpect(jsonPath("$[0].options[1]").value("Blau"))
+                .andExpect(jsonPath("$[0].translations.de.questionText").value("Wer gewinnt?"))
+                .andExpect(jsonPath("$[0].translations.en").doesNotExist());
+
+        mockMvc.perform(put("/admin/settings").with(csrf().asHeader())
+                        .cookie(adminCookie)
+                        .contentType(APPLICATION_JSON)
+                        .content("""
+                                {"defaultLanguage":"English"}
+                                """))
+                .andExpect(status().isBadRequest());
+
+        mockMvc.perform(delete("/admin/settings/reset").with(csrf().asHeader()).cookie(adminCookie))
+                .andExpect(status().isOk());
+        mockMvc.perform(get("/public/settings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.defaultLanguage").value("de"));
     }
 }

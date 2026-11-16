@@ -61,7 +61,7 @@ class AdminSettingsUpdateControllerContractTest extends AbstractWebMvcSliceTest 
     void updateSettingsLayoutMatchesContract() throws Exception {
         TournamentDTO input = new TournamentDTO(true, false, 8, SurveyKeyMode.DISABLED, 8, 6, 20, 1, 4, 2,
                 List.of(new SwitchDTO("Blau", "#9DAEDA", Map.of())), "{\"elements\":[]}", "{\"entries\":[]}",
-                "{\"rules\":[]}", "openai", true);
+                "{\"rules\":[]}", "openai", true, "en");
         when(adminSettingsUpdateService.updateSettings(input)).thenReturn(input);
 
         MvcResult result = mockMvc.perform(put("/admin/settings")

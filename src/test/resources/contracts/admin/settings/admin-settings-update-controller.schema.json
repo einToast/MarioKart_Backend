@@ -31,7 +31,8 @@
         "surveyKeyDays": { "type": ["integer", "null"], "minimum": 1, "maximum": 400 },
         "howToPlay": { "type": ["string", "null"] },
         "ocrProvider": { "type": ["string", "null"] },
-        "relativePoints": { "type": ["boolean", "null"] }
+        "relativePoints": { "type": ["boolean", "null"] },
+        "defaultLanguage": { "type": ["string", "null"] }
       },
       "additionalProperties": true
     },

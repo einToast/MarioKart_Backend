@@ -31,6 +31,7 @@ public class TournamentDTO {
     private String howToPlay;
     private String ocrProvider;
     private Boolean relativePoints;
+    private String defaultLanguage;
 
     public TournamentDTO(Boolean tournamentOpen, Boolean registrationOpen, Integer maxGamesCount,
             SurveyKeyMode surveyKeyMode) {
@@ -61,6 +62,7 @@ public class TournamentDTO {
         this.howToPlay = tournament.getHowToPlay();
         this.ocrProvider = tournament.getOcrProvider();
         this.relativePoints = tournament.isRelativePoints();
+        this.defaultLanguage = tournament.getDefaultLanguage();
     }
 
     private static Map<String, SwitchTranslation> copyTranslations(Map<String, SwitchTranslation> translations) {

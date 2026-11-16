@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.settings.service.admin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -20,9 +21,13 @@ import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
+import de.fsr.mariokart_backend.survey.service.admin.AdminSurveyUpdateService;
+import de.fsr.mariokart_backend.translation.TranslationRebase;
 import de.fsr.mariokart_backend.translation.Translations;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.node.ObjectNode;
 
 @Service
 @AllArgsConstructor
@@ -46,6 +51,8 @@ public class AdminSettingsUpdateService {
     private final PublicScheduleReadService publicScheduleReadService;
     private final AdminOcrReadService adminOcrReadService;
     private final WebSocketService webSocketService;
+    private final AdminSurveyUpdateService adminSurveyUpdateService;
+    private final TranslationRebase translationRebase;
 
     public TournamentDTO updateSettings(TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
         Tournament tournament = tournamentRepository.findFirstByOrderByIdAsc().orElseThrow();
@@ -105,6 +112,10 @@ public class AdminSettingsUpdateService {
         }
         if (tournamentDTO.getRelativePoints() != null) {
             tournament.setRelativePoints(tournamentDTO.getRelativePoints());
+        }
+        if (tournamentDTO.getDefaultLanguage() != null
+                && !tournamentDTO.getDefaultLanguage().equals(tournament.getDefaultLanguage())) {
+            updateDefaultLanguage(tournament, tournamentDTO.getDefaultLanguage());
         }
 
         TournamentDTO savedSettings = new TournamentDTO(tournamentRepository.save(tournament));
@@ -191,6 +202,31 @@ public class AdminSettingsUpdateService {
             throw new IllegalArgumentException("The how-to-play page is too large.");
         }
         tournament.setHowToPlay(howToPlay.isBlank() ? null : howToPlay);
+    }
+
+    private void updateDefaultLanguage(Tournament tournament, String language) {
+        if (!Translations.isLanguageCode(language)) {
+            throw new IllegalArgumentException("The default language needs a language code like \"en\".");
+        }
+        String previous = tournament.getDefaultLanguage();
+        tournament.setSwitches(new ArrayList<>(tournament.getSwitches().stream()
+                .map(switchConfig -> rebaseSwitch(switchConfig, previous, language))
+                .toList()));
+        tournament.setFloorPlan(translationRebase.rebaseJson(tournament.getFloorPlan(), previous, language));
+        tournament.setProgram(translationRebase.rebaseJson(tournament.getProgram(), previous, language));
+        tournament.setHowToPlay(translationRebase.rebaseJson(tournament.getHowToPlay(), previous, language));
+        adminSurveyUpdateService.rebaseTranslations(previous, language);
+        tournament.setDefaultLanguage(language);
+    }
+
+    private SwitchConfig rebaseSwitch(SwitchConfig switchConfig, String from, String to) {
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("name", switchConfig.getName());
+        ObjectNode node = translationRebase.toNode(fields, switchConfig.getTranslations());
+        translationRebase.rebaseTree(node, from, to);
+        return new SwitchConfig(translationRebase.text(node, "name"), switchConfig.getColor(),
+                translationRebase.translationsOf(node, new TypeReference<Map<String, SwitchTranslation>>() {
+                }));
     }
 
     private void updateOcrProvider(Tournament tournament, String ocrProvider) {

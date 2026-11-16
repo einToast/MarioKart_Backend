@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
@@ -33,7 +34,9 @@ import de.fsr.mariokart_backend.survey.model.subclasses.MultipleChoiceQuestion;
 import de.fsr.mariokart_backend.survey.repository.QuestionRepository;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionInputDTOService;
 import de.fsr.mariokart_backend.survey.service.dto.QuestionReturnDTOService;
+import de.fsr.mariokart_backend.translation.TranslationRebase;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -53,6 +56,41 @@ class AdminSurveyUpdateServiceTest {
 
     @Mock
     private ApplicationEventPublisher eventPublisher;
+
+    @Spy
+    private TranslationRebase translationRebase = new TranslationRebase(JsonMapper.builder().build());
+
+    @Test
+    void rebaseTranslationsMovesQuestionsAndOptionsIntoTheNewBaseLanguage() {
+        MultipleChoiceQuestion choice = new MultipleChoiceQuestion();
+        choice.setQuestionText("Lieblingsfarbe?");
+        choice.setOptions(List.of("Rot", "Blau"));
+        choice.setTranslations(Map.of("en", new QuestionTranslation("Favourite colour?", List.of("Red", ""))));
+        FreeTextQuestion freeText = new FreeTextQuestion();
+        freeText.setQuestionText("Wünsche?");
+        when(questionRepository.findAll()).thenReturn(List.of(choice, freeText));
+
+        service.rebaseTranslations("de", "en");
+
+        assertThat(choice.getQuestionText()).isEqualTo("Favourite colour?");
+        assertThat(choice.getOptions()).containsExactly("Red", "Blau");
+        assertThat(choice.getTranslations())
+                .containsExactly(Map.entry("de", new QuestionTranslation("Lieblingsfarbe?", List.of("Rot", ""))));
+        assertThat(freeText.getQuestionText()).isEqualTo("Wünsche?");
+        assertThat(freeText.getTranslations()).isEmpty();
+        verify(questionRepository).saveAll(List.of(choice, freeText));
+        verify(webSocketService).sendMessage("/topic/questions", "update");
+    }
+
+    @Test
+    void rebaseTranslationsWithoutQuestionsChangesNothing() {
+        when(questionRepository.findAll()).thenReturn(List.of());
+
+        service.rebaseTranslations("de", "en");
+
+        verify(questionRepository).findAll();
+        verifyNoInteractions(webSocketService);
+    }
 
     @InjectMocks
     private AdminSurveyUpdateService service;

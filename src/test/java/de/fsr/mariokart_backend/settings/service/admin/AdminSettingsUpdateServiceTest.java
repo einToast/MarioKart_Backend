@@ -3,6 +3,7 @@ package de.fsr.mariokart_backend.settings.service.admin;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -18,18 +19,23 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import de.fsr.mariokart_backend.exception.RoundsAlreadyExistsException;
 import de.fsr.mariokart_backend.ocr.service.admin.AdminOcrReadService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
 import de.fsr.mariokart_backend.settings.model.SurveyKeyMode;
+import de.fsr.mariokart_backend.settings.model.SwitchConfig;
 import de.fsr.mariokart_backend.settings.model.SwitchTranslation;
 import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
+import de.fsr.mariokart_backend.survey.service.admin.AdminSurveyUpdateService;
+import de.fsr.mariokart_backend.translation.TranslationRebase;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
+import tools.jackson.databind.json.JsonMapper;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -46,6 +52,12 @@ class AdminSettingsUpdateServiceTest {
 
     @Mock
     private WebSocketService webSocketService;
+
+    @Mock
+    private AdminSurveyUpdateService adminSurveyUpdateService;
+
+    @Spy
+    private TranslationRebase translationRebase = new TranslationRebase(JsonMapper.builder().build());
 
     @InjectMocks
     private AdminSettingsUpdateService service;
@@ -124,6 +136,7 @@ class AdminSettingsUpdateServiceTest {
         assertThat(dto.getOcrProvider()).isNull();
         assertThat(dto.getRelativePoints()).isFalse();
         assertThat(dto.getHowToPlay()).isNull();
+        assertThat(dto.getDefaultLanguage()).isEqualTo("de");
     }
 
     @Test
@@ -329,6 +342,56 @@ class AdminSettingsUpdateServiceTest {
         when(adminOcrReadService.getProviders()).thenReturn(List.of("gemini", "openai"));
 
         assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void updateSettingsMovesTheContentIntoTheNewDefaultLanguage() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        existing.getSwitches().add(new SwitchConfig("Blau", "#9DAEDA", Map.of("en", new SwitchTranslation("Blue"))));
+        existing.setProgram("[{\"text\":\"Pause\",\"translations\":{\"en\":{\"text\":\"Break\"}}}]");
+        existing.setFloorPlan("{\"elements\":[{\"text\":\"essen\",\"translations\":{\"en\":{\"text\":\"food\"}}}]}");
+        existing.setHowToPlay("{\"rules\":[{\"text\":\"Fair bleiben\"}]}");
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+        TournamentDTO update = new TournamentDTO();
+        update.setDefaultLanguage("en");
+
+        TournamentDTO result = service.updateSettings(update);
+
+        assertThat(result.getDefaultLanguage()).isEqualTo("en");
+        assertThat(result.getSwitches())
+                .containsExactly(new SwitchDTO("Blue", "#9DAEDA", Map.of("de", new SwitchTranslation("Blau"))));
+        assertThat(result.getProgram()).isEqualTo("[{\"text\":\"Break\",\"translations\":{\"de\":{\"text\":\"Pause\"}}}]");
+        assertThat(result.getFloorPlan()).isEqualTo("{\"elements\":[{\"text\":\"food\",\"translations\":{\"de\":{\"text\":\"essen\"}}}]}");
+        assertThat(result.getHowToPlay()).isEqualTo("{\"rules\":[{\"text\":\"Fair bleiben\"}]}");
+        verify(adminSurveyUpdateService).rebaseTranslations("de", "en");
+    }
+
+    @Test
+    void updateSettingsKeepsTheContentWhenTheDefaultLanguageStays() throws RoundsAlreadyExistsException {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        existing.setProgram("[{\"text\":\"Pause\",\"translations\":{\"en\":{\"text\":\"Break\"}}}]");
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+        when(tournamentRepository.save(existing)).thenReturn(existing);
+        TournamentDTO update = new TournamentDTO();
+        update.setDefaultLanguage("de");
+
+        TournamentDTO result = service.updateSettings(update);
+
+        assertThat(result.getProgram()).isEqualTo("[{\"text\":\"Pause\",\"translations\":{\"en\":{\"text\":\"Break\"}}}]");
+        verifyNoInteractions(adminSurveyUpdateService);
+    }
+
+    @Test
+    void updateSettingsRejectsADefaultLanguageWithoutLanguageCode() {
+        Tournament existing = new Tournament(1L, true, false, 4, SurveyKeyMode.DISABLED);
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(existing));
+        TournamentDTO update = new TournamentDTO();
+        update.setDefaultLanguage("English");
+
+        assertThatThrownBy(() -> service.updateSettings(update)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(existing.getDefaultLanguage()).isEqualTo("de");
+        verifyNoInteractions(adminSurveyUpdateService);
     }
 
     @Test
