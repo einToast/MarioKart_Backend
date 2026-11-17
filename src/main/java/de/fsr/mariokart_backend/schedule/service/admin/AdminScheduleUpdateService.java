@@ -39,6 +39,7 @@ import de.fsr.mariokart_backend.schedule.repository.PointsRepository;
 import de.fsr.mariokart_backend.schedule.repository.RoundRepository;
 import de.fsr.mariokart_backend.schedule.service.dto.ScheduleReturnDTOService;
 import de.fsr.mariokart_backend.schedule.service.pub.PublicScheduleReadService;
+import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,10 +62,14 @@ public class AdminScheduleUpdateService {
     private final ScheduleReturnDTOService scheduleReturnDTOService;
     private final WebSocketService webSocketService;
     private final ApplicationEventPublisher eventPublisher;
+    private final PublicSettingsReadService publicSettingsReadService;
 
-    private static final long PLAY_MINUTES = 20L;
     private static final String ROUND_NOT_FOUND = "There is no round with this ID.";
     private static final String ROUNDS_TOPIC = "/topic/rounds";
+
+    private long roundMinutes() {
+        return publicSettingsReadService.getSettings().roundMinutesOrDefault();
+    }
 
     private void updateBreakAndFollowingRounds(Round breakRound, List<Round> roundsAfterBreak) {
         int breakDuration = (int) Duration
@@ -81,7 +86,7 @@ public class AdminScheduleUpdateService {
 
         // Set the round start time to be after the break
         breakRound.setStartTime(breakRound.getBreakTime().getEndTime());
-        breakRound.setEndTime(breakRound.getStartTime().plusMinutes(PLAY_MINUTES));
+        breakRound.setEndTime(breakRound.getStartTime().plusMinutes(roundMinutes()));
 
         // Save changes
         breakRepository.save(breakRound.getBreakTime());
@@ -98,11 +103,12 @@ public class AdminScheduleUpdateService {
     }
 
     private void updateRoundsAfterBreak(List<Round> roundsAfterBreak, Round breakRound) {
+        long minutes = roundMinutes();
         for (int i = 0; i < roundsAfterBreak.size(); i++) {
             Round currentRound = roundsAfterBreak.get(i);
-            LocalDateTime startTime = breakRound.getEndTime().plusMinutes(PLAY_MINUTES * i);
+            LocalDateTime startTime = breakRound.getEndTime().plusMinutes(minutes * i);
             currentRound.setStartTime(startTime);
-            currentRound.setEndTime(startTime.plusMinutes(PLAY_MINUTES));
+            currentRound.setEndTime(startTime.plusMinutes(minutes));
             roundRepository.save(currentRound);
         }
     }
@@ -227,7 +233,7 @@ public class AdminScheduleUpdateService {
 
         // Update round start time to be after the break
         newRound.setStartTime(aBreak.getEndTime());
-        newRound.setEndTime(newRound.getStartTime().plusMinutes(PLAY_MINUTES));
+        newRound.setEndTime(newRound.getStartTime().plusMinutes(roundMinutes()));
 
         // Save all changes
         breakRepository.save(aBreak);
@@ -278,11 +284,13 @@ public class AdminScheduleUpdateService {
     }
 
     private void updateNotPlayedRoundsSchedule(List<Round> notPlayedRounds) {
+        long minutes = roundMinutes();
+        LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
         for (int i = 0; i < notPlayedRounds.size(); i++) {
             Round currentRound = notPlayedRounds.get(i);
-            LocalDateTime startTime = LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(PLAY_MINUTES * i);
+            LocalDateTime startTime = now.plusMinutes(minutes * i);
             currentRound.setStartTime(startTime);
-            currentRound.setEndTime(startTime.plusMinutes(PLAY_MINUTES));
+            currentRound.setEndTime(startTime.plusMinutes(minutes));
             roundRepository.save(currentRound);
         }
     }

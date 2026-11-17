@@ -14,6 +14,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +59,7 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
         AnswerReturnDTO response = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "A", null, null, null);
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
-                .thenReturn(new AnswerSubmissionResult(response, null));
+                .thenReturn(new AnswerSubmissionResult(response, null, Duration.ofDays(2)));
 
         mockMvc.perform(post("/public/survey/answer")
                         .cookie(new MockCookie("user", "{\"teamId\":1}"))
@@ -144,7 +146,7 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
         when(cookieProperties.getPath()).thenReturn("/");
         when(cookieProperties.getSameSite()).thenReturn("Lax");
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), isNull()))
-                .thenReturn(new AnswerSubmissionResult(response, "new-key"));
+                .thenReturn(new AnswerSubmissionResult(response, "new-key", Duration.ofDays(3)));
 
         mockMvc.perform(post("/public/survey/answer")
                         .cookie(new MockCookie("user", "{\"teamId\":1}"))
@@ -153,7 +155,7 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
                 .andExpect(status().isOk())
                 .andExpect(cookie().value(PublicSurveyCreateController.SURVEY_KEY_COOKIE_NAME, "new-key"))
                 .andExpect(cookie().httpOnly(PublicSurveyCreateController.SURVEY_KEY_COOKIE_NAME, true))
-                .andExpect(cookie().maxAge(PublicSurveyCreateController.SURVEY_KEY_COOKIE_NAME, 2 * 24 * 60 * 60));
+                .andExpect(cookie().maxAge(PublicSurveyCreateController.SURVEY_KEY_COOKIE_NAME, 3 * 24 * 60 * 60));
     }
 
     @Test
@@ -161,7 +163,7 @@ class PublicSurveyCreateControllerWebMvcTest extends AbstractWebMvcSliceTest {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
         AnswerReturnDTO response = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "A", null, null, null);
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), eq("known-key")))
-                .thenReturn(new AnswerSubmissionResult(response, null));
+                .thenReturn(new AnswerSubmissionResult(response, null, Duration.ofDays(2)));
 
         mockMvc.perform(post("/public/survey/answer")
                         .cookie(new MockCookie("user", "{\"teamId\":1}"),

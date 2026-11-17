@@ -61,7 +61,7 @@ class PublicScheduleReadControllerContractTest extends AbstractWebMvcSliceTest {
         when(publicScheduleOverviewService.getOverview()).thenReturn(new ScheduleOverviewDTO(
                 List.of(new RoundReturnDTO(1L, 1, null, null, false, false, Set.of(), null)),
                 Map.of(1L, List.of(new TeamReturnDTO(9L, "Team Yoshi", null, true, true, 0, 0, 2))),
-                true, false, 3, true));
+                true, false, 3, true, 1));
 
         MvcResult result = mockMvc.perform(get("/public/schedule/overview"))
                 .andExpect(status().isOk())

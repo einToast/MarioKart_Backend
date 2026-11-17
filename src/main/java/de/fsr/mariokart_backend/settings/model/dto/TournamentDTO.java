@@ -20,11 +20,18 @@ public class TournamentDTO {
     private Integer maxGamesCount;
     private SurveyKeyMode surveyKeyMode;
     private Integer finalTeamsCount;
+    private Integer finalGamesCount;
+    private Integer roundMinutes;
+    private Integer rankingHiddenRounds;
+    private Integer maxAnswersPerTeam;
+    private Integer surveyKeyDays;
     private List<SwitchDTO> switches;
     private String floorPlan;
     private String program;
+    private String howToPlay;
     private String ocrProvider;
     private Boolean relativePoints;
+    private String defaultLanguage;
 
     public TournamentDTO(Boolean tournamentOpen, Boolean registrationOpen, Integer maxGamesCount,
             SurveyKeyMode surveyKeyMode) {
@@ -40,6 +47,11 @@ public class TournamentDTO {
         this.maxGamesCount = tournament.getMaxGamesCount();
         this.surveyKeyMode = tournament.getSurveyKeyMode();
         this.finalTeamsCount = tournament.getFinalTeamsCount();
+        this.finalGamesCount = tournament.getFinalGamesCount();
+        this.roundMinutes = tournament.getRoundMinutes();
+        this.rankingHiddenRounds = tournament.getRankingHiddenRounds();
+        this.maxAnswersPerTeam = tournament.getMaxAnswersPerTeam();
+        this.surveyKeyDays = tournament.getSurveyKeyDays();
         this.switches = tournament.getSwitches() == null ? List.of()
                 : tournament.getSwitches().stream()
                         .map(switchConfig -> new SwitchDTO(switchConfig.getName(), switchConfig.getColor(),
@@ -47,8 +59,10 @@ public class TournamentDTO {
                         .toList();
         this.floorPlan = tournament.getFloorPlan();
         this.program = tournament.getProgram();
+        this.howToPlay = tournament.getHowToPlay();
         this.ocrProvider = tournament.getOcrProvider();
         this.relativePoints = tournament.isRelativePoints();
+        this.defaultLanguage = tournament.getDefaultLanguage();
     }
 
     private static Map<String, SwitchTranslation> copyTranslations(Map<String, SwitchTranslation> translations) {
@@ -57,6 +71,18 @@ public class TournamentDTO {
 
     public int finalTeamsCountOrDefault() {
         return finalTeamsCount != null ? finalTeamsCount : Tournament.DEFAULT_FINAL_TEAMS_COUNT;
+    }
+
+    public int finalGamesCountOrDefault() {
+        return finalGamesCount != null ? finalGamesCount : Tournament.DEFAULT_FINAL_GAMES_COUNT;
+    }
+
+    public int roundMinutesOrDefault() {
+        return roundMinutes != null ? roundMinutes : Tournament.DEFAULT_ROUND_MINUTES;
+    }
+
+    public int rankingHiddenRoundsOrDefault() {
+        return rankingHiddenRounds != null ? rankingHiddenRounds : Tournament.DEFAULT_RANKING_HIDDEN_ROUNDS;
     }
 
     // Falls back to the one-based switch number while the switch has no name

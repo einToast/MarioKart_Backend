@@ -8,6 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -116,6 +117,22 @@ class PublicSurveyCreateServiceTest {
         assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
                 .isInstanceOf(AnswerLimitReachedException.class)
                 .hasMessageContaining("Maximum number of answers per team reached");
+    }
+
+    @Test
+    void submitAnswerThrowsWhenTeamReachedTheConfiguredAnswerLimit() throws Exception {
+        CheckboxQuestion question = new CheckboxQuestion();
+        question.setOptions(List.of("A", "B"));
+        stubTeamAndQuestion(question, false);
+        Tournament settings = tournament(SurveyKeyMode.DISABLED);
+        settings.setMaxAnswersPerTeam(2);
+        AnswerInputDTO input = new AnswerInputDTO(1L, "CHECKBOX", null, null, List.of(1), null);
+
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(settings));
+        when(answerRepository.countByQuestionIdAndSubmittingTeamId(1L, 7L)).thenReturn(2L);
+
+        assertThatThrownBy(() -> service.submitAnswer(input, USER_JSON, null))
+                .isInstanceOf(AnswerLimitReachedException.class);
     }
 
     @Test
@@ -230,6 +247,19 @@ class PublicSurveyCreateServiceTest {
 
         assertThat(result.issuedSurveyKey()).isNotBlank();
         assertThat(mapped.getSurveyKey().getToken()).isEqualTo(result.issuedSurveyKey());
+    }
+
+    @Test
+    void submitAnswerKeepsIssuedSurveyKeysForTheConfiguredNumberOfDays() throws Exception {
+        stubValidFreeTextSubmission(SurveyKeyMode.DISTRIBUTING, false);
+        Tournament settings = tournament(SurveyKeyMode.DISTRIBUTING);
+        settings.setSurveyKeyDays(5);
+        when(tournamentRepository.findFirstByOrderByIdAsc()).thenReturn(Optional.of(settings));
+        when(surveyKeyRepository.save(any(SurveyKey.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AnswerSubmissionResult result = service.submitAnswer(freeTextInput(), USER_JSON, null);
+
+        assertThat(result.surveyKeyMaxAge()).isEqualTo(Duration.ofDays(5));
     }
 
     @Test

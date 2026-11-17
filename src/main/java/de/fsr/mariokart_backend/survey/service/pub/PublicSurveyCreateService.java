@@ -1,5 +1,6 @@
 package de.fsr.mariokart_backend.survey.service.pub;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,6 @@ public class PublicSurveyCreateService {
     private final SurveyKeyRepository surveyKeyRepository;
     private final ObjectMapper objectMapper;
 
-    private static final int MAX_ANSWERS_PER_TEAM = 4;
     public static final int MAX_FREE_TEXT_ANSWER_LENGTH = 1000;
 
     @Transactional(rollbackFor = Exception.class)
@@ -78,12 +78,14 @@ public class PublicSurveyCreateService {
         final Team submittingTeam = teamRepository.findById(teamId.longValue())
                 .orElseThrow(() -> new EntityNotFoundException("There is no team with this id."));
 
+        Tournament settings = tournamentRepository.findFirstByOrderByIdAsc().orElseGet(Tournament::new);
+
         // Skip team answer limit check for free text questions
         if (questionType != QuestionType.FREE_TEXT) {
             long teamAnswerCount = answerRepository.countByQuestionIdAndSubmittingTeamId(answer.getQuestionId(),
                     submittingTeam.getId());
 
-            if (teamAnswerCount >= MAX_ANSWERS_PER_TEAM) {
+            if (teamAnswerCount >= settings.getMaxAnswersPerTeam()) {
                 throw new AnswerLimitReachedException("Maximum number of answers per team reached.");
             }
         }
@@ -94,7 +96,6 @@ public class PublicSurveyCreateService {
             throw new AnswerLimitReachedException("This team has already submitted an answer for this question.");
         }
 
-        Tournament settings = tournamentRepository.findFirstByOrderByIdAsc().orElseGet(Tournament::new);
         SurveyKey surveyKey = resolveSurveyKey(settings.getSurveyKeyMode(), surveyKeyToken);
 
         if (surveyKey != null && question.isOneAnswerPerKey()
@@ -114,7 +115,8 @@ public class PublicSurveyCreateService {
 
         return new AnswerSubmissionResult(
                 answerReturnDTOService.answerToAnswerReturnDTO(answerRepository.save(answerToSave)),
-                issuedSurveyKey);
+                issuedSurveyKey,
+                Duration.ofDays(settings.getSurveyKeyDays()));
     }
 
     private static QuestionType questionTypeOf(Question question) {

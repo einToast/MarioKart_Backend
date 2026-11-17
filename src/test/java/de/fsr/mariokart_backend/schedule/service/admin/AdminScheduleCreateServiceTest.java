@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -117,6 +119,11 @@ class AdminScheduleCreateServiceTest {
 
     @InjectMocks
     private AdminScheduleCreateService service;
+
+    @BeforeEach
+    void useDefaultSettings() {
+        lenient().when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO());
+    }
 
     @Test
     void addRoundAssignsRoundNumberWhenZero() {
@@ -279,7 +286,7 @@ class AdminScheduleCreateServiceTest {
         when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        service.createSchedule(new ScheduleInputDTO(version, 3, 1, 8, List.of(8, 4, 4)));
+        service.createSchedule(new ScheduleInputDTO(version, 3, 1, 8, List.of(8, 4, 4), null, null));
 
         ArgumentCaptor<Map<String, Object>> body = ArgumentCaptor.captor();
         verify(scheduleRestClient.post().uri("/schedule"), atLeastOnce()).body(body.capture());
@@ -301,7 +308,7 @@ class AdminScheduleCreateServiceTest {
                 .thenReturn("payload");
         when(objectMapper.readValue("payload", ScheduleDTO.class)).thenThrow(new RuntimeException("stop"));
 
-        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 4, 8, 4, List.of());
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 4, 8, 4, List.of(), null, null);
 
         assertThatThrownBy(() -> service.createSchedule(scheduleInput)).isInstanceOf(RuntimeException.class);
 
@@ -316,7 +323,7 @@ class AdminScheduleCreateServiceTest {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
         when(teamRepository.count()).thenReturn((long) teams.size());
 
-        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 3, 8, 4, List.of(8, 4, 4));
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 3, 8, 4, List.of(8, 4, 4), null, null);
 
         assertThatThrownBy(() -> service.createSchedule(scheduleInput))
                 .isInstanceOf(NotEnoughTeamsException.class)
@@ -339,7 +346,7 @@ class AdminScheduleCreateServiceTest {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
 
         List<Integer> teamCounts = Arrays.stream(teamsPerField.split(",")).map(Integer::valueOf).toList();
-        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(version, numFields, 8, 4, teamCounts);
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(version, numFields, 8, 4, teamCounts, null, null);
 
         assertThatThrownBy(() -> service.createSchedule(scheduleInput))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -352,7 +359,7 @@ class AdminScheduleCreateServiceTest {
 
         List<Integer> teamCounts = new ArrayList<>(List.of(4, 4));
         teamCounts.add(null);
-        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 3, 8, 4, teamCounts);
+        ScheduleInputDTO scheduleInput = new ScheduleInputDTO(4, 3, 8, 4, teamCounts, null, null);
 
         assertThatThrownBy(() -> service.createSchedule(scheduleInput))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -544,6 +551,59 @@ class AdminScheduleCreateServiceTest {
 
     @Test
     void createScheduleShiftsTheRoundsAfterTheBreakInRoundOrder() throws Exception {
+        List<Round> rounds = createEightRoundSchedule(new ScheduleInputDTO(1, 4, 8, 4), true);
+
+        Round beforeBreak = rounds.get(4);
+        Round breakRound = rounds.get(5);
+        assertThat(breakRound.getBreakTime()).isNotNull();
+        assertThat(Duration.between(beforeBreak.getStartTime(), breakRound.getStartTime()))
+                .isBetween(Duration.ofMinutes(50), Duration.ofMinutes(51));
+        for (int index = 5; index < rounds.size() - 1; index++) {
+            assertThat(rounds.get(index + 1).getStartTime()).isEqualTo(rounds.get(index).getEndTime());
+        }
+    }
+
+    @Test
+    void createScheduleUsesTheConfiguredRoundLengthAndTheRequestedBreak() throws Exception {
+        TournamentDTO settings = new TournamentDTO();
+        settings.setRoundMinutes(25);
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
+
+        List<Round> rounds = createEightRoundSchedule(new ScheduleInputDTO(2, 4, 8, 4, null, 3, 15), false);
+
+        assertThat(rounds).filteredOn(round -> round.getBreakTime() != null)
+                .extracting(Round::getRoundNumber)
+                .containsExactly(3);
+        assertThat(Duration.between(rounds.get(1).getStartTime(), rounds.get(2).getStartTime()))
+                .isBetween(Duration.ofMinutes(40), Duration.ofMinutes(41));
+        assertThat(rounds).allMatch(round -> Duration.between(round.getStartTime(), round.getEndTime())
+                .equals(Duration.ofMinutes(25)));
+        ArgumentCaptor<BreakInputDTO> breakCaptor = ArgumentCaptor.forClass(BreakInputDTO.class);
+        verify(scheduleInputDTOService).breakInputDTOToBreak(breakCaptor.capture());
+        assertThat(breakCaptor.getValue().getBreakDuration()).isEqualTo(15);
+    }
+
+    @Test
+    void createSchedulePutsABreakAfterTheLastRoundBeforeTheLastRound() throws Exception {
+        List<Round> rounds = createEightRoundSchedule(new ScheduleInputDTO(2, 4, 8, 4, null, 20, 30), false);
+
+        assertThat(rounds).filteredOn(round -> round.getBreakTime() != null)
+                .extracting(Round::getRoundNumber)
+                .containsExactly(8);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "0, 30", "6, 0" })
+    void createScheduleRejectsABreakBeforeRoundOneOrWithoutMinutes(int breakRound, int breakMinutes) {
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        ScheduleInputDTO input = new ScheduleInputDTO(2, 4, 8, 4, null, breakRound, breakMinutes);
+
+        assertThatThrownBy(() -> service.createSchedule(input))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(roundRepository, never()).save(any(Round.class));
+    }
+
+    private List<Round> createEightRoundSchedule(ScheduleInputDTO input, boolean reverseFindAll) throws Exception {
         List<Team> teams = buildTeams(16);
         List<Round> savedRounds = new ArrayList<>();
         AtomicLong roundIds = new AtomicLong(1L);
@@ -567,7 +627,9 @@ class AdminScheduleCreateServiceTest {
         });
         when(roundRepository.findAll()).thenAnswer(invocation -> {
             List<Round> rounds = new ArrayList<>(savedRounds);
-            Collections.reverse(rounds);
+            if (reverseFindAll) {
+                Collections.reverse(rounds);
+            }
             return rounds;
         });
         when(roundRepository.findById(anyLong())).thenAnswer(invocation -> savedRounds.stream()
@@ -577,19 +639,11 @@ class AdminScheduleCreateServiceTest {
         when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(breakRepository.save(any(Break.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        service.createSchedule(new ScheduleInputDTO(1, 4, 8, 4));
+        service.createSchedule(input);
 
-        List<Round> rounds = savedRounds.stream()
+        return savedRounds.stream()
                 .sorted(Comparator.comparing(Round::getRoundNumber))
                 .toList();
-        Round beforeBreak = rounds.get(4);
-        Round breakRound = rounds.get(5);
-        assertThat(breakRound.getBreakTime()).isNotNull();
-        assertThat(Duration.between(beforeBreak.getStartTime(), breakRound.getStartTime()))
-                .isBetween(Duration.ofMinutes(50), Duration.ofMinutes(51));
-        for (int index = 5; index < rounds.size() - 1; index++) {
-            assertThat(rounds.get(index + 1).getStartTime()).isEqualTo(rounds.get(index).getEndTime());
-        }
     }
 
     @Test
@@ -725,6 +779,64 @@ class AdminScheduleCreateServiceTest {
         assertThat(pointsCaptor.getAllValues().subList(0, 8))
                 .extracting(Points::getFinalPoints)
                 .containsExactly(8, 7, 6, 5, 4, 3, 2, 1);
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "1, 4, 1", "4, 4, 4", "6, 4, 3;3", "7, 4, 4;3", "9, 4, 3;3;3", "6, 1, 1;1;1;1;1;1", "5, 2, 2;2;1" })
+    void splitFinalGamesUsesAsFewRoundsAsTheSwitchesAllowAndFillsThemEvenly(int gamesCount, int switchCount,
+            String expected) {
+        assertThat(AdminScheduleCreateService.splitFinalGames(gamesCount, switchCount))
+                .containsExactlyElementsOf(Arrays.stream(expected.split(";")).map(Integer::valueOf).toList());
+    }
+
+    @Test
+    void createFinalScheduleSplitsTheConfiguredFinalGamesIntoRoundsOfTheConfiguredLength() throws Exception {
+        List<Team> finalTeams = buildTeams(4);
+        List<Round> savedRounds = new ArrayList<>();
+        List<Game> savedGames = new ArrayList<>();
+        AtomicLong roundIds = new AtomicLong(1L);
+        TournamentDTO settings = new TournamentDTO();
+        settings.setFinalGamesCount(7);
+        settings.setRoundMinutes(15);
+
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
+        when(publicScheduleReadService.isFinalScheduleCreated()).thenReturn(false);
+        when(publicScheduleReadService.getNumberOfRoundsUnplayed()).thenReturn(0);
+        when(publicSettingsReadService.getSettings()).thenReturn(settings);
+        when(teamRepository.findByFinalReadyTrue()).thenReturn(finalTeams);
+        when(adminRegistrationReadService.getFinalTeams()).thenReturn(finalTeams);
+        when(roundRepository.count()).thenAnswer(invocation -> (long) savedRounds.size());
+        when(roundRepository.findAll()).thenAnswer(invocation -> new ArrayList<>(savedRounds));
+        when(roundRepository.save(any(Round.class))).thenAnswer(invocation -> {
+            Round round = invocation.getArgument(0);
+            if (round.getId() == null) {
+                round.setId(roundIds.getAndIncrement());
+            }
+            savedRounds.add(round);
+            return round;
+        });
+        when(gameRepository.save(any(Game.class))).thenAnswer(invocation -> {
+            savedGames.add(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+        when(pointsRepository.save(any(Points.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        Game lastGroupGame = new Game();
+        lastGroupGame.setSwitchIndex(3);
+        when(gameRepository.findFirstByRound_FinalGameFalseOrderBySwitchIndexDesc()).thenReturn(Optional.of(lastGroupGame));
+
+        service.createFinalSchedule();
+
+        List<Round> finalRounds = savedRounds.stream().filter(round -> !round.isPlayed()).toList();
+        assertThat(finalRounds).hasSize(2)
+                .allMatch(round -> Duration.between(round.getStartTime(), round.getEndTime())
+                        .equals(Duration.ofMinutes(15)));
+        assertThat(finalRounds).extracting(round -> savedGames.stream()
+                .filter(game -> game.getRound() == round)
+                .map(Game::getSwitchIndex)
+                .toList())
+                .containsExactly(List.of(0, 0, 0, 0), List.of(0, 0, 0));
+        assertThat(Duration.between(finalRounds.get(0).getStartTime(), finalRounds.get(1).getStartTime()))
+                .isEqualTo(Duration.ofMinutes(15));
     }
 
     @Test

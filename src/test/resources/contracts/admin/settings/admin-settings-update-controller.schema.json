@@ -24,8 +24,15 @@
         },
         "floorPlan": { "type": ["string", "null"] },
         "program": { "type": ["string", "null"] },
+        "finalGamesCount": { "type": ["integer", "null"], "minimum": 1 },
+        "roundMinutes": { "type": ["integer", "null"], "minimum": 1 },
+        "rankingHiddenRounds": { "type": ["integer", "null"], "minimum": 0 },
+        "maxAnswersPerTeam": { "type": ["integer", "null"], "minimum": 1 },
+        "surveyKeyDays": { "type": ["integer", "null"], "minimum": 1, "maximum": 400 },
+        "howToPlay": { "type": ["string", "null"] },
         "ocrProvider": { "type": ["string", "null"] },
-        "relativePoints": { "type": ["boolean", "null"] }
+        "relativePoints": { "type": ["boolean", "null"] },
+        "defaultLanguage": { "type": ["string", "null"] }
       },
       "additionalProperties": true
     },

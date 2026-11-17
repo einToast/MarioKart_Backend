@@ -2,6 +2,7 @@ package de.fsr.mariokart_backend.settings.service.admin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -20,9 +21,13 @@ import de.fsr.mariokart_backend.settings.model.Tournament;
 import de.fsr.mariokart_backend.settings.model.dto.SwitchDTO;
 import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.repository.TournamentRepository;
+import de.fsr.mariokart_backend.survey.service.admin.AdminSurveyUpdateService;
+import de.fsr.mariokart_backend.translation.TranslationRebase;
 import de.fsr.mariokart_backend.translation.Translations;
 import de.fsr.mariokart_backend.websocket.service.WebSocketService;
 import lombok.AllArgsConstructor;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.node.ObjectNode;
 
 @Service
 @AllArgsConstructor
@@ -37,6 +42,8 @@ public class AdminSettingsUpdateService {
     public static final int MAX_SWITCH_NAME_LENGTH = 30;
     public static final int MAX_FLOOR_PLAN_LENGTH = 50_000;
     public static final int MAX_PROGRAM_LENGTH = 10_000;
+    public static final int MAX_HOW_TO_PLAY_LENGTH = 10_000;
+    public static final int MAX_SURVEY_KEY_DAYS = 400;
 
     private static final Pattern HEX_COLOR = Pattern.compile("#[0-9a-fA-F]{6}");
 
@@ -44,6 +51,8 @@ public class AdminSettingsUpdateService {
     private final PublicScheduleReadService publicScheduleReadService;
     private final AdminOcrReadService adminOcrReadService;
     private final WebSocketService webSocketService;
+    private final AdminSurveyUpdateService adminSurveyUpdateService;
+    private final TranslationRebase translationRebase;
 
     public TournamentDTO updateSettings(TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
         Tournament tournament = tournamentRepository.findFirstByOrderByIdAsc().orElseThrow();
@@ -52,6 +61,17 @@ public class AdminSettingsUpdateService {
             throw new RoundsAlreadyExistsException("Matches already exist. Can't open registration.");
         }
 
+        applyState(tournament, tournamentDTO);
+        applyFinal(tournament, tournamentDTO);
+        applyLimits(tournament, tournamentDTO);
+        applyContent(tournament, tournamentDTO);
+
+        TournamentDTO savedSettings = new TournamentDTO(tournamentRepository.save(tournament));
+        webSocketService.sendMessage("/topic/settings", "update");
+        return savedSettings;
+    }
+
+    private void applyState(Tournament tournament, TournamentDTO tournamentDTO) {
         if (tournamentDTO.getTournamentOpen() != null) {
             tournament.setTournamentOpen(tournamentDTO.getTournamentOpen());
         }
@@ -64,10 +84,40 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getSurveyKeyMode() != null) {
             tournament.setSurveyKeyMode(tournamentDTO.getSurveyKeyMode());
         }
+        if (tournamentDTO.getRelativePoints() != null) {
+            tournament.setRelativePoints(tournamentDTO.getRelativePoints());
+        }
+    }
+
+    private void applyFinal(Tournament tournament, TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
         if (tournamentDTO.getFinalTeamsCount() != null
                 && tournamentDTO.getFinalTeamsCount() != tournament.getFinalTeamsCount()) {
             updateFinalTeamsCount(tournament, tournamentDTO.getFinalTeamsCount());
         }
+        if (tournamentDTO.getFinalGamesCount() != null
+                && tournamentDTO.getFinalGamesCount() != tournament.getFinalGamesCount()) {
+            requireFinalNotCreated("final games");
+            tournament.setFinalGamesCount(requireAtLeast(tournamentDTO.getFinalGamesCount(), 1, "final games"));
+        }
+    }
+
+    private void applyLimits(Tournament tournament, TournamentDTO tournamentDTO) {
+        if (tournamentDTO.getRoundMinutes() != null) {
+            tournament.setRoundMinutes(requireAtLeast(tournamentDTO.getRoundMinutes(), 1, "minutes per round"));
+        }
+        if (tournamentDTO.getRankingHiddenRounds() != null) {
+            tournament.setRankingHiddenRounds(requireAtLeast(tournamentDTO.getRankingHiddenRounds(), 0,
+                    "rounds with a hidden ranking"));
+        }
+        if (tournamentDTO.getMaxAnswersPerTeam() != null) {
+            tournament.setMaxAnswersPerTeam(requireAtLeast(tournamentDTO.getMaxAnswersPerTeam(), 1, "answers per team"));
+        }
+        if (tournamentDTO.getSurveyKeyDays() != null) {
+            updateSurveyKeyDays(tournament, tournamentDTO.getSurveyKeyDays());
+        }
+    }
+
+    private void applyContent(Tournament tournament, TournamentDTO tournamentDTO) {
         if (tournamentDTO.getSwitches() != null) {
             tournament.setSwitches(toSwitchConfigs(tournamentDTO.getSwitches()));
         }
@@ -77,16 +127,37 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getProgram() != null) {
             updateProgram(tournament, tournamentDTO.getProgram());
         }
+        if (tournamentDTO.getHowToPlay() != null) {
+            updateHowToPlay(tournament, tournamentDTO.getHowToPlay());
+        }
         if (tournamentDTO.getOcrProvider() != null) {
             updateOcrProvider(tournament, tournamentDTO.getOcrProvider());
         }
-        if (tournamentDTO.getRelativePoints() != null) {
-            tournament.setRelativePoints(tournamentDTO.getRelativePoints());
+        if (tournamentDTO.getDefaultLanguage() != null
+                && !tournamentDTO.getDefaultLanguage().equals(tournament.getDefaultLanguage())) {
+            updateDefaultLanguage(tournament, tournamentDTO.getDefaultLanguage());
         }
+    }
 
-        TournamentDTO savedSettings = new TournamentDTO(tournamentRepository.save(tournament));
-        webSocketService.sendMessage("/topic/settings", "update");
-        return savedSettings;
+    private static int requireAtLeast(int value, int min, String name) {
+        if (value < min) {
+            throw new IllegalArgumentException("The %s have to be at least %d.".formatted(name, min));
+        }
+        return value;
+    }
+
+    private void updateSurveyKeyDays(Tournament tournament, int surveyKeyDays) {
+        if (surveyKeyDays < 1 || surveyKeyDays > MAX_SURVEY_KEY_DAYS) {
+            throw new IllegalArgumentException(
+                    "Survey keys are valid for 1 to %d days, browsers drop longer cookies.".formatted(MAX_SURVEY_KEY_DAYS));
+        }
+        tournament.setSurveyKeyDays(surveyKeyDays);
+    }
+
+    private void requireFinalNotCreated(String name) throws RoundsAlreadyExistsException {
+        if (publicScheduleReadService.isFinalScheduleCreated()) {
+            throw new RoundsAlreadyExistsException("Final schedule already created. Can't change the %s.".formatted(name));
+        }
     }
 
     private void updateFinalTeamsCount(Tournament tournament, int finalTeamsCount)
@@ -140,6 +211,38 @@ public class AdminSettingsUpdateService {
             throw new IllegalArgumentException("The program is too large.");
         }
         tournament.setProgram(program.isBlank() ? null : program);
+    }
+
+    private void updateHowToPlay(Tournament tournament, String howToPlay) {
+        if (howToPlay.length() > MAX_HOW_TO_PLAY_LENGTH) {
+            throw new IllegalArgumentException("The how-to-play page is too large.");
+        }
+        tournament.setHowToPlay(howToPlay.isBlank() ? null : howToPlay);
+    }
+
+    private void updateDefaultLanguage(Tournament tournament, String language) {
+        if (!Translations.isLanguageCode(language)) {
+            throw new IllegalArgumentException("The default language needs a language code like \"en\".");
+        }
+        String previous = tournament.getDefaultLanguage();
+        tournament.setSwitches(new ArrayList<>(tournament.getSwitches().stream()
+                .map(switchConfig -> rebaseSwitch(switchConfig, previous, language))
+                .toList()));
+        tournament.setFloorPlan(translationRebase.rebaseJson(tournament.getFloorPlan(), previous, language));
+        tournament.setProgram(translationRebase.rebaseJson(tournament.getProgram(), previous, language));
+        tournament.setHowToPlay(translationRebase.rebaseJson(tournament.getHowToPlay(), previous, language));
+        adminSurveyUpdateService.rebaseTranslations(previous, language);
+        tournament.setDefaultLanguage(language);
+    }
+
+    private SwitchConfig rebaseSwitch(SwitchConfig switchConfig, String from, String to) {
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("name", switchConfig.getName());
+        ObjectNode node = translationRebase.toNode(fields, switchConfig.getTranslations());
+        translationRebase.rebaseTree(node, from, to);
+        return new SwitchConfig(translationRebase.text(node, "name"), switchConfig.getColor(),
+                translationRebase.translationsOf(node, new TypeReference<Map<String, SwitchTranslation>>() {
+                }));
     }
 
     private void updateOcrProvider(Tournament tournament, String ocrProvider) {

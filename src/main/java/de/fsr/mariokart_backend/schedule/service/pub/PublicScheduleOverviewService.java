@@ -10,6 +10,7 @@ import de.fsr.mariokart_backend.registration.model.dto.TeamReturnDTO;
 import de.fsr.mariokart_backend.registration.service.pub.PublicRegistrationReadService;
 import de.fsr.mariokart_backend.schedule.model.dto.RoundReturnDTO;
 import de.fsr.mariokart_backend.schedule.model.dto.ScheduleOverviewDTO;
+import de.fsr.mariokart_backend.settings.model.dto.TournamentDTO;
 import de.fsr.mariokart_backend.settings.service.pub.PublicSettingsReadService;
 import lombok.AllArgsConstructor;
 
@@ -29,10 +30,12 @@ public class PublicScheduleOverviewService {
             teamsNotInRound.put(round.getId(), publicRegistrationReadService.getTeamsNotInRound(round.getId()));
         }
 
+        TournamentDTO settings = publicSettingsReadService.getSettings();
         return new ScheduleOverviewDTO(currentRounds, teamsNotInRound,
                 publicScheduleReadService.isScheduleCreated(),
                 publicScheduleReadService.isFinalScheduleCreated(),
                 publicScheduleReadService.getNumberOfRoundsUnplayed(),
-                Boolean.TRUE.equals(publicSettingsReadService.getSettings().getTournamentOpen()));
+                Boolean.TRUE.equals(settings.getTournamentOpen()),
+                settings.rankingHiddenRoundsOrDefault());
     }
 }

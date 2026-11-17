@@ -4,6 +4,11 @@
     "registrationOpen": false,
     "surveyKeyMode": "DISABLED",
     "finalTeamsCount": 4,
+    "finalGamesCount": 8,
+    "roundMinutes": 20,
+    "rankingHiddenRounds": 1,
+    "maxAnswersPerTeam": 4,
+    "surveyKeyDays": 2,
     "switches": [
       {
         "name": "Blau",
@@ -334,68 +339,131 @@
       }
     ]
   },
-  "program": [
-    {
-      "icon": "megaphone",
-      "time": "16:00 - 16:45",
-      "text": "Arne labert",
-      "translations": {
-        "en": {
-          "text": "Arne talks"
+  "program": {
+    "entries": [
+      {
+        "icon": "megaphone",
+        "time": "16:00 - 16:45",
+        "text": "Arne labert",
+        "translations": {
+          "en": {
+            "text": "Arne talks"
+          }
+        }
+      },
+      {
+        "icon": "play",
+        "time": "16:45 - 18:30",
+        "text": "Runde 1 - 5",
+        "translations": {
+          "en": {
+            "text": "Rounds 1 - 5"
+          }
+        }
+      },
+      {
+        "icon": "pizza",
+        "time": "18:30 - 19:00",
+        "text": "Pause",
+        "translations": {
+          "en": {
+            "text": "Break"
+          }
+        }
+      },
+      {
+        "icon": "play",
+        "time": "19:00 - 20:00",
+        "text": "Runde 6 - 8",
+        "translations": {
+          "en": {
+            "text": "Rounds 6 - 8"
+          }
+        }
+      },
+      {
+        "icon": "final",
+        "time": "20:00 - 20:45",
+        "text": "Finale",
+        "translations": {
+          "en": {
+            "text": "Final"
+          }
+        }
+      },
+      {
+        "icon": "medal",
+        "time": "21:00",
+        "text": "Siegerehrung",
+        "translations": {
+          "en": {
+            "text": "Award ceremony"
+          }
         }
       }
-    },
-    {
-      "icon": "play",
-      "time": "16:45 - 18:30",
-      "text": "Runde 1 - 5",
-      "translations": {
-        "en": {
-          "text": "Rounds 1 - 5"
+    ]
+  },
+  "howToPlay": {
+    "videoUrl": "https://www.youtube.com/watch?v=3p25Jjj6UGA",
+    "rules": [
+      {
+        "text": "Es treten 4 Teams gegeneinander an",
+        "translations": {
+          "en": {
+            "text": "4 teams race against each other"
+          }
+        }
+      },
+      {
+        "text": "Es wird im Versus-Rennen gespielt",
+        "translations": {
+          "en": {
+            "text": "The races are played in versus mode"
+          }
+        }
+      },
+      {
+        "text": "Jedes Team wählt den Charakter aus, mit dem es sich angemeldet hat",
+        "translations": {
+          "en": {
+            "text": "Every team picks the character it registered with"
+          }
+        }
+      },
+      {
+        "text": "Alle Teams fahren im Standard-Kart",
+        "translations": {
+          "en": {
+            "text": "All teams drive the standard kart"
+          }
+        }
+      },
+      {
+        "text": "Die Geschwindigkeit beträgt 100 ccm",
+        "translations": {
+          "en": {
+            "text": "The speed is 100cc"
+          }
+        }
+      },
+      {
+        "text": "Die Streckenauswahl ist zufällig",
+        "translations": {
+          "en": {
+            "text": "The tracks are chosen at random"
+          }
+        }
+      },
+      {
+        "text": "Die Teams fahren 4 Rennen gegeneinander",
+        "translations": {
+          "en": {
+            "text": "The teams race against each other 4 times"
+          }
         }
       }
-    },
-    {
-      "icon": "pizza",
-      "time": "18:30 - 19:00",
-      "text": "Pause",
-      "translations": {
-        "en": {
-          "text": "Break"
-        }
-      }
-    },
-    {
-      "icon": "play",
-      "time": "19:00 - 20:00",
-      "text": "Runde 6 - 8",
-      "translations": {
-        "en": {
-          "text": "Rounds 6 - 8"
-        }
-      }
-    },
-    {
-      "icon": "final",
-      "time": "20:00 - 20:45",
-      "text": "Finale",
-      "translations": {
-        "en": {
-          "text": "Final"
-        }
-      }
-    },
-    {
-      "icon": "medal",
-      "time": "21:00",
-      "text": "Siegerehrung",
-      "translations": {
-        "en": {
-          "text": "Award ceremony"
-        }
-      }
-    }
-  ],
+    ]
+  },
   "teams": [
     {
       "teamName": "GreatTeamName",
@@ -484,33 +552,50 @@
   ],
   "survey": [
     {
-      "questionText": "How satisfied are you with the tournament?",
+      "questionText": "Wie zufrieden bist du mit dem Turnier?",
       "questionType": "MULTIPLE_CHOICE",
       "options": [
-        "Very satisfied",
-        "Satisfied",
+        "Sehr zufrieden",
+        "Zufrieden",
         "Neutral",
-        "Dissatisfied",
-        "Very dissatisfied"
+        "Unzufrieden",
+        "Sehr unzufrieden"
       ],
       "active": true,
       "visible": true,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "How satisfied are you with the tournament?",
+          "options": [
+            "Very satisfied",
+            "Satisfied",
+            "Neutral",
+            "Dissatisfied",
+            "Very dissatisfied"
+          ]
+        }
+      }
     },
     {
-      "questionText": "What would you improve?",
+      "questionText": "Was würdest du verbessern?",
       "questionType": "FREE_TEXT",
       "options": null,
       "active": true,
       "visible": true,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "What would you improve?"
+        }
+      }
     },
     {
-      "questionText": "What are your favorite characters?",
+      "questionText": "Was sind deine Lieblingscharaktere?",
       "questionType": "CHECKBOX",
       "options": [
         "Mario",
@@ -529,33 +614,50 @@
       "visible": true,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "What are your favorite characters?"
+        }
+      }
     },
     {
-      "questionText": "Choose your favorite team",
+      "questionText": "Wähle dein Lieblingsteam",
       "questionType": "TEAM",
       "options": null,
       "active": false,
       "visible": false,
       "live": false,
       "finalTeamsOnly": false,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "Choose your favorite team"
+        }
+      }
     },
     {
-      "questionText": "Which team will win the finals?",
+      "questionText": "Welches Team gewinnt das Finale?",
       "questionType": "TEAM",
       "options": null,
       "active": false,
       "visible": false,
       "live": false,
       "finalTeamsOnly": true,
-      "oneAnswerPerKey": false
+      "oneAnswerPerKey": false,
+      "translations": {
+        "en": {
+          "questionText": "Which team will win the finals?"
+        }
+      }
     }
   ],
   "schedule": {
     "version": 2,
     "numFields": 4,
     "numRounds": 8,
-    "teamsPerGame": 4
+    "teamsPerGame": 4,
+    "breakRound": 6,
+    "breakMinutes": 30
   }
 }

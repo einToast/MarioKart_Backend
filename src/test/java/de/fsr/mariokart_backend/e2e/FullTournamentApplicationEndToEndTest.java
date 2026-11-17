@@ -16,6 +16,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,6 +55,12 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
         private static final int ROUND_COUNT = 8;
         private static final int TEAMS_PER_GAME = 4;
         private static final int TEAMS_PER_ROUND = SWITCH_COUNT * TEAMS_PER_GAME;
+        private static final int ROUND_MINUTES = 25;
+        private static final int BREAK_MINUTES = 15;
+        private static final int FINAL_GAMES = 7;
+        private static final int RANKING_HIDDEN_ROUNDS = 2;
+        private static final String HOW_TO_PLAY = """
+                        {"videoUrl":"https://youtu.be/3p25Jjj6UGA","rules":[{"text":"Fair bleiben"}]}""";
         private static final String PROGRAM = """
                         [{"icon":"flag","time":"16:00 - 16:30","text":"Begrüßung"},{"icon":"pizza","time":"18:00 - 18:30","text":"Pizzapause"}]""";
         private static final String FLOOR_PLAN = """
@@ -79,8 +87,10 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
 
         private void configureVenue(MockCookie adminCookie) throws Exception {
                 putSettings(adminCookie, """
-                                {"switches":[{"name":"Blau","color":"#9DAEDA"},{"name":"Rot","color":"#DA9DC9"},{"name":"Grün","color":"#9DDAB0"},{"name":"Gelb","color":"#DAD49D"}],"floorPlan":%s,"program":%s,"finalTeamsCount":4}
-                                """.formatted(JSON.writeValueAsString(FLOOR_PLAN), JSON.writeValueAsString(PROGRAM)));
+                                {"switches":[{"name":"Blau","color":"#9DAEDA"},{"name":"Rot","color":"#DA9DC9"},{"name":"Grün","color":"#9DDAB0"},{"name":"Gelb","color":"#DAD49D"}],"floorPlan":%s,"program":%s,"finalTeamsCount":4,"roundMinutes":%d,"finalGamesCount":%d,"rankingHiddenRounds":%d,"surveyKeyDays":3,"howToPlay":%s}
+                                """.formatted(JSON.writeValueAsString(FLOOR_PLAN), JSON.writeValueAsString(PROGRAM),
+                                                ROUND_MINUTES, FINAL_GAMES, RANKING_HIDDEN_ROUNDS,
+                                                JSON.writeValueAsString(HOW_TO_PLAY)));
 
                 JsonNode settings = getJson(get("/public/settings"));
                 assertThat(settings.path("switches")).hasSize(SWITCH_COUNT);
@@ -88,6 +98,12 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                 assertThat(settings.path("program").asText()).isEqualTo(PROGRAM);
                 assertThat(settings.path("floorPlan").asText()).isEqualTo(FLOOR_PLAN);
                 assertThat(settings.path("finalTeamsCount").asInt()).isEqualTo(4);
+                assertThat(settings.path("roundMinutes").asInt()).isEqualTo(ROUND_MINUTES);
+                assertThat(settings.path("finalGamesCount").asInt()).isEqualTo(FINAL_GAMES);
+                assertThat(settings.path("rankingHiddenRounds").asInt()).isEqualTo(RANKING_HIDDEN_ROUNDS);
+                assertThat(settings.path("maxAnswersPerTeam").asInt()).isEqualTo(4);
+                assertThat(settings.path("surveyKeyDays").asInt()).isEqualTo(3);
+                assertThat(settings.path("howToPlay").asText()).isEqualTo(HOW_TO_PLAY);
         }
 
         private Map<String, Integer> registerTeams(MockCookie adminCookie) throws Exception {
@@ -191,14 +207,15 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                                                 .cookie(adminCookie)
                                                 .contentType(APPLICATION_JSON)
                                                 .content("""
-                                                                {"version":2,"numFields":%d,"numRounds":%d,"teamsPerGame":%d}
-                                                                """.formatted(SWITCH_COUNT, ROUND_COUNT, TEAMS_PER_GAME)))
+                                                                {"version":2,"numFields":%d,"numRounds":%d,"teamsPerGame":%d,"breakRound":6,"breakMinutes":%d}
+                                                                """.formatted(SWITCH_COUNT, ROUND_COUNT, TEAMS_PER_GAME, BREAK_MINUTES)))
                                 .andExpect(status().isOk())
                                 .andReturn();
 
                 JsonNode createdRounds = JSON.readTree(scheduleCreateResult.getResponse().getContentAsString());
                 assertThat(createdRounds).hasSize(ROUND_COUNT);
                 for (JsonNode round : getAdminRounds(adminCookie)) {
+                        assertThat(minutesOf(round)).isEqualTo(ROUND_MINUTES);
                         assertThat(round.path("games")).hasSize(SWITCH_COUNT);
                         int teamsInRound = 0;
                         for (JsonNode game : round.path("games")) {
@@ -208,13 +225,16 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                         assertThat(teamsInRound).isEqualTo(TEAMS_PER_ROUND);
                 }
 
-                assertThat(getBreak(adminCookie).path("round").path("roundNumber").asInt()).isEqualTo(6);
+                JsonNode createdBreak = getBreak(adminCookie);
+                assertThat(createdBreak.path("round").path("roundNumber").asInt()).isEqualTo(6);
+                assertThat(minutesOf(createdBreak)).isEqualTo(BREAK_MINUTES);
 
                 JsonNode overview = getOverview();
                 assertThat(overview.path("scheduleCreated").asBoolean()).isTrue();
                 assertThat(overview.path("finalScheduleCreated").asBoolean()).isFalse();
                 assertThat(overview.path("numberOfRoundsUnplayed").asInt()).isEqualTo(ROUND_COUNT);
                 assertThat(overview.path("tournamentOpen").asBoolean()).isTrue();
+                assertThat(overview.path("rankingHiddenRounds").asInt()).isEqualTo(RANKING_HIDDEN_ROUNDS);
                 long currentRoundId = overview.path("currentRounds").get(0).path("id").asLong();
                 assertThat(overview.path("teamsNotInRound").path(String.valueOf(currentRoundId)))
                                 .hasSize(TEAM_COUNT - TEAMS_PER_ROUND);
@@ -439,22 +459,26 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                 assertThat(statistics(adminCookie, finalQuestion)).containsExactlyElementsOf(expectedVotes);
 
                 Map<String, Integer> finalStrength = Map.of("Team-02", 10, "Team-03", 8, "Team-04", 12, "Team-05", 15);
-                int finalRounds = 0;
+                List<List<Integer>> finalSwitches = new ArrayList<>();
                 while (getUnplayedRoundCount() > 0) {
                         long currentRoundId = getCurrentRounds().get(0).path("id").asLong();
                         JsonNode roundDetails = getAdminRound(adminCookie, currentRoundId);
-                        assertThat(roundDetails.path("games")).hasSize(3);
+                        assertThat(minutesOf(roundDetails)).isEqualTo(ROUND_MINUTES);
+                        finalSwitches.add(IntStream.range(0, roundDetails.path("games").size())
+                                        .map(index -> roundDetails.path("games").get(index).path("switchIndex").asInt())
+                                        .sorted()
+                                        .boxed()
+                                        .toList());
                         applyScoresToRound(adminCookie, roundDetails, finalStrength);
                         markRoundPlayed(adminCookie, currentRoundId);
-                        finalRounds++;
                         assertThat(getFinalStandings(adminCookie)).hasSize(TEAM_COUNT);
                 }
-                assertThat(finalRounds).isEqualTo(2);
+                assertThat(finalSwitches).containsExactly(List.of(0, 0, 0, 0), List.of(0, 0, 0));
 
                 JsonNode finalStandings = getFinalStandings(adminCookie);
                 assertThat(teamNames(finalStandings).subList(0, 4))
                                 .containsExactly("Team-05", "Team-04", "Team-02", "Team-03");
-                assertThat(finalStandings.get(0).path("finalPoints").asInt()).isEqualTo(6 * 15 + 1);
+                assertThat(finalStandings.get(0).path("finalPoints").asInt()).isEqualTo(FINAL_GAMES * 15 + 1);
                 assertThat(finalStandings.get(4).path("teamName").asText()).isEqualTo("FSR");
                 assertThat(finalStandings.get(4).path("finalPoints").asInt()).isZero();
                 assertThat(teamStrength).containsKey("FSR");
@@ -602,6 +626,11 @@ class FullTournamentApplicationEndToEndTest extends AbstractEndToEndApiSmokeTest
                                 .andExpect(status().isOk())
                                 .andReturn();
                 return JSON.readTree(result.getResponse().getContentAsString());
+        }
+
+        private long minutesOf(JsonNode timedNode) {
+                return Duration.between(LocalDateTime.parse(timedNode.path("startTime").asText()),
+                                LocalDateTime.parse(timedNode.path("endTime").asText())).toMinutes();
         }
 
         private JsonNode getOverview() throws Exception {

@@ -59,4 +59,32 @@ class GameRepositoryTest extends PostgresTestBase {
         assertThat(gameRepository.findByRoundId(roundOne.getId())).hasSize(2);
         assertThat(gameRepository.findByRoundId(9999L)).isEmpty();
     }
+
+    @Test
+    void findsTheGroupGameOnTheHighestSwitch() {
+        assertThat(gameRepository.findFirstByRound_FinalGameFalseOrderBySwitchIndexDesc()).isEmpty();
+
+        Round groupRound = new Round();
+        groupRound.setRoundNumber(1);
+        Round finalRound = new Round();
+        finalRound.setRoundNumber(2);
+        finalRound.setFinalGame(true);
+        roundRepository.save(groupRound);
+        roundRepository.save(finalRound);
+
+        for (int switchIndex : new int[] { 0, 3, 1 }) {
+            Game game = new Game();
+            game.setSwitchIndex(switchIndex);
+            game.setRound(groupRound);
+            gameRepository.save(game);
+        }
+        Game finalGame = new Game();
+        finalGame.setSwitchIndex(7);
+        finalGame.setRound(finalRound);
+        gameRepository.save(finalGame);
+
+        assertThat(gameRepository.findFirstByRound_FinalGameFalseOrderBySwitchIndexDesc())
+                .map(Game::getSwitchIndex)
+                .contains(3);
+    }
 }

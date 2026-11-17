@@ -10,12 +10,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -61,6 +64,8 @@ class EventSeedServiceTest {
     private AdminSurveyCreateService adminSurveyCreateService;
     @Mock
     private AdminScheduleCreateService adminScheduleCreateService;
+    @Mock
+    private SeedGroupPhaseService seedGroupPhaseService;
 
     private EventSeedService eventSeedService;
 
@@ -69,7 +74,7 @@ class EventSeedServiceTest {
         eventSeedService = new EventSeedService(new DefaultResourceLoader(), JsonMapper.builder().build(),
                 teamRepository, questionRepository, publicRegistrationCreateService, publicSettingsReadService,
                 publicScheduleReadService, adminSettingsUpdateService, adminSurveyCreateService,
-                adminScheduleCreateService);
+                adminScheduleCreateService, seedGroupPhaseService);
     }
 
     @Test
@@ -88,7 +93,7 @@ class EventSeedServiceTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "demo", "registration" })
+    @ValueSource(strings = { "demo", "registration", "final" })
     void shippedEventsOnlyUseRegistrableTeams(String event) {
         List<TeamInputDTO> teams = eventSeedService.load(event).getTeams();
 
@@ -119,7 +124,8 @@ class EventSeedServiceTest {
         ArgumentCaptor<TournamentDTO> settings = ArgumentCaptor.forClass(TournamentDTO.class);
         verify(adminSettingsUpdateService).updateSettings(settings.capture());
         assertThat(settings.getValue().getFloorPlan()).startsWith("{\"version\":1,\"elements\":[");
-        assertThat(settings.getValue().getProgram()).startsWith("[{\"icon\":\"megaphone\"");
+        assertThat(settings.getValue().getProgram()).startsWith("{\"entries\":[{\"icon\":\"megaphone\"");
+        assertThat(settings.getValue().getHowToPlay()).startsWith("{\"videoUrl\":");
         assertThat(settings.getValue().getSwitches()).hasSize(4);
     }
 
@@ -137,6 +143,73 @@ class EventSeedServiceTest {
 
         assertThat(settings.getAllValues().get(1).getRegistrationOpen()).isTrue();
         assertThat(settings.getAllValues().get(2).getRegistrationOpen()).isFalse();
+    }
+
+    @Test
+    void finalEventIsTheDemoWithAPlayedGroupPhase() {
+        EventSeedDTO demo = eventSeedService.load("demo");
+        EventSeedDTO finalEvent = eventSeedService.load("final");
+
+        assertThat(finalEvent.getGroupPhasePlayed()).isTrue();
+        assertThat(demo.getGroupPhasePlayed()).isNull();
+        assertThat(finalEvent.getTeams()).isEqualTo(demo.getTeams());
+        assertThat(finalEvent.getSchedule()).isEqualTo(demo.getSchedule());
+        assertThat(finalEvent.getSettings()).isEqualTo(demo.getSettings());
+        assertThat(finalEvent.getFloorPlan()).isEqualTo(demo.getFloorPlan());
+    }
+
+    @Test
+    void seedThatExtendsItselfFails(@TempDir Path directory) throws Exception {
+        Path seed = directory.resolve("loop.json");
+        String location = seed.toUri().toString();
+        Files.writeString(seed, "{\"extends\": \"" + location + "\"}");
+
+        assertThatThrownBy(() -> eventSeedService.load(location))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("extends itself");
+    }
+
+    @Test
+    void finalEventPlaysTheGroupPhaseAfterCreatingTheSchedule() throws Exception {
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 0, null));
+
+        eventSeedService.seed("final");
+
+        InOrder order = inOrder(adminScheduleCreateService, seedGroupPhaseService);
+        order.verify(adminScheduleCreateService).createSchedule(any());
+        order.verify(seedGroupPhaseService).playGroupPhase();
+    }
+
+    @Test
+    void demoEventLeavesTheGroupPhaseOpen() throws Exception {
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 0, null));
+
+        eventSeedService.seed("demo");
+
+        verify(adminScheduleCreateService).createSchedule(any());
+        verifyNoInteractions(seedGroupPhaseService);
+    }
+
+    @Test
+    void groupPhaseIsNotPlayedWithoutANewSchedule() {
+        when(teamRepository.count()).thenReturn(5L);
+        when(questionRepository.count()).thenReturn(3L);
+        when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);
+
+        eventSeedService.seed("final");
+
+        verifyNoInteractions(seedGroupPhaseService);
+    }
+
+    @Test
+    void groupPhaseIsNotPlayedWhenTheScheduleCannotBeCreated() throws Exception {
+        when(publicSettingsReadService.getSettings()).thenReturn(new TournamentDTO(true, false, 0, null));
+        when(adminScheduleCreateService.createSchedule(any()))
+                .thenThrow(new RuntimeException("Failed to send request to schedule generator"));
+
+        eventSeedService.seed("final");
+
+        verifyNoInteractions(seedGroupPhaseService);
     }
 
     @Test

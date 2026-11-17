@@ -7,6 +7,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Duration;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +55,7 @@ class PublicSurveyCreateControllerContractTest extends AbstractWebMvcSliceTest {
         AnswerInputDTO input = new AnswerInputDTO(1L, "FREE_TEXT", "A", null, null, null);
         AnswerReturnDTO response = new AnswerReturnDTO(3L, 1L, "FREE_TEXT", "A", null, null, null);
         when(publicSurveyCreateService.submitAnswer(any(AnswerInputDTO.class), anyString(), any()))
-                .thenReturn(new AnswerSubmissionResult(response, null));
+                .thenReturn(new AnswerSubmissionResult(response, null, Duration.ofDays(2)));
 
         MvcResult result = mockMvc.perform(post("/public/survey/answer")
                         .cookie(new MockCookie("user", "{\"teamId\":1}"))

@@ -57,14 +57,14 @@ public class AdminScheduleCreateService {
     public static final int MAX_FIELDS = 16;
     public static final int MIN_TEAMS_PER_GAME = 2;
     public static final int MAX_TEAMS_PER_GAME = 8;
+    public static final int DEFAULT_BREAK_ROUND = 6;
+    public static final int DEFAULT_BREAK_MINUTES = 30;
 
     // The final is played on the first switch
     private static final int MAIN_SWITCH_INDEX = 0;
     private static final int LEGACY_SCHEDULER_VERSION = 1;
     // First scheduler that takes a number of teams for every field
     private static final int PER_FIELD_SCHEDULER_VERSION = 4;
-    private static final int BREAK_ROUND_INDEX = 5;
-    private static final int BREAK_MINUTES = 30;
 
     private final RoundRepository roundRepository;
     private final GameRepository gameRepository;
@@ -126,7 +126,8 @@ public class AdminScheduleCreateService {
             throw new IllegalArgumentException("Not all rounds played");
         }
 
-        int finalTeamsCount = publicSettingsReadService.getSettings().finalTeamsCountOrDefault();
+        TournamentDTO settings = publicSettingsReadService.getSettings();
+        int finalTeamsCount = settings.finalTeamsCountOrDefault();
         if (teamRepository.findByFinalReadyTrue().size() < finalTeamsCount) {
             throw new NotEnoughTeamsException("Not enough teams ready for final");
         }
@@ -137,10 +138,16 @@ public class AdminScheduleCreateService {
             teams = teams.subList(0, finalTeamsCount);
         }
 
-        createFinalBonusRound(teams, LocalDateTime.now(ZoneId.systemDefault()));
+        int roundMinutes = settings.roundMinutesOrDefault();
+        LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
+        createFinalBonusRound(teams, now);
 
-        for (int i = 0; i < 2; i++) {
-            createFinalRounds(teams, LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(20L * i));
+        int switchCount = gameRepository.findFirstByRound_FinalGameFalseOrderBySwitchIndexDesc()
+                .map(game -> game.getSwitchIndex() + 1)
+                .orElse(1);
+        List<Integer> gamesPerRound = splitFinalGames(settings.finalGamesCountOrDefault(), switchCount);
+        for (int i = 0; i < gamesPerRound.size(); i++) {
+            createFinalRound(teams, now.plusMinutes((long) roundMinutes * i), roundMinutes, gamesPerRound.get(i));
         }
 
         webSocketService.sendMessage("/topic/rounds", "create");
@@ -149,6 +156,15 @@ public class AdminScheduleCreateService {
         return roundRepository.findAll().stream()
                 .map(scheduleReturnDTOService::roundToRoundDTO)
                 .toList();
+    }
+
+    static List<Integer> splitFinalGames(int gamesCount, int switchCount) {
+        int rounds = Math.ceilDiv(gamesCount, switchCount);
+        List<Integer> gamesPerRound = new ArrayList<>();
+        for (int i = 0; i < rounds; i++) {
+            gamesPerRound.add(gamesCount / rounds + (i < gamesCount % rounds ? 1 : 0));
+        }
+        return gamesPerRound;
     }
 
     private void createFinalBonusRound(List<Team> teams, LocalDateTime startTime) {
@@ -175,15 +191,15 @@ public class AdminScheduleCreateService {
         }
     }
 
-    private void createFinalRounds(List<Team> teams, LocalDateTime startTime) {
+    private void createFinalRound(List<Team> teams, LocalDateTime startTime, int roundMinutes, int gamesCount) {
         Round round = new Round();
         round.setRoundNumber((int) roundRepository.count() + 1);
         round.setFinalGame(true);
         round.setPlayed(false);
         round.setStartTime(startTime);
-        round.setEndTime(startTime.plusMinutes(20L));
+        round.setEndTime(startTime.plusMinutes(roundMinutes));
         addRound(round);
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < gamesCount; i++) {
             Game game = new Game();
             game.setSwitchIndex(MAIN_SWITCH_INDEX);
             game.setRound(round);
@@ -209,8 +225,10 @@ public class AdminScheduleCreateService {
 
         validateScheduleCreation(scheduleCreation);
 
-        createRoundsAndGames(scheduleDTO);
-        addBreakAndUpdateTimes();
+        int roundMinutes = publicSettingsReadService.getSettings().roundMinutesOrDefault();
+        createRoundsAndGames(scheduleDTO, roundMinutes);
+        addBreakAndUpdateTimes(breakRoundOrDefault(scheduleCreation), breakMinutesOrDefault(scheduleCreation),
+                roundMinutes);
         updateTournamentSettings(scheduleDTO.getMaxGamesCount());
 
         webSocketService.sendMessage("/topic/rounds", "create");
@@ -226,31 +244,49 @@ public class AdminScheduleCreateService {
         if (publicScheduleReadService.isScheduleCreated()) {
             throw new RoundsAlreadyExistsException("Schedule already created");
         }
+        if (breakRoundOrDefault(scheduleCreation) < 1) {
+            throw new IllegalArgumentException("Invalid break round");
+        }
+        if (breakMinutesOrDefault(scheduleCreation) < 1) {
+            throw new IllegalArgumentException("Invalid break length");
+        }
         if (scheduleCreation.getVersion() == LEGACY_SCHEDULER_VERSION) {
             // The first scheduler only knows four fields with four teams each
             if (teamRepository.count() < 16) {
                 throw new NotEnoughTeamsException("Not enough teams");
             }
         } else {
-            if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumFields() > MAX_FIELDS
-                    || scheduleCreation.getNumRounds() <= 0) {
-                throw new IllegalArgumentException("Invalid schedule parameters");
-            }
-            List<Integer> teamsPerField = resolveTeamsPerField(scheduleCreation);
-            if (teamsPerField.size() != scheduleCreation.getNumFields()
-                    || teamsPerField.stream().anyMatch(teamCount -> teamCount == null
-                            || teamCount < MIN_TEAMS_PER_GAME || teamCount > MAX_TEAMS_PER_GAME)) {
-                throw new IllegalArgumentException("Invalid schedule parameters");
-            }
-            // A team can only play on one field per round, so every field needs its own
-            // teams
-            int teamsPerRound = teamsPerField.stream().mapToInt(Integer::intValue).sum();
-            if (teamRepository.count() < teamsPerRound) {
-                throw new NotEnoughTeamsException(
-                        "Not enough teams: fields with %s teams need at least %d teams".formatted(
-                                teamsPerField, teamsPerRound));
-            }
+            validateFields(scheduleCreation);
         }
+    }
+
+    private void validateFields(ScheduleInputDTO scheduleCreation) throws NotEnoughTeamsException {
+        if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumFields() > MAX_FIELDS
+                || scheduleCreation.getNumRounds() <= 0) {
+            throw new IllegalArgumentException("Invalid schedule parameters");
+        }
+        List<Integer> teamsPerField = resolveTeamsPerField(scheduleCreation);
+        if (teamsPerField.size() != scheduleCreation.getNumFields()
+                || teamsPerField.stream().anyMatch(teamCount -> teamCount == null
+                        || teamCount < MIN_TEAMS_PER_GAME || teamCount > MAX_TEAMS_PER_GAME)) {
+            throw new IllegalArgumentException("Invalid schedule parameters");
+        }
+        // A team can only play on one field per round, so every field needs its own
+        // teams
+        int teamsPerRound = teamsPerField.stream().mapToInt(Integer::intValue).sum();
+        if (teamRepository.count() < teamsPerRound) {
+            throw new NotEnoughTeamsException(
+                    "Not enough teams: fields with %s teams need at least %d teams".formatted(
+                            teamsPerField, teamsPerRound));
+        }
+    }
+
+    private static int breakRoundOrDefault(ScheduleInputDTO scheduleCreation) {
+        return scheduleCreation.getBreakRound() != null ? scheduleCreation.getBreakRound() : DEFAULT_BREAK_ROUND;
+    }
+
+    private static int breakMinutesOrDefault(ScheduleInputDTO scheduleCreation) {
+        return scheduleCreation.getBreakMinutes() != null ? scheduleCreation.getBreakMinutes() : DEFAULT_BREAK_MINUTES;
     }
 
     private boolean hasTeamsPerField(ScheduleInputDTO scheduleCreation) {
@@ -268,12 +304,12 @@ public class AdminScheduleCreateService {
         return scheduleCreation.getTeamsPerField();
     }
 
-    private void createRoundsAndGames(ScheduleDTO scheduleDTO) throws EntityNotFoundException {
+    private void createRoundsAndGames(ScheduleDTO scheduleDTO, int roundMinutes) throws EntityNotFoundException {
         List<List<List<Integer>>> plan = scheduleDTO.getPlan();
         List<Team> teams = teamRepository.findAll();
 
         for (int roundIndex = 0; roundIndex < plan.size(); roundIndex++) {
-            Round round = createRound(roundIndex);
+            Round round = createRound(roundIndex, roundMinutes);
 
             for (int gameIndex = 0; gameIndex < plan.get(roundIndex).size(); gameIndex++) {
                 Game game = createGame(round, gameIndex);
@@ -282,12 +318,13 @@ public class AdminScheduleCreateService {
         }
     }
 
-    private Round createRound(int roundIndex) {
+    private Round createRound(int roundIndex, int roundMinutes) {
         Round round = new Round();
         round.setRoundNumber(roundIndex + 1);
         round.setPlayed(false);
-        round.setStartTime(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(20L * roundIndex));
-        round.setEndTime(LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(20L * roundIndex).plusMinutes(20L));
+        LocalDateTime startTime = LocalDateTime.now(ZoneId.systemDefault()).plusMinutes((long) roundMinutes * roundIndex);
+        round.setStartTime(startTime);
+        round.setEndTime(startTime.plusMinutes(roundMinutes));
         return addRound(round);
     }
 
@@ -309,22 +346,25 @@ public class AdminScheduleCreateService {
         }
     }
 
-    private void addBreakAndUpdateTimes() throws EntityNotFoundException {
+    private void addBreakAndUpdateTimes(int breakRoundNumber, int breakMinutes, int roundMinutes)
+            throws EntityNotFoundException {
         List<Round> rounds = new ArrayList<>(roundRepository.findAll());
         rounds.sort(Comparator.comparing(Round::getRoundNumber));
         // Short schedules have their break before the last round
-        Round breakRound = rounds.get(Math.min(BREAK_ROUND_INDEX, rounds.size() - 1));
-        LocalDateTime breakEndTime = breakRound.getStartTime().plusMinutes(BREAK_MINUTES);
-        addBreak(new BreakInputDTO(breakRound.getId(), BREAK_MINUTES, false));
+        Round breakRound = rounds.get(Math.min(breakRoundNumber - 1, rounds.size() - 1));
+        LocalDateTime breakEndTime = breakRound.getStartTime().plusMinutes(breakMinutes);
+        addBreak(new BreakInputDTO(breakRound.getId(), breakMinutes, false));
 
-        updateRoundTimesAfterBreak(rounds.subList(rounds.indexOf(breakRound), rounds.size()), breakEndTime);
+        updateRoundTimesAfterBreak(rounds.subList(rounds.indexOf(breakRound), rounds.size()), breakEndTime,
+                roundMinutes);
     }
 
-    private void updateRoundTimesAfterBreak(List<Round> roundsFromBreak, LocalDateTime breakEndTime) {
+    private void updateRoundTimesAfterBreak(List<Round> roundsFromBreak, LocalDateTime breakEndTime,
+            int roundMinutes) {
         LocalDateTime startTime = breakEndTime;
         for (Round round : roundsFromBreak) {
             round.setStartTime(startTime);
-            round.setEndTime(startTime.plusMinutes(20L));
+            round.setEndTime(startTime.plusMinutes(roundMinutes));
             addRound(round);
             startTime = round.getEndTime();
         }
