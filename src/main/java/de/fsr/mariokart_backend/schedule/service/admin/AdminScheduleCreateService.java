@@ -256,24 +256,28 @@ public class AdminScheduleCreateService {
                 throw new NotEnoughTeamsException("Not enough teams");
             }
         } else {
-            if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumFields() > MAX_FIELDS
-                    || scheduleCreation.getNumRounds() <= 0) {
-                throw new IllegalArgumentException("Invalid schedule parameters");
-            }
-            List<Integer> teamsPerField = resolveTeamsPerField(scheduleCreation);
-            if (teamsPerField.size() != scheduleCreation.getNumFields()
-                    || teamsPerField.stream().anyMatch(teamCount -> teamCount == null
-                            || teamCount < MIN_TEAMS_PER_GAME || teamCount > MAX_TEAMS_PER_GAME)) {
-                throw new IllegalArgumentException("Invalid schedule parameters");
-            }
-            // A team can only play on one field per round, so every field needs its own
-            // teams
-            int teamsPerRound = teamsPerField.stream().mapToInt(Integer::intValue).sum();
-            if (teamRepository.count() < teamsPerRound) {
-                throw new NotEnoughTeamsException(
-                        "Not enough teams: fields with %s teams need at least %d teams".formatted(
-                                teamsPerField, teamsPerRound));
-            }
+            validateFields(scheduleCreation);
+        }
+    }
+
+    private void validateFields(ScheduleInputDTO scheduleCreation) throws NotEnoughTeamsException {
+        if (scheduleCreation.getNumFields() <= 0 || scheduleCreation.getNumFields() > MAX_FIELDS
+                || scheduleCreation.getNumRounds() <= 0) {
+            throw new IllegalArgumentException("Invalid schedule parameters");
+        }
+        List<Integer> teamsPerField = resolveTeamsPerField(scheduleCreation);
+        if (teamsPerField.size() != scheduleCreation.getNumFields()
+                || teamsPerField.stream().anyMatch(teamCount -> teamCount == null
+                        || teamCount < MIN_TEAMS_PER_GAME || teamCount > MAX_TEAMS_PER_GAME)) {
+            throw new IllegalArgumentException("Invalid schedule parameters");
+        }
+        // A team can only play on one field per round, so every field needs its own
+        // teams
+        int teamsPerRound = teamsPerField.stream().mapToInt(Integer::intValue).sum();
+        if (teamRepository.count() < teamsPerRound) {
+            throw new NotEnoughTeamsException(
+                    "Not enough teams: fields with %s teams need at least %d teams".formatted(
+                            teamsPerField, teamsPerRound));
         }
     }
 

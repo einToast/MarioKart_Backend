@@ -30,7 +30,7 @@ public class TranslationRebase {
         JsonNode root;
         try {
             root = objectMapper.readTree(json);
-        } catch (JacksonException e) {
+        } catch (JacksonException _) {
             return json;
         }
         rebaseTree(root, from, to);
@@ -59,7 +59,7 @@ public class TranslationRebase {
     public List<String> texts(ObjectNode node, String field) {
         JsonNode value = node.get(field);
         if (value == null || !value.isArray()) {
-            return null;
+            return List.of();
         }
         List<String> texts = new ArrayList<>();
         value.forEach(entry -> texts.add(entry.isNull() ? null : entry.asString()));

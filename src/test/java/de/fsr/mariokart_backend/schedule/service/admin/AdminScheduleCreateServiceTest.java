@@ -596,9 +596,9 @@ class AdminScheduleCreateServiceTest {
     @CsvSource({ "0, 30", "6, 0" })
     void createScheduleRejectsABreakBeforeRoundOneOrWithoutMinutes(int breakRound, int breakMinutes) {
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(false);
+        ScheduleInputDTO input = new ScheduleInputDTO(2, 4, 8, 4, null, breakRound, breakMinutes);
 
-        assertThatThrownBy(() -> service.createSchedule(
-                new ScheduleInputDTO(2, 4, 8, 4, null, breakRound, breakMinutes)))
+        assertThatThrownBy(() -> service.createSchedule(input))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(roundRepository, never()).save(any(Round.class));
     }
@@ -827,9 +827,9 @@ class AdminScheduleCreateServiceTest {
         service.createFinalSchedule();
 
         List<Round> finalRounds = savedRounds.stream().filter(round -> !round.isPlayed()).toList();
-        assertThat(finalRounds).hasSize(2);
-        assertThat(finalRounds).allMatch(round -> Duration.between(round.getStartTime(), round.getEndTime())
-                .equals(Duration.ofMinutes(15)));
+        assertThat(finalRounds).hasSize(2)
+                .allMatch(round -> Duration.between(round.getStartTime(), round.getEndTime())
+                        .equals(Duration.ofMinutes(15)));
         assertThat(finalRounds).extracting(round -> savedGames.stream()
                 .filter(game -> game.getRound() == round)
                 .map(Game::getSwitchIndex)

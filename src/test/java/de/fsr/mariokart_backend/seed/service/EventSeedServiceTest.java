@@ -161,9 +161,10 @@ class EventSeedServiceTest {
     @Test
     void seedThatExtendsItselfFails(@TempDir Path directory) throws Exception {
         Path seed = directory.resolve("loop.json");
-        Files.writeString(seed, "{\"extends\": \"" + seed.toUri() + "\"}");
+        String location = seed.toUri().toString();
+        Files.writeString(seed, "{\"extends\": \"" + location + "\"}");
 
-        assertThatThrownBy(() -> eventSeedService.load(seed.toUri().toString()))
+        assertThatThrownBy(() -> eventSeedService.load(location))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("extends itself");
     }
@@ -190,7 +191,7 @@ class EventSeedServiceTest {
     }
 
     @Test
-    void groupPhaseIsNotPlayedWithoutANewSchedule() throws Exception {
+    void groupPhaseIsNotPlayedWithoutANewSchedule() {
         when(teamRepository.count()).thenReturn(5L);
         when(questionRepository.count()).thenReturn(3L);
         when(publicScheduleReadService.isScheduleCreated()).thenReturn(true);

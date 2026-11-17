@@ -61,6 +61,17 @@ public class AdminSettingsUpdateService {
             throw new RoundsAlreadyExistsException("Matches already exist. Can't open registration.");
         }
 
+        applyState(tournament, tournamentDTO);
+        applyFinal(tournament, tournamentDTO);
+        applyLimits(tournament, tournamentDTO);
+        applyContent(tournament, tournamentDTO);
+
+        TournamentDTO savedSettings = new TournamentDTO(tournamentRepository.save(tournament));
+        webSocketService.sendMessage("/topic/settings", "update");
+        return savedSettings;
+    }
+
+    private void applyState(Tournament tournament, TournamentDTO tournamentDTO) {
         if (tournamentDTO.getTournamentOpen() != null) {
             tournament.setTournamentOpen(tournamentDTO.getTournamentOpen());
         }
@@ -73,6 +84,12 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getSurveyKeyMode() != null) {
             tournament.setSurveyKeyMode(tournamentDTO.getSurveyKeyMode());
         }
+        if (tournamentDTO.getRelativePoints() != null) {
+            tournament.setRelativePoints(tournamentDTO.getRelativePoints());
+        }
+    }
+
+    private void applyFinal(Tournament tournament, TournamentDTO tournamentDTO) throws RoundsAlreadyExistsException {
         if (tournamentDTO.getFinalTeamsCount() != null
                 && tournamentDTO.getFinalTeamsCount() != tournament.getFinalTeamsCount()) {
             updateFinalTeamsCount(tournament, tournamentDTO.getFinalTeamsCount());
@@ -82,6 +99,9 @@ public class AdminSettingsUpdateService {
             requireFinalNotCreated("final games");
             tournament.setFinalGamesCount(requireAtLeast(tournamentDTO.getFinalGamesCount(), 1, "final games"));
         }
+    }
+
+    private void applyLimits(Tournament tournament, TournamentDTO tournamentDTO) {
         if (tournamentDTO.getRoundMinutes() != null) {
             tournament.setRoundMinutes(requireAtLeast(tournamentDTO.getRoundMinutes(), 1, "minutes per round"));
         }
@@ -95,6 +115,9 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getSurveyKeyDays() != null) {
             updateSurveyKeyDays(tournament, tournamentDTO.getSurveyKeyDays());
         }
+    }
+
+    private void applyContent(Tournament tournament, TournamentDTO tournamentDTO) {
         if (tournamentDTO.getSwitches() != null) {
             tournament.setSwitches(toSwitchConfigs(tournamentDTO.getSwitches()));
         }
@@ -110,17 +133,10 @@ public class AdminSettingsUpdateService {
         if (tournamentDTO.getOcrProvider() != null) {
             updateOcrProvider(tournament, tournamentDTO.getOcrProvider());
         }
-        if (tournamentDTO.getRelativePoints() != null) {
-            tournament.setRelativePoints(tournamentDTO.getRelativePoints());
-        }
         if (tournamentDTO.getDefaultLanguage() != null
                 && !tournamentDTO.getDefaultLanguage().equals(tournament.getDefaultLanguage())) {
             updateDefaultLanguage(tournament, tournamentDTO.getDefaultLanguage());
         }
-
-        TournamentDTO savedSettings = new TournamentDTO(tournamentRepository.save(tournament));
-        webSocketService.sendMessage("/topic/settings", "update");
-        return savedSettings;
     }
 
     private static int requireAtLeast(int value, int min, String name) {

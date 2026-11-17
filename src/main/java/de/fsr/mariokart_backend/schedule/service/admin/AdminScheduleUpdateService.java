@@ -285,9 +285,10 @@ public class AdminScheduleUpdateService {
 
     private void updateNotPlayedRoundsSchedule(List<Round> notPlayedRounds) {
         long minutes = roundMinutes();
+        LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
         for (int i = 0; i < notPlayedRounds.size(); i++) {
             Round currentRound = notPlayedRounds.get(i);
-            LocalDateTime startTime = LocalDateTime.now(ZoneId.systemDefault()).plusMinutes(minutes * i);
+            LocalDateTime startTime = now.plusMinutes(minutes * i);
             currentRound.setStartTime(startTime);
             currentRound.setEndTime(startTime.plusMinutes(minutes));
             roundRepository.save(currentRound);
