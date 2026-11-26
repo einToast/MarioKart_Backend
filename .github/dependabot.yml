@@ -9,14 +9,33 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
+    groups:
+      maven-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
     groups:
+      actions-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
       codeql-action:
         patterns:
           - "github/codeql-action*"
@@ -25,6 +44,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
     ignore:
       - dependency-name: "eclipse-temurin"
@@ -37,9 +59,26 @@ updates:
           - ">= 3.9.26, < 3.10"
           - ">= 3.10.26, < 3.11"
           - ">= 3.11, < 4"
+    groups:
+      docker-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 10
+    groups:
+      devcontainers-minor:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
